@@ -1,14 +1,15 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Bell, Calendar, Activity } from "lucide-react";
+import { Plus, Bell, Calendar, Activity, Settings } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
+import SettingsModal from "@/components/SettingsModal";
 
 const Index = () => {
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Mock data for demonstration
   const todayChecklist = [
@@ -39,9 +40,14 @@ const Index = () => {
             <h1 className="text-2xl font-bold text-gray-800">RatTracker</h1>
             <p className="text-sm text-gray-600">Your rats' daily companion</p>
           </div>
-          <Button variant="outline" size="icon">
-            <Bell className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon">
+              <Bell className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setShowSettings(true)}>
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -155,8 +161,9 @@ const Index = () => {
         <Plus className="h-6 w-6" />
       </Button>
 
-      {/* Quick Log Modal */}
+      {/* Modals */}
       <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
       {/* Bottom Navigation */}
       <BottomNav />
