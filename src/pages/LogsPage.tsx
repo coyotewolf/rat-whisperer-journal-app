@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Activity, Heart, Thermometer, Plus } from "lucide-react";
+import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
 const LogsPage = () => {
@@ -68,13 +68,13 @@ const LogsPage = () => {
   const getLogColor = (type: string) => {
     switch (type) {
       case "behavior":
-        return "border-blue-200 bg-blue-50";
+        return "border-blue-300/30 bg-blue-500/10";
       case "health":
-        return "border-red-200 bg-red-50";
+        return "border-red-300/30 bg-red-500/10";
       case "environment":
-        return "border-green-200 bg-green-50";
+        return "border-green-300/30 bg-green-500/10";
       default:
-        return "border-gray-200 bg-gray-50";
+        return "border-gray-300/30 bg-gray-500/10";
     }
   };
 
@@ -86,14 +86,14 @@ const LogsPage = () => {
     const { date, time } = formatDateTime(log.timestamp);
     
     return (
-      <Card className={`${getLogColor(log.type)} border`}>
+      <Card className={`${getLogColor(log.type)} backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white">
               {getLogIcon(log.type)}
               <span className="font-medium capitalize">{log.type}</span>
             </div>
-            <div className="text-right text-sm text-gray-600">
+            <div className="text-right text-sm text-purple-100/80">
               <div>{date}</div>
               <div>{time}</div>
             </div>
@@ -102,7 +102,7 @@ const LogsPage = () => {
           {log.rats && (
             <div className="flex flex-wrap gap-1 mb-2">
               {log.rats.map((rat: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs">
+                <Badge key={index} variant="outline" className="text-xs border-white/20 text-white backdrop-blur-sm">
                   {rat}
                 </Badge>
               ))}
@@ -110,25 +110,25 @@ const LogsPage = () => {
           )}
           
           {log.behavior && (
-            <p className="text-sm font-medium text-gray-800 mb-1">
+            <p className="text-sm font-medium text-white mb-1">
               Behavior: {log.behavior}
             </p>
           )}
           
           {log.weight && (
-            <p className="text-sm font-medium text-gray-800 mb-1">
+            <p className="text-sm font-medium text-white mb-1">
               Weight: {log.weight}g
             </p>
           )}
           
           {log.temperature && (
-            <p className="text-sm font-medium text-gray-800 mb-1">
+            <p className="text-sm font-medium text-white mb-1">
               Temperature: {log.temperature}°C
             </p>
           )}
           
           {log.notes && (
-            <p className="text-sm text-gray-600 mt-2">{log.notes}</p>
+            <p className="text-sm text-purple-100/90 mt-2">{log.notes}</p>
           )}
         </CardContent>
       </Card>
@@ -136,28 +136,41 @@ const LogsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
+      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b p-4">
+      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Activity Logs</h1>
-            <p className="text-sm text-gray-600">Track your rats' daily activities</p>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
+                Activity Logs
+              </h1>
+              <p className="text-sm text-cyan-100/80">Track your rats' daily activities</p>
+            </div>
           </div>
-          <Button className="bg-orange-500 hover:bg-orange-600">
+          <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300">
             <Plus className="h-4 w-4 mr-2" />
             New Log
           </Button>
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="relative p-4">
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="behavior">Behavior</TabsTrigger>
-            <TabsTrigger value="health">Health</TabsTrigger>
-            <TabsTrigger value="environment">Environment</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 mb-6 backdrop-blur-md bg-white/10 border-white/20">
+            <TabsTrigger value="all" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">All</TabsTrigger>
+            <TabsTrigger value="behavior" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Behavior</TabsTrigger>
+            <TabsTrigger value="health" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Health</TabsTrigger>
+            <TabsTrigger value="environment" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Environment</TabsTrigger>
           </TabsList>
           
           <TabsContent value="all" className="space-y-3">
