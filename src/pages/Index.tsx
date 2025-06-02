@@ -78,8 +78,36 @@ const Index = () => {
           </Button>
         </div>
 
-        {/* Recent Activities */}
+        {/* Upcoming Tasks - moved above Recent Activities */}
         <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-cyan-300" />
+              Upcoming Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {upcomingTasks.map((task) => (
+              <div key={task.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
+                <div>
+                  <p className="text-white font-medium">{task.task}</p>
+                  <p className="text-sm text-purple-100">Due: {task.due}</p>
+                </div>
+                <Badge 
+                  className={`${
+                    task.priority === 'high' ? 'bg-red-500/20 text-red-100' : 
+                    'bg-yellow-500/20 text-yellow-100'
+                  } border-0 backdrop-blur-sm`}
+                >
+                  {task.priority}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activities - moved below Upcoming Tasks */}
+        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Heart className="h-5 w-5 text-pink-300" />
@@ -101,34 +129,6 @@ const Index = () => {
                   } border-0 backdrop-blur-sm`}
                 >
                   {activity.status}
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Tasks */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-cyan-300" />
-              Upcoming Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {upcomingTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
-                <div>
-                  <p className="text-white font-medium">{task.task}</p>
-                  <p className="text-sm text-purple-100">Due: {task.due}</p>
-                </div>
-                <Badge 
-                  className={`${
-                    task.priority === 'high' ? 'bg-red-500/20 text-red-100' : 
-                    'bg-yellow-500/20 text-yellow-100'
-                  } border-0 backdrop-blur-sm`}
-                >
-                  {task.priority}
                 </Badge>
               </div>
             ))}
