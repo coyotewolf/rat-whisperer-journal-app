@@ -9,7 +9,131 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      behavior_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      log_entries: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          rat_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          rat_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          rat_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_entries_rat_id_fkey"
+            columns: ["rat_id"]
+            isOneToOne: false
+            referencedRelation: "rats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rats: {
+        Row: {
+          birthday: string
+          created_at: string
+          id: string
+          name: string
+          personality: Json | null
+          profile_picture: string | null
+          sex: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday: string
+          created_at?: string
+          id?: string
+          name: string
+          personality?: Json | null
+          profile_picture?: string | null
+          sex: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday?: string
+          created_at?: string
+          id?: string
+          name?: string
+          personality?: Json | null
+          profile_picture?: string | null
+          sex?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          font_size: number | null
+          id: string
+          language: string | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          font_size?: number | null
+          id?: string
+          language?: string | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          font_size?: number | null
+          id?: string
+          language?: string | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Activity, Heart, Scale, Thermometer, Pill, Coffee, Sparkles } from "lucide-react";
+import { Activity, Heart, Scale, Thermometer, Pill, Utensils } from "lucide-react";
+import LogEntryModal from "@/components/LogEntryModal";
+import AuthModal from "@/components/AuthModal";
+import { useAuth } from "@/hooks/useAuth";
 
 interface QuickLogModalProps {
   isOpen: boolean;
@@ -11,92 +13,72 @@ interface QuickLogModalProps {
 }
 
 const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
-  const quickLogOptions = [
-    { 
-      id: "behavior", 
-      icon: Activity, 
-      label: "Behavior", 
-      gradient: "from-blue-500 to-cyan-500",
-      description: "Log interactions & activities" 
-    },
-    { 
-      id: "health", 
-      icon: Heart, 
-      label: "Health Check", 
-      gradient: "from-red-500 to-pink-500",
-      description: "Record health observations" 
-    },
-    { 
-      id: "weight", 
-      icon: Scale, 
-      label: "Weight", 
-      gradient: "from-green-500 to-emerald-500",
-      description: "Track weight changes" 
-    },
-    { 
-      id: "environment", 
-      icon: Thermometer, 
-      label: "Environment", 
-      gradient: "from-purple-500 to-violet-500",
-      description: "Cage conditions & temp" 
-    },
-    { 
-      id: "medication", 
-      icon: Pill, 
-      label: "Medication", 
-      gradient: "from-yellow-500 to-orange-500",
-      description: "Medicine & supplements" 
-    },
-    { 
-      id: "feeding", 
-      icon: Coffee, 
-      label: "Feeding", 
-      gradient: "from-orange-500 to-red-500",
-      description: "Food & treats given" 
-    },
+  const [logEntryModalOpen, setLogEntryModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [selectedLogType, setSelectedLogType] = useState("");
+  const { user } = useAuth();
+
+  const logTypes = [
+    { type: "behavior", label: "Behavior", icon: Activity, color: "from-blue-500 to-cyan-500" },
+    { type: "health", label: "Health Check", icon: Heart, color: "from-red-500 to-pink-500" },
+    { type: "weight", label: "Weight", icon: Scale, color: "from-green-500 to-emerald-500" },
+    { type: "environment", label: "Environment", icon: Thermometer, color: "from-orange-500 to-amber-500" },
+    { type: "medication", label: "Medication", icon: Pill, color: "from-purple-500 to-violet-500" },
+    { type: "feeding", label: "Feeding", icon: Utensils, color: "from-yellow-500 to-orange-500" },
   ];
 
+  const handleLogTypeClick = (logType: string) => {
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+    setSelectedLogType(logType);
+    setLogEntryModalOpen(true);
+  };
+
+  const handleLogAdded = () => {
+    // Optionally refresh data or show success message
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md backdrop-blur-xl bg-white/90 border-white/20 shadow-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-center flex items-center justify-center gap-2 text-xl">
-            <div className="p-1 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            Quick Log Entry
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          {quickLogOptions.map((option) => {
-            const Icon = option.icon;
-            return (
-              <Card 
-                key={option.id} 
-                className="cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm bg-white/50 border-white/30 group"
-              >
-                <CardContent className="p-4 text-center">
-                  <div className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${option.gradient} mb-3 shadow-lg group-hover:shadow-xl transition-all duration-300`}>
-                    <Icon className="h-6 w-6 text-white" />
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-white">Quick Log Entry</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 p-4">
+            {logTypes.map((logType) => {
+              const Icon = logType.icon;
+              return (
+                <Button
+                  key={logType.type}
+                  onClick={() => handleLogTypeClick(logType.type)}
+                  className={`h-20 bg-gradient-to-r ${logType.color} hover:scale-105 transition-all duration-200 shadow-lg`}
+                >
+                  <div className="text-center">
+                    <Icon className="h-6 w-6 mx-auto mb-2" />
+                    <div className="text-sm font-medium">{logType.label}</div>
                   </div>
-                  <p className="text-sm font-semibold text-gray-800 mb-1">{option.label}</p>
-                  <p className="text-xs text-gray-600">{option.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-        
-        <Button 
-          variant="outline" 
-          onClick={onClose} 
-          className="mt-6 backdrop-blur-sm bg-white/50 border-gray-300/50 hover:bg-white/70 transition-all duration-300"
-        >
-          Cancel
-        </Button>
-      </DialogContent>
-    </Dialog>
+                </Button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <LogEntryModal
+        isOpen={logEntryModalOpen}
+        onClose={() => setLogEntryModalOpen(false)}
+        logType={selectedLogType}
+        onLogAdded={handleLogAdded}
+      />
+
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
+    </>
   );
 };
 

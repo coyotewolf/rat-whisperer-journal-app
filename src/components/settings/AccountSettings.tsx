@@ -3,30 +3,76 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, User, Mail, Lock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface AccountSettingsProps {
-  isLoggedIn: boolean;
-  setIsLoggedIn: (value: boolean) => void;
   onBack: () => void;
 }
 
-const AccountSettings = ({ isLoggedIn, setIsLoggedIn, onBack }: AccountSettingsProps) => {
+const AccountSettings = ({ onBack }: AccountSettingsProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user, signIn, signOut } = useAuth();
+  const { toast } = useToast();
 
-  const handleLogin = () => {
-    // Mock login functionality
-    if (email && password) {
-      setIsLoggedIn(true);
-      console.log("Login successful");
+  const handleLogin = async () => {
+    if (!email || !password) return;
+
+    setLoading(true);
+    try {
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Signed in successfully!",
+        });
+        setEmail("");
+        setPassword("");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setEmail("");
-    setPassword("");
-    console.log("Logged out");
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      const { error } = await signOut();
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Signed out successfully!",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,7 +82,7 @@ const AccountSettings = ({ isLoggedIn, setIsLoggedIn, onBack }: AccountSettingsP
         Back to Settings
       </Button>
 
-      {!isLoggedIn ? (
+      {!user ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -73,8 +119,12 @@ const AccountSettings = ({ isLoggedIn, setIsLoggedIn, onBack }: AccountSettingsP
               </div>
             </div>
 
-            <Button onClick={handleLogin} className="w-full bg-orange-500 hover:bg-orange-600">
-              Sign In
+            <Button 
+              onClick={handleLogin} 
+              disabled={loading}
+              className="w-full bg-orange-500 hover:bg-orange-600"
+            >
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
 
             <p className="text-xs text-gray-500 text-center">
@@ -93,19 +143,21 @@ const AccountSettings = ({ isLoggedIn, setIsLoggedIn, onBack }: AccountSettingsP
           <CardContent className="space-y-4">
             <div className="p-4 bg-green-50 rounded-lg">
               <p className="text-sm font-medium text-green-800">Signed in as</p>
-              <p className="text-sm text-green-600">{email}</p>
+              <p className="text-sm text-green-600">{user.email}</p>
             </div>
 
             <div className="space-y-2">
               <h3 className="font-medium">Account Actions</h3>
               <Button variant="outline" className="w-full">
-                Sync Data
-              </Button>
-              <Button variant="outline" className="w-full">
                 Export Data
               </Button>
-              <Button variant="outline" onClick={handleLogout} className="w-full text-red-600 border-red-200 hover:bg-red-50">
-                Sign Out
+              <Button 
+                variant="outline" 
+                onClick={handleLogout} 
+                disabled={loading}
+                className="w-full text-red-600 border-red-200 hover:bg-red-50"
+              >
+                {loading ? "Signing Out..." : "Sign Out"}
               </Button>
             </div>
           </CardContent>

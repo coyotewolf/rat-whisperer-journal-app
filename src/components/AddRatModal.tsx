@@ -1,0 +1,113 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+
+interface AddRatModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onRatAdded: () => void;
+}
+
+const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
+  const [name, setName] = useState("");
+  const [sex, setSex] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('rats')
+        .insert({
+          user_id: user.id,
+          name,
+          sex,
+          birthday,
+          status: 'active',
+          personality: []
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Rat added successfully!",
+      });
+      
+      onRatAdded();
+      onClose();
+      setName("");
+      setSex("");
+      setBirthday("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add rat",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add New Rat</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sex">Sex</Label>
+            <Select value={sex} onValueChange={setSex} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select sex" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="birthday">Birthday</Label>
+            <Input
+              id="birthday"
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Adding..." : "Add Rat"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddRatModal;

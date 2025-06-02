@@ -1,8 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Globe, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface LanguageSettingsProps {
   onBack: () => void;
@@ -10,6 +13,9 @@ interface LanguageSettingsProps {
 
 const LanguageSettings = ({ onBack }: LanguageSettingsProps) => {
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const languages = [
     { code: "en", name: "English", flag: "🇺🇸" },
@@ -21,6 +27,60 @@ const LanguageSettings = ({ onBack }: LanguageSettingsProps) => {
     { code: "zh", name: "中文", flag: "🇨🇳" },
     { code: "pt", name: "Português", flag: "🇧🇷" },
   ];
+
+  useEffect(() => {
+    if (user) {
+      fetchUserSettings();
+    }
+  }, [user]);
+
+  const fetchUserSettings = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('language')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        setSelectedLanguage(data.language || 'en');
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  const saveLanguage = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: user.id,
+          language: selectedLanguage
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Language setting saved successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save language setting",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -59,8 +119,12 @@ const LanguageSettings = ({ onBack }: LanguageSettingsProps) => {
         </CardContent>
       </Card>
 
-      <Button className="w-full bg-orange-500 hover:bg-orange-600">
-        Apply Language
+      <Button 
+        onClick={saveLanguage}
+        disabled={loading}
+        className="w-full bg-orange-500 hover:bg-orange-600"
+      >
+        {loading ? "Saving..." : "Apply Language"}
       </Button>
     </div>
   );

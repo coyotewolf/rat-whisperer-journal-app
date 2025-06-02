@@ -1,8 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Type, Minus, Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface FontSettingsProps {
   onBack: () => void;
@@ -11,6 +14,9 @@ interface FontSettingsProps {
 const FontSettings = ({ onBack }: FontSettingsProps) => {
   const [fontSize, setFontSize] = useState(16);
   const [selectedFont, setSelectedFont] = useState("system");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const fontOptions = [
     { id: "system", name: "System Default", preview: "The quick brown fox jumps over the lazy dog" },
@@ -21,8 +27,62 @@ const FontSettings = ({ onBack }: FontSettingsProps) => {
     { id: "montserrat", name: "Montserrat", preview: "The quick brown fox jumps over the lazy dog" },
   ];
 
+  useEffect(() => {
+    if (user) {
+      fetchUserSettings();
+    }
+  }, [user]);
+
+  const fetchUserSettings = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('font_size')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        setFontSize(data.font_size || 16);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
   const adjustFontSize = (delta: number) => {
     setFontSize(prev => Math.max(12, Math.min(24, prev + delta)));
+  };
+
+  const saveFontSettings = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: user.id,
+          font_size: fontSize
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Font settings saved successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save font settings",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -104,8 +164,12 @@ const FontSettings = ({ onBack }: FontSettingsProps) => {
         </CardContent>
       </Card>
 
-      <Button className="w-full bg-orange-500 hover:bg-orange-600">
-        Apply Font Settings
+      <Button 
+        onClick={saveFontSettings}
+        disabled={loading}
+        className="w-full bg-orange-500 hover:bg-orange-600"
+      >
+        {loading ? "Saving..." : "Apply Font Settings"}
       </Button>
     </div>
   );
