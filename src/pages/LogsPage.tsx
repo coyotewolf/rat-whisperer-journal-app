@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import LogSearchFilter from "@/components/LogSearchFilter";
 
 const LogsPage = () => {
   const [logs] = useState([
@@ -16,6 +17,7 @@ const LogsPage = () => {
       behavior: "Grooming",
       timestamp: "2024-06-01T10:30:00",
       notes: "Pepper grooming Salt for 5 minutes",
+      hashtags: ["social", "grooming", "bonding"]
     },
     {
       id: 2,
@@ -25,6 +27,7 @@ const LogsPage = () => {
       symptoms: [],
       timestamp: "2024-06-01T09:15:00",
       notes: "Weekly weigh-in",
+      hashtags: ["health", "weight", "routine"]
     },
     {
       id: 3,
@@ -33,6 +36,7 @@ const LogsPage = () => {
       humidity: 65,
       timestamp: "2024-06-01T08:00:00",
       notes: "Cage cleaning completed",
+      hashtags: ["cleaning", "environment", "maintenance"]
     },
     {
       id: 4,
@@ -41,8 +45,40 @@ const LogsPage = () => {
       behavior: "Chasing",
       timestamp: "2024-05-31T19:45:00",
       notes: "Playful chase around the cage",
+      hashtags: ["playful", "exercise", "social"]
     },
   ]);
+
+  const [filteredLogs, setFilteredLogs] = useState(logs);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
+
+  // Get all unique hashtags from logs
+  const availableHashtags = Array.from(
+    new Set(logs.flatMap(log => log.hashtags || []))
+  );
+
+  useEffect(() => {
+    let filtered = logs;
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(log =>
+        log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.rats?.some(rat => rat.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        log.behavior?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by hashtags
+    if (selectedHashtags.length > 0) {
+      filtered = filtered.filter(log =>
+        log.hashtags?.some(hashtag => selectedHashtags.includes(hashtag))
+      );
+    }
+
+    setFilteredLogs(filtered);
+  }, [searchQuery, selectedHashtags, logs]);
 
   const formatDateTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -78,9 +114,9 @@ const LogsPage = () => {
     }
   };
 
-  const behaviorLogs = logs.filter(log => log.type === "behavior");
-  const healthLogs = logs.filter(log => log.type === "health");
-  const environmentLogs = logs.filter(log => log.type === "environment");
+  const behaviorLogs = filteredLogs.filter(log => log.type === "behavior");
+  const healthLogs = filteredLogs.filter(log => log.type === "health");
+  const environmentLogs = filteredLogs.filter(log => log.type === "environment");
 
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
@@ -130,6 +166,16 @@ const LogsPage = () => {
           {log.notes && (
             <p className="text-sm text-purple-100/90 mt-2">{log.notes}</p>
           )}
+
+          {log.hashtags && log.hashtags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {log.hashtags.map((hashtag: string, index: number) => (
+                <Badge key={index} variant="secondary" className="text-xs bg-orange-500/20 text-orange-100">
+                  #{hashtag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -165,36 +211,60 @@ const LogsPage = () => {
       </div>
 
       <div className="relative p-4">
+        <LogSearchFilter
+          onSearch={setSearchQuery}
+          onHashtagFilter={setSelectedHashtags}
+          availableHashtags={availableHashtags}
+        />
+
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6 backdrop-blur-md bg-white/10 border-white/20">
-            <TabsTrigger value="all" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">All</TabsTrigger>
-            <TabsTrigger value="behavior" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Behavior</TabsTrigger>
-            <TabsTrigger value="health" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Health</TabsTrigger>
-            <TabsTrigger value="environment" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">Environment</TabsTrigger>
+            <TabsTrigger value="all" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+              All ({filteredLogs.length})
+            </TabsTrigger>
+            <TabsTrigger value="behavior" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+              Behavior ({behaviorLogs.length})
+            </TabsTrigger>
+            <TabsTrigger value="health" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+              Health ({healthLogs.length})
+            </TabsTrigger>
+            <TabsTrigger value="environment" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+              Environment ({environmentLogs.length})
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="all" className="space-y-3">
-            {logs.map((log) => (
-              <LogCard key={log.id} log={log} />
-            ))}
+            {filteredLogs.length === 0 ? (
+              <div className="text-center py-8 text-white">
+                {searchQuery || selectedHashtags.length > 0 ? "No logs match your filters" : "No logs found"}
+              </div>
+            ) : (
+              filteredLogs.map((log) => <LogCard key={log.id} log={log} />)
+            )}
           </TabsContent>
           
           <TabsContent value="behavior" className="space-y-3">
-            {behaviorLogs.map((log) => (
-              <LogCard key={log.id} log={log} />
-            ))}
+            {behaviorLogs.length === 0 ? (
+              <div className="text-center py-8 text-white">No behavior logs found</div>
+            ) : (
+              behaviorLogs.map((log) => <LogCard key={log.id} log={log} />)
+            )}
           </TabsContent>
           
           <TabsContent value="health" className="space-y-3">
-            {healthLogs.map((log) => (
-              <LogCard key={log.id} log={log} />
-            ))}
+            {healthLogs.length === 0 ? (
+              <div className="text-center py-8 text-white">No health logs found</div>
+            ) : (
+              healthLogs.map((log) => <LogCard key={log.id} log={log} />)
+            )}
           </TabsContent>
           
           <TabsContent value="environment" className="space-y-3">
-            {environmentLogs.map((log) => (
-              <LogCard key={log.id} log={log} />
-            ))}
+            {environmentLogs.length === 0 ? (
+              <div className="text-center py-8 text-white">No environment logs found</div>
+            ) : (
+              environmentLogs.map((log) => <LogCard key={log.id} log={log} />)
+            )}
           </TabsContent>
         </Tabs>
       </div>

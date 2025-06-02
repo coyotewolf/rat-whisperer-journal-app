@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import PersonalityTagManager from "@/components/PersonalityTagManager";
 
 interface Rat {
   id: string;
@@ -14,6 +16,7 @@ interface Rat {
   sex: string;
   birthday: string;
   status: string;
+  personality?: string[];
 }
 
 interface EditRatModalProps {
@@ -28,7 +31,9 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
   const [sex, setSex] = useState("");
   const [birthday, setBirthday] = useState("");
   const [status, setStatus] = useState("");
+  const [personality, setPersonality] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,6 +42,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
       setSex(rat.sex);
       setBirthday(rat.birthday);
       setStatus(rat.status);
+      setPersonality(rat.personality || []);
     }
   }, [rat]);
 
@@ -52,7 +58,8 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
           name,
           sex,
           birthday,
-          status
+          status,
+          personality
         })
         .eq('id', rat.id);
 
@@ -78,10 +85,6 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
 
   const handleDelete = async () => {
     if (!rat) return;
-    
-    if (!confirm("Are you sure you want to delete this rat? This action cannot be undone.")) {
-      return;
-    }
 
     setLoading(true);
     try {
@@ -99,6 +102,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
       
       onRatUpdated();
       onClose();
+      setShowDeleteConfirm(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -111,71 +115,91 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit Rat</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sex">Sex</Label>
-            <Select value={sex} onValueChange={setSex} required>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Male">Male</SelectItem>
-                <SelectItem value="Female">Female</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="birthday">Birthday</Label>
-            <Input
-              id="birthday"
-              type="date"
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus} required>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="deceased">Deceased</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? "Updating..." : "Update Rat"}
-            </Button>
-            <Button 
-              type="button" 
-              variant="destructive" 
-              onClick={handleDelete}
-              disabled={loading}
-            >
-              Delete
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Rat</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sex">Sex</Label>
+              <Select value={sex} onValueChange={setSex} required>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="birthday">Birthday</Label>
+              <Input
+                id="birthday"
+                type="date"
+                value={birthday}
+                onChange={(e) => setBirthday(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={status} onValueChange={setStatus} required>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="deceased">Deceased</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Personality Tags</Label>
+              <PersonalityTagManager
+                selectedTags={personality}
+                onTagsChange={setPersonality}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? "Updating..." : "Update Rat"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={loading}
+              >
+                Delete
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Rat"
+        description={`Are you sure you want to delete ${rat?.name}? This action cannot be undone and will also delete all associated logs.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
+    </>
   );
 };
 
