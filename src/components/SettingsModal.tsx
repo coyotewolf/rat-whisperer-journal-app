@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Globe, Type, Palette, LogIn, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import AccountSettings from "./settings/AccountSettings";
 import LanguageSettings from "./settings/LanguageSettings";
 import FontSettings from "./settings/FontSettings";
@@ -18,14 +19,14 @@ type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes';
 
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user } = useAuth();
 
   const settingsSections = [
     {
       id: 'account' as const,
-      icon: isLoggedIn ? LogOut : LogIn,
-      title: isLoggedIn ? "Account" : "Sign In",
-      description: isLoggedIn ? "Manage your account settings" : "Sign in to sync your data",
+      icon: user ? LogOut : LogIn,
+      title: user ? "Account" : "Sign In",
+      description: user ? "Manage your account settings" : "Sign in to sync your data",
       color: "bg-blue-100 text-blue-700"
     },
     {
@@ -54,7 +55,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const renderContent = () => {
     switch (currentSection) {
       case 'account':
-        return <AccountSettings isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} onBack={() => setCurrentSection('main')} />;
+        return <AccountSettings onBack={() => setCurrentSection('main')} />;
       case 'language':
         return <LanguageSettings onBack={() => setCurrentSection('main')} />;
       case 'fonts':
