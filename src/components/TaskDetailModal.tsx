@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, MapPin, Calendar, Clock, Repeat } from "lucide-react";
+import { ArrowLeft, Edit, MapPin, Calendar, Clock, Repeat, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 interface Task {
@@ -50,6 +50,14 @@ const TaskDetailModal = ({ isOpen, onClose, onEdit, task }: TaskDetailModalProps
       case 'custom': 
         return task.repeatDays?.length ? `Custom (${task.repeatDays.join(', ')})` : 'Custom';
       default: return 'No repeat';
+    }
+  };
+
+  const openGoogleMaps = () => {
+    if (task.location) {
+      const encodedLocation = encodeURIComponent(task.location);
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+      window.open(mapsUrl, '_blank');
     }
   };
 
@@ -135,7 +143,18 @@ const TaskDetailModal = ({ isOpen, onClose, onEdit, task }: TaskDetailModalProps
                 <MapPin className="h-3 w-3" />
                 Location
               </label>
-              <p className="text-white">{task.location}</p>
+              <div className="flex items-center justify-between">
+                <p className="text-white">{task.location}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={openGoogleMaps}
+                  className="ml-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Maps
+                </Button>
+              </div>
             </div>
           )}
           

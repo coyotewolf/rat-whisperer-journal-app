@@ -1,13 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ChevronDown } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "@/components/ui/badge";
 
 interface Rat {
   id: string;
@@ -15,114 +11,75 @@ interface Rat {
 }
 
 interface MultiSelectRatsProps {
-  selectedRatIds: string[];
-  onSelectionChange: (ratIds: string[]) => void;
+  rats: Rat[];
+  selectedRats: string[];
+  onSelectionChange: (selectedIds: string[]) => void;
   placeholder?: string;
 }
 
-const MultiSelectRats = ({ selectedRatIds, onSelectionChange, placeholder = "Select rats..." }: MultiSelectRatsProps) => {
-  const [rats, setRats] = useState<Rat[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth();
+const MultiSelectRats = ({ rats, selectedRats, onSelectionChange, placeholder = "Select rats" }: MultiSelectRatsProps) => {
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchRats();
-    }
-  }, [user]);
-
-  const fetchRats = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('rats')
-        .select('id, name')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('name');
-      
-      if (error) throw error;
-      setRats(data || []);
-    } catch (error) {
-      console.error('Error fetching rats:', error);
-    }
-  };
-
-  const handleRatToggle = (ratId: string) => {
-    const isSelected = selectedRatIds.includes(ratId);
-    if (isSelected) {
-      onSelectionChange(selectedRatIds.filter(id => id !== ratId));
+  const toggleRat = (ratId: string) => {
+    if (selectedRats.includes(ratId)) {
+      onSelectionChange(selectedRats.filter(id => id !== ratId));
     } else {
-      onSelectionChange([...selectedRatIds, ratId]);
+      onSelectionChange([...selectedRats, ratId]);
     }
   };
 
-  const getSelectedRatNames = () => {
-    return rats.filter(rat => selectedRatIds.includes(rat.id)).map(rat => rat.name);
-  };
-
-  const selectedNames = getSelectedRatNames();
+  const selectedRatNames = rats
+    .filter(rat => selectedRats.includes(rat.id))
+    .map(rat => rat.name);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-full justify-between"
-          onClick={() => setIsOpen(!isOpen)}
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between bg-white/10 border-white/20 text-white"
         >
-          <div className="flex flex-wrap gap-1 flex-1">
-            {selectedNames.length === 0 ? (
-              <span className="text-muted-foreground">{placeholder}</span>
-            ) : selectedNames.length === 1 ? (
-              <span>{selectedNames[0]}</span>
-            ) : (
-              <>
-                <Badge variant="secondary" className="text-xs">
-                  {selectedNames[0]}
-                </Badge>
-                {selectedNames.length > 1 && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{selectedNames.length - 1} more
-                  </Badge>
-                )}
-              </>
-            )}
-          </div>
-          <ChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-2">
-        <div className="space-y-2">
-          {rats.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No active rats found</p>
-          ) : (
-            rats.map((rat) => (
-              <div key={rat.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`rat-${rat.id}`}
-                  checked={selectedRatIds.includes(rat.id)}
-                  onCheckedChange={() => handleRatToggle(rat.id)}
-                />
-                <Label htmlFor={`rat-${rat.id}`} className="text-sm font-normal cursor-pointer flex-1">
-                  {rat.name}
-                </Label>
-              </div>
-            ))
-          )}
-        </div>
-        {selectedNames.length > 0 && (
-          <div className="mt-3 pt-2 border-t">
+          {selectedRatNames.length > 0 ? (
             <div className="flex flex-wrap gap-1">
-              {selectedNames.map((name, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+              {selectedRatNames.slice(0, 2).map(name => (
+                <Badge key={name} variant="secondary" className="text-xs">
                   {name}
                 </Badge>
               ))}
+              {selectedRatNames.length > 2 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{selectedRatNames.length - 2} more
+                </Badge>
+              )}
             </div>
-          </div>
-        )}
+          ) : (
+            placeholder
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0 bg-white/95 backdrop-blur-sm">
+        <div className="max-h-60 overflow-auto">
+          {rats.map((rat) => (
+            <div
+              key={rat.id}
+              className="flex items-center space-x-2 p-2 cursor-pointer hover:bg-gray-100"
+              onClick={() => toggleRat(rat.id)}
+            >
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                selectedRats.includes(rat.id) 
+                  ? 'bg-blue-500 border-blue-500' 
+                  : 'border-gray-300'
+              }`}>
+                {selectedRats.includes(rat.id) && (
+                  <Check className="h-3 w-3 text-white" />
+                )}
+              </div>
+              <span className="text-sm">{rat.name}</span>
+            </div>
+          ))}
+        </div>
       </PopoverContent>
     </Popover>
   );

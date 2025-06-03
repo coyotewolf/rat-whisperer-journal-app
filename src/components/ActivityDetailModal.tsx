@@ -10,12 +10,13 @@ interface Activity {
   rat: string;
   time: string;
   status: string;
+  logEntry?: any;
 }
 
 interface ActivityDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: () => void;
+  onEdit: (logEntry: any) => void;
   activity: Activity | null;
 }
 
@@ -29,6 +30,13 @@ const ActivityDetailModal = ({ isOpen, onClose, onEdit, activity }: ActivityDeta
       case 'stable': return 'bg-yellow-500/20 text-yellow-100 border-yellow-300';
       default: return 'bg-gray-500/20 text-gray-100 border-gray-300';
     }
+  };
+
+  const handleEdit = () => {
+    if (activity.logEntry) {
+      onEdit(activity.logEntry);
+    }
+    onClose();
   };
 
   return (
@@ -48,7 +56,7 @@ const ActivityDetailModal = ({ isOpen, onClose, onEdit, activity }: ActivityDeta
             <Button
               variant="ghost"
               size="sm"
-              onClick={onEdit}
+              onClick={handleEdit}
               className="rounded-lg bg-orange-100 hover:bg-orange-200 p-2"
             >
               <Edit className="h-4 w-4" />

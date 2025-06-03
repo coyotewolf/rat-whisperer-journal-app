@@ -4,12 +4,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles } from "lucide-react";
+import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Edit } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
+import LogEntryModal from "@/components/LogEntryModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const LogsPage = () => {
-  const [logs] = useState([
+  const [logs, setLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
+  const [logModalOpen, setLogModalOpen] = useState(false);
+  const [selectedLogType, setSelectedLogType] = useState("");
+  const [editingLog, setEditingLog] = useState(null);
+  const { user } = useAuth();
+
+  // Mock data for logs (replace with real data)
+  const mockLogs = [
     {
       id: 1,
       type: "behavior",
@@ -47,11 +60,12 @@ const LogsPage = () => {
       notes: "Playful chase around the cage",
       hashtags: ["playful", "exercise", "social"]
     },
-  ]);
+  ];
 
-  const [filteredLogs, setFilteredLogs] = useState(logs);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
+  useEffect(() => {
+    setLogs(mockLogs);
+    setFilteredLogs(mockLogs);
+  }, []);
 
   // Get all unique hashtags from logs
   const availableHashtags = Array.from(
@@ -64,7 +78,7 @@ const LogsPage = () => {
     // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter(log =>
-        log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.rats?.some(rat => rat.toLowerCase().includes(searchQuery.toLowerCase())) ||
         log.behavior?.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -118,20 +132,45 @@ const LogsPage = () => {
   const healthLogs = filteredLogs.filter(log => log.type === "health");
   const environmentLogs = filteredLogs.filter(log => log.type === "environment");
 
+  const handleEditLog = (log: any) => {
+    setEditingLog(log);
+    setSelectedLogType(log.type);
+    setLogModalOpen(true);
+  };
+
+  const handleNewLog = (logType: string) => {
+    setEditingLog(null);
+    setSelectedLogType(logType);
+    setLogModalOpen(true);
+  };
+
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
     
     return (
-      <Card className={`${getLogColor(log.type)} backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}>
+      <Card className={`${getLogColor(log.type)} backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer relative group`}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center gap-2 text-white">
               {getLogIcon(log.type)}
               <span className="font-medium capitalize">{log.type}</span>
             </div>
-            <div className="text-right text-sm text-purple-100/80">
-              <div>{date}</div>
-              <div>{time}</div>
+            <div className="flex items-center gap-2">
+              <div className="text-right text-sm text-purple-100/80">
+                <div>{date}</div>
+                <div>{time}</div>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditLog(log);
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           
@@ -203,7 +242,10 @@ const LogsPage = () => {
               <p className="text-sm text-cyan-100/80">Track your rats' daily activities</p>
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300">
+          <Button 
+            onClick={() => handleNewLog('behavior')}
+            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300"
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Log
           </Button>
@@ -268,6 +310,21 @@ const LogsPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <LogEntryModal
+        isOpen={logModalOpen}
+        onClose={() => {
+          setLogModalOpen(false);
+          setEditingLog(null);
+        }}
+        logType={selectedLogType}
+        onLogAdded={() => {
+          // Refresh logs here
+          setLogModalOpen(false);
+          setEditingLog(null);
+        }}
+        editingLog={editingLog}
+      />
 
       <BottomNav />
     </div>
