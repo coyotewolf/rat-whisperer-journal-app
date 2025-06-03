@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, Edit, Trash2, MapPin } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, Edit, Trash2, MapPin, Pencil } from "lucide-react"; // Added Pencil
 import { useNavigate } from "react-router-dom";
 import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
@@ -213,7 +213,7 @@ const TasksPage = () => {
                           }}
                           className="text-white hover:bg-white/20 h-8 w-8 p-0"
                         >
-                          <Edit className="h-3 w-3" />
+                          <Pencil className="h-3 w-3" />
                         </Button>
                         <Button
                           size="sm"

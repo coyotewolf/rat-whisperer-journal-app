@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Clock, MapPin, Edit } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Edit, Pencil } from "lucide-react"; // Added Pencil
 import { format } from "date-fns";
 
 interface Task {
@@ -74,7 +74,7 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
               onClick={() => onEdit(task)}
               className="bg-white/50 hover:bg-white/70 border-white/30"
             >
-              <Edit className="h-4 w-4 mr-1" />
+              <Pencil className="h-4 w-4 mr-1" /> {/* Changed to Pencil */}
               Edit
             </Button>
           </div>

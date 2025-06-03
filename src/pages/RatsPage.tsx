@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, Calendar, MapPin, Sparkles, Edit, Trash2 } from "lucide-react";
+import { Plus, Heart, Calendar, MapPin, Sparkles, Edit, Trash2, Pencil } from "lucide-react"; // Added Pencil
 import BottomNav from "@/components/BottomNav";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import AuthModal from "@/components/AuthModal";
@@ -41,7 +41,15 @@ const RatsPage = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      setRats(data || []);
+      
+      const activeRats = data?.filter(rat => rat.status === 'active') || [];
+      const deceasedRats = data?.filter(rat => rat.status === 'deceased') || [];
+
+      // Sort active rats by created_at (descending)
+      activeRats.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Deceased rats maintain their original relative order within their group
+      // and are appended to the end of the active rats.
+      setRats([...activeRats, ...deceasedRats]);
     } catch (error) {
       console.error('Error fetching rats:', error);
     } finally {
@@ -204,7 +212,10 @@ const RatsPage = () => {
         ) : (
           <div className="grid gap-4">
             {rats.map((rat) => (
-              <Card key={rat.id} className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+              <Card
+                key={rat.id}
+                className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 ${rat.status === 'deceased' ? 'opacity-70' : ''}`}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     {/* Profile Picture */}
@@ -218,15 +229,15 @@ const RatsPage = () => {
                     </div>
 
                     {/* Rat Info */}
-                    <div className="flex-1 space-y-3">
+                    <div className={`flex-1 space-y-3 ${rat.status === 'deceased' ? 'grayscale' : ''}`}>
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-xl font-bold text-white">{rat.name}</h3>
                           <p className="text-sm text-purple-100">{rat.sex} • {calculateAge(rat.birthday)}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className={`${rat.status === 'active' ? 'border-green-300 text-green-100' : 'border-gray-300 text-gray-200'} backdrop-blur-sm`}
                           >
                             {rat.status}
@@ -237,7 +248,7 @@ const RatsPage = () => {
                             onClick={() => handleEditClick(rat)}
                             className="text-white hover:bg-white/20"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" /> {/* Changed to Pencil */}
                           </Button>
                         </div>
                       </div>

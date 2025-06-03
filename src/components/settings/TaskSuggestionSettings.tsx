@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 // Removed Card imports to achieve a minimalist layout
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 // Dialog related imports are now handled by TaskSuggestionFormModal
-import { PlusCircle, Edit2, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit2, Trash2, Pencil } from 'lucide-react'; // Added Pencil
 import { useToast } from "@/hooks/use-toast";
 import TaskSuggestionFormModal from './TaskSuggestionFormModal'; // Import the new modal
 
@@ -138,7 +138,7 @@ const TaskSuggestionSettings = () => {
               </div>
               <div className="space-x-2">
                 <Button variant="ghost" size="icon" onClick={() => openFormModal(suggestion)} title="Edit suggestion">
-                  <Edit2 className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                  <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" /> {/* Changed to Pencil */}
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDeleteSuggestion(suggestion.id)} title="Delete suggestion">
                   <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />

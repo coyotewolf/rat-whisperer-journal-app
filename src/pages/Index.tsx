@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit, Pencil } from "lucide-react"; // Added Pencil
+import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
@@ -129,6 +129,15 @@ const Index = () => {
     }
   };
 
+  const getTitleColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'text-red-200';
+      case 'medium': return 'text-yellow-200';
+      case 'low': return 'text-green-200';
+      default: return 'text-white';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
       {/* Animated Background */}
@@ -217,13 +226,27 @@ const Index = () => {
                   className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
                   onClick={() => handleTaskCardClick(task)}
                 >
-                  <div>
-                    <p className="text-white font-medium">{task.title}</p>
+                  <div className="flex-1"> {/* Wrap content in a flex-1 div to push button to the right */}
+                    <p className={`font-medium ${getTitleColor(task.priority)}`}>{task.title}</p> {/* Apply priority color */}
                     <p className="text-sm text-purple-100">Due: {getDateLabel(task.dueDate)}</p>
                   </div>
-                  <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
-                    {task.priority}
-                  </Badge>
+                  <div className="flex items-center gap-2"> {/* Container for badge and edit button */}
+                    <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
+                      {task.priority}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent parent card's onClick
+                        handleEditFromDetail(task);
+                      }}
+                      className="text-white/60 hover:text-cyan-300 h-7 w-7" // Adjusted size and color for consistency
+                      aria-label={`Edit task ${task.title}`}
+                    >
+                      <Pencil className="h-4 w-4" /> {/* Consistent icon size */}
+                    </Button>
+                  </div>
                 </div>
               ))
             ) : (
