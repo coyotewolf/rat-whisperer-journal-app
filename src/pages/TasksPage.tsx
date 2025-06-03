@@ -18,15 +18,6 @@ interface Task {
   dueTime: string;
   priority: 'low' | 'medium' | 'high';
   completed: boolean;
-  repeat?: {
-    type: 'none' | 'daily' | 'weekly' | 'monthly' | 'custom';
-    weekdays?: number[];
-    endDate?: Date;
-    indefinite: boolean;
-  };
-  location?: string;
-  quantity?: number;
-  unit?: string;
 }
 
 const TasksPage = () => {
@@ -154,7 +145,7 @@ const TasksPage = () => {
       <div className="relative p-4">
         <div className="space-y-3">
           {sortedTasks.map((task) => (
-            <Card key={task.id} className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 rounded-xl ${task.completed ? 'opacity-60' : ''}`}>
+            <Card key={task.id} className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 ${task.completed ? 'opacity-60' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <button
@@ -217,29 +208,7 @@ const TasksPage = () => {
                           <span>{task.dueTime}</span>
                         </div>
                       )}
-                      {task.repeat && task.repeat.type !== 'none' && (
-                        <div className="flex items-center gap-1">
-                          <Badge variant="outline" className="text-xs bg-blue-500/20 text-blue-100 border-blue-300">
-                            Repeats {task.repeat.type}
-                          </Badge>
-                        </div>
-                      )}
                     </div>
-
-                    {(task.location || task.quantity) && (
-                      <div className="flex items-center gap-4 text-sm text-green-100">
-                        {task.location && (
-                          <div className="flex items-center gap-1">
-                            <span>📍 {task.location}</span>
-                          </div>
-                        )}
-                        {task.quantity && (
-                          <div className="flex items-center gap-1">
-                            <span>📦 {task.quantity}{task.unit ? ` ${task.unit}` : ''}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               </CardContent>
