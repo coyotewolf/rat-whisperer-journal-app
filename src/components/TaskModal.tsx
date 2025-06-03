@@ -148,20 +148,20 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md bg-gradient-to-br from-white/90 to-purple-50/90 border-0 shadow-2xl">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between"> {/* Changed to justify-between to accommodate back button */}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onClose}
-              className="bg-white/50 hover:bg-white/70 border-white/30"
+              className="text-gray-500 hover:text-gray-700"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
+              <ArrowLeft className="h-5 w-5" />
             </Button>
+            <DialogTitle className="flex-1 text-center">{task ? 'Edit Task' : 'New Task'}</DialogTitle>
+            <div className="w-10"></div> {/* Placeholder to balance the back button */}
           </div>
-          <DialogTitle>{task ? 'Edit Task' : 'New Task'}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">

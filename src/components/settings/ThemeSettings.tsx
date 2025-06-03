@@ -71,7 +71,7 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={onBack} className="mb-4 p-0 h-auto">
+      <Button variant="ghost" onClick={onBack} className="mb-4 p-0 h-auto text-gray-500 hover:text-gray-700">
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Settings
       </Button>

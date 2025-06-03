@@ -1,8 +1,10 @@
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button"; // Import Button
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -111,9 +113,20 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto backdrop-blur-md bg-white/80">
         <DialogHeader>
-          <DialogTitle>{ratName} - Logs</DialogTitle>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <DialogTitle className="flex-1 text-center">{ratName} - Logs</DialogTitle>
+            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+          </div>
         </DialogHeader>
         <div className="space-y-4">
           {loading ? (

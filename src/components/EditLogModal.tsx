@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react"; // Import ArrowLeft and Trash2 icons
 // import { supabase } from "@/integrations/supabase/client"; // Not used for now as data is local
 // import { useAuth } from "@/hooks/useAuth"; // Not used for now
 import { useToast } from "@/hooks/use-toast";
@@ -158,7 +158,18 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Log Entry - {logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1)}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <DialogTitle className="flex-1 text-center">Edit Log Entry - {logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1)}</DialogTitle>
+            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
@@ -200,7 +211,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
               {hashtags.map(tag => (
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                   {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeHashtag(tag)} />
+                  <Trash2 className="h-3 w-3 cursor-pointer" onClick={() => removeHashtag(tag)} />
                 </Badge>
               ))}
             </div>
@@ -216,11 +227,6 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
           </div>
           
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-            </DialogClose>
             <Button type="submit" disabled={loading}>
               {loading ? "Saving..." : "Save Changes"}
             </Button>

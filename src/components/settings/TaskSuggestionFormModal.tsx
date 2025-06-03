@@ -3,7 +3,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Removed DialogClose
+import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
 import { TaskSuggestion } from './TaskSuggestionSettings'; // Import the interface
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
@@ -80,7 +81,18 @@ const TaskSuggestionFormModal = ({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{editingSuggestion ? 'Edit' : 'Add New'} Task Suggestion</DialogTitle>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <DialogTitle className="flex-1 text-center">{editingSuggestion ? 'Edit' : 'Add New'} Task Suggestion</DialogTitle>
+            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+          </div>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
@@ -122,7 +134,6 @@ const TaskSuggestionFormModal = ({
           </div>
         </div>
         <DialogFooter>
-          <DialogClose asChild><Button type="button" variant="outline" onClick={handleClose}>Cancel</Button></DialogClose>
           <Button onClick={handleSubmit}>{editingSuggestion ? 'Save Changes' : 'Add Suggestion'}</Button>
         </DialogFooter>
       </DialogContent>

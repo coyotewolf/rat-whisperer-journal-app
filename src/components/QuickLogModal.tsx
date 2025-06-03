@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Import useEffect
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Activity, Heart, Scale, Thermometer, Pill, Utensils } from "lucide-react";
+import { Activity, Heart, Scale, Thermometer, Pill, Utensils, ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
 import LogEntryModal from "@/components/LogEntryModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,7 +17,9 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
   const [logEntryModalOpen, setLogEntryModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [selectedLogType, setSelectedLogType] = useState("");
+  const [isQuickLogVisible, setIsQuickLogVisible] = useState(true);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const logTypes = [
     { type: "behavior", label: "Behavior", icon: Activity, color: "from-blue-500 to-cyan-500" },
@@ -34,18 +37,69 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
     }
     setSelectedLogType(logType);
     setLogEntryModalOpen(true);
+    setIsQuickLogVisible(false); // Hide QuickLogModal content
   };
 
   const handleLogAdded = () => {
     // Optionally refresh data or show success message
+    // Note: After log addition, LogEntryModal's onClose (handleLogEntryOverlayOrSubmitClose) will be called.
   };
+
+  // Called when LogEntryModal's overlay/Esc is triggered, or after successful log addition
+  const handleLogEntryOverlayOrSubmitClose = () => {
+    setLogEntryModalOpen(false); // Close child modal state
+    setIsQuickLogVisible(true);  // Ensure parent content is ready for next time
+    onClose();                   // Close parent modal (QuickLogModal's main onClose prop)
+    navigate("/");               // Navigate home
+  };
+
+  // Called when LogEntryModal's internal back button is clicked
+  const handleLogEntryBackNavigation = () => {
+    setLogEntryModalOpen(false);
+    setIsQuickLogVisible(true); // Show QuickLogModal content again
+  };
+
+  // This is for QuickLogModal's own Dialog (wrapper)
+  const handleQuickLogDialogClose = (open: boolean) => {
+    if (!open) {
+      // If QuickLogModal's overlay is clicked or Esc is pressed
+      if (logEntryModalOpen) {
+        // If child (LogEntryModal) was open, close everything and navigate
+        handleLogEntryOverlayOrSubmitClose();
+      } else {
+        // Only QuickLogModal was open and is now closing.
+        onClose(); // Call the original onClose from QuickLogModal's parent component
+      }
+    }
+  };
+
+  useEffect(() => {
+    // When QuickLogModal is told to close (e.g., its `isOpen` prop becomes false),
+    // ensure child modal is also closed and visibility is reset.
+    if (!isOpen) {
+      setLogEntryModalOpen(false);
+      setIsQuickLogVisible(true);
+    }
+  }, [isOpen]);
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-white">Quick Log Entry</DialogTitle>
+      <Dialog open={isOpen} onOpenChange={handleQuickLogDialogClose}>
+        {isOpen && isQuickLogVisible && (
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose} // This closes QuickLogModal directly if its own back button is clicked
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <DialogTitle className="flex-1 text-center text-white">Quick Log Entry</DialogTitle>
+              <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            </div>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 p-4">
             {logTypes.map((logType) => {
@@ -64,12 +118,14 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
               );
             })}
           </div>
-        </DialogContent>
+            </DialogContent>
+          )}
       </Dialog>
 
       <LogEntryModal
         isOpen={logEntryModalOpen}
-        onClose={() => setLogEntryModalOpen(false)}
+        onClose={handleLogEntryOverlayOrSubmitClose} // For overlay/Esc/submit on LogEntryModal
+        onBack={handleLogEntryBackNavigation}       // For internal back button on LogEntryModal
         logType={selectedLogType}
         onLogAdded={handleLogAdded}
       />

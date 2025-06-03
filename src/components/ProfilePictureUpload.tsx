@@ -3,19 +3,45 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Camera, Upload, Edit, Trash2, Heart, Star } from "lucide-react";
+import { Camera, Upload, Edit, Trash2, Heart, Star, ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
+
+import { useEffect } from "react"; // Added useEffect
 
 interface ProfilePictureUploadProps {
   currentImage?: string;
   onImageUpdate: (imageUrl: string) => void;
   petName?: string;
+  onImageClick?: (imageUrl: string) => void; // For image preview
+  forceOpen?: boolean; // To trigger modal from parent
+  onClose?: () => void; // Callback when modal is closed
 }
 
-const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat" }: ProfilePictureUploadProps) => {
+const ProfilePictureUpload = ({
+  currentImage,
+  onImageUpdate,
+  petName = "Your Rat",
+  onImageClick,
+  forceOpen,
+  onClose
+}: ProfilePictureUploadProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (forceOpen) {
+      setIsModalOpen(true);
+    }
+  }, [forceOpen]);
+
+  const handleModalOpenChange = (open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      onClose?.(); // Call onClose when modal is closed by any means
+      setPreviewImage(null); // Reset preview image when modal closes
+    }
+  };
 
   const defaultAvatars = [
     { id: "rat1", emoji: "🐭", bg: "bg-gradient-to-br from-pink-400 to-purple-500" },
@@ -65,14 +91,13 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
   const saveImage = () => {
     if (previewImage) {
       onImageUpdate(previewImage);
-      setIsModalOpen(false);
-      setPreviewImage(null);
+      handleModalOpenChange(false); // Use centralized close logic
     }
   };
 
   const selectDefaultAvatar = (avatar: typeof defaultAvatars[0]) => {
     onImageUpdate(avatar.id);
-    setIsModalOpen(false);
+    handleModalOpenChange(false); // Use centralized close logic
   };
 
   const renderProfilePicture = () => {
@@ -104,29 +129,34 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
 
   return (
     <>
-      <div className="relative group">
-        <div 
-          className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg cursor-pointer transform transition-all duration-300 group-hover:scale-105"
-          onClick={() => setIsModalOpen(true)}
-        >
-          {renderProfilePicture()}
-        </div>
-        
-        <Button
-          size="icon"
-          className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg border-2 border-white"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Edit className="h-4 w-4 text-white" />
-        </Button>
+      <div
+        className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg cursor-pointer transform transition-all duration-300 group-hover:scale-105"
+        onClick={() => {
+          if (onImageClick && currentImage) {
+            onImageClick(currentImage);
+          }
+        }}
+      >
+        {renderProfilePicture()}
       </div>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md backdrop-blur-md bg-white/95">
+      <Dialog open={isModalOpen} onOpenChange={handleModalOpenChange}>
+        <DialogContent className="sm:max-w-md backdrop-blur-md bg-white/80">
           <DialogHeader>
-            <DialogTitle className="text-center">
-              Update {petName}'s Photo
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleModalOpenChange(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <DialogTitle className="flex-1 text-center">
+                Update {petName}'s Photo
+              </DialogTitle>
+              <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            </div>
           </DialogHeader>
           
           <div className="space-y-6">
@@ -199,7 +229,7 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
                 className="w-full text-red-600 border-red-200 hover:bg-red-50"
                 onClick={() => {
                   onImageUpdate("");
-                  setIsModalOpen(false);
+                  handleModalOpenChange(false); // Use centralized close logic
                 }}
               >
                 <Trash2 className="h-4 w-4 mr-2" />

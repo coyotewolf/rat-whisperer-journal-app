@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks } from "lucide-react"; // Added ListChecks
+import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks, ArrowLeft } from "lucide-react"; // Added ListChecks, ArrowLeft
 import { useAuth } from "@/hooks/useAuth";
 import AccountSettings from "./settings/AccountSettings";
 import LanguageSettings from "./settings/LanguageSettings";
@@ -102,13 +102,26 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {currentSection === 'main' ? 'Settings' : settingsSections.find(s => s.id === currentSection)?.title}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            {currentSection !== 'main' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentSection('main')}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
+            <DialogTitle className={`flex-1 ${currentSection === 'main' ? 'text-center' : 'text-left'}`}>
+              {currentSection === 'main' ? 'Settings' : settingsSections.find(s => s.id === currentSection)?.title}
+            </DialogTitle>
+            {currentSection === 'main' && <div className="w-10"></div>} {/* Placeholder for main section */}
+          </div>
         </DialogHeader>
         {renderContent()}
         {currentSection === 'main' && (
-          <Button variant="outline" onClick={onClose} className="mt-4">
+          <Button variant="ghost" onClick={onClose} className="mt-4 text-gray-500 hover:text-gray-700">
             Close
           </Button>
         )}

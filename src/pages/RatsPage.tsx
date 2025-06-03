@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, Calendar, MapPin, Sparkles, Edit, Trash2, Pencil } from "lucide-react"; // Added Pencil
+import { Dialog, DialogContent } from "@/components/ui/dialog"; // Added Dialog and DialogContent
+import { Plus, Heart, Calendar, MapPin, Sparkles, Edit, Trash2, Pencil, ArrowLeft } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import AuthModal from "@/components/AuthModal";
@@ -19,6 +20,9 @@ const RatsPage = () => {
   const [editRatModalOpen, setEditRatModalOpen] = useState(false);
   const [logsModalOpen, setLogsModalOpen] = useState(false);
   const [selectedRat, setSelectedRat] = useState<any>(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [editingRatImageId, setEditingRatImageId] = useState<string | null>(null); // State to control which rat's image is being edited
   const [logTypes, setLogTypes] = useState<string[]>([]);
   const [rats, setRats] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -108,6 +112,11 @@ const RatsPage = () => {
     setSelectedRat(rat);
     setLogTypes(['health', 'weight', 'medication']);
     setLogsModalOpen(true);
+  };
+
+  const handleImageClick = (imageUrl: string) => {
+    setImagePreviewUrl(imageUrl);
+    setShowImagePreview(true);
   };
 
   const handleTrackClick = (rat: any) => {
@@ -219,12 +228,23 @@ const RatsPage = () => {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     {/* Profile Picture */}
-                    <div className="relative">
+                    <div className="relative group">
                       <ProfilePictureUpload
                         currentImage={rat.profile_picture}
                         onImageUpdate={(imageUrl) => updateRatPicture(rat.id, imageUrl)}
                         petName={rat.name}
+                        onImageClick={() => handleImageClick(rat.profile_picture)} // For image preview
+                        forceOpen={editingRatImageId === rat.id} // Trigger image edit modal
+                        onClose={() => setEditingRatImageId(null)} // Reset state when modal closes
                       />
+                      {/* This button now triggers the image edit modal for the specific rat */}
+                      <Button
+                        size="icon"
+                        className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg border-2 border-white"
+                        onClick={() => setEditingRatImageId(rat.id)} // Opens image edit modal
+                      >
+                        <Pencil className="h-4 w-4 text-white" />
+                      </Button>
                       <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full ${getStatusColor(rat.status)} border-2 border-white shadow-sm`}></div>
                     </div>
 
@@ -340,6 +360,28 @@ const RatsPage = () => {
         ratName={selectedRat?.name || ""}
         logTypes={logTypes}
       />
+
+      {/* Image Preview Modal (Lightbox) */}
+      <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
+        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-background/80 border-none shadow-none">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {imagePreviewUrl && (
+              <img
+                src={imagePreviewUrl}
+                alt="Profile Preview"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-xl"
+              />
+            )}
+            <Button
+              size="icon"
+              className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
+              onClick={() => setShowImagePreview(false)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

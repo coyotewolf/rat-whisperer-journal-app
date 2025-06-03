@@ -56,18 +56,23 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md backdrop-blur-md bg-gradient-to-br from-white/90 to-purple-50/90 border-0 shadow-2xl">
+      <DialogContent className="sm:max-w-md backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between"> {/* Changed to justify-between to accommodate back button */}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onClose}
-              className="bg-white/50 hover:bg-white/70 border-white/30"
+              className="text-gray-500 hover:text-gray-700"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
+              <ArrowLeft className="h-5 w-5" />
             </Button>
+            <DialogTitle className={`flex-1 text-center text-xl font-bold ${getTitleColor(task.priority)} flex items-center gap-2`}>
+              {task.title}
+              <Badge className={`${getPriorityColor(task.priority)} border text-xs`}>
+                {task.priority}
+              </Badge>
+            </DialogTitle>
             <Button
               variant="outline"
               size="sm"
@@ -78,12 +83,6 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
               Edit
             </Button>
           </div>
-          <DialogTitle className={`text-xl font-bold ${getTitleColor(task.priority)} flex items-center gap-2`}>
-            {task.title}
-            <Badge className={`${getPriorityColor(task.priority)} border text-xs`}>
-              {task.priority}
-            </Badge>
-          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
