@@ -5,11 +5,13 @@ interface AppSettings {
   language: string;
   theme: string;
   fontSize: number;
+  fontFamily: string;
 }
 
 interface AppSettingsContextType {
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
+  updateSetting: (key: keyof AppSettings, value: string | number) => void;
   signOut: () => void;
 }
 
@@ -28,6 +30,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     language: 'en',
     theme: 'light',
     fontSize: 16,
+    fontFamily: 'system',
   });
 
   useEffect(() => {
@@ -51,12 +54,24 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Apply font size
     document.documentElement.style.setProperty('--base-font-size', `${newSettings.fontSize}px`);
     
+    // Apply font family
+    if (newSettings.fontFamily && newSettings.fontFamily !== 'system') {
+      document.documentElement.style.setProperty('--base-font-family', newSettings.fontFamily);
+    }
+    
     // Apply language (this would typically involve i18n)
     document.documentElement.setAttribute('lang', newSettings.language);
   };
 
   const updateSettings = (newSettings: Partial<AppSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
+    setSettings(updatedSettings);
+    localStorage.setItem('app_settings', JSON.stringify(updatedSettings));
+    applySettings(updatedSettings);
+  };
+
+  const updateSetting = (key: keyof AppSettings, value: string | number) => {
+    const updatedSettings = { ...settings, [key]: value };
     setSettings(updatedSettings);
     localStorage.setItem('app_settings', JSON.stringify(updatedSettings));
     applySettings(updatedSettings);
@@ -73,13 +88,14 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       language: 'en',
       theme: 'light',
       fontSize: 16,
+      fontFamily: 'system',
     };
     setSettings(defaultSettings);
     applySettings(defaultSettings);
   };
 
   return (
-    <AppSettingsContext.Provider value={{ settings, updateSettings, signOut }}>
+    <AppSettingsContext.Provider value={{ settings, updateSettings, updateSetting, signOut }}>
       {children}
     </AppSettingsContext.Provider>
   );

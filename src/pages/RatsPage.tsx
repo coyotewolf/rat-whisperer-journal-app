@@ -281,7 +281,7 @@ const RatsPage = () => {
       <RatLogsModal
         isOpen={logsModalOpen}
         onClose={() => setLogsModalOpen(false)}
-        rat={selectedRat}
+        ratId={selectedRat?.id || ''}
       />
     </div>
   );
