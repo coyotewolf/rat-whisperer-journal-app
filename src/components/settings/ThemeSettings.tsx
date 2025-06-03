@@ -1,10 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Palette, Check, Sun, Moon, Smartphone } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface ThemeSettingsProps {
@@ -12,9 +11,8 @@ interface ThemeSettingsProps {
 }
 
 const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
-  const [selectedTheme, setSelectedTheme] = useState("light");
+  const { settings, updateSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const themes = [
@@ -52,45 +50,10 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
     }
   ];
 
-  useEffect(() => {
-    if (user) {
-      fetchUserSettings();
-    }
-  }, [user]);
-
-  const fetchUserSettings = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('theme')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      if (data) {
-        setSelectedTheme(data.theme || 'light');
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-    }
-  };
-
-  const saveTheme = async () => {
-    if (!user) return;
-
+  const saveTheme = async (themeId: string) => {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          theme: selectedTheme
-        });
-
-      if (error) throw error;
-
+      updateSetting('theme', themeId);
       toast({
         title: "Success",
         description: "Theme setting saved successfully!",
@@ -126,9 +89,9 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
             return (
               <div
                 key={theme.id}
-                onClick={() => setSelectedTheme(theme.id)}
+                onClick={() => saveTheme(theme.id)}
                 className={`p-4 rounded-lg cursor-pointer transition-all border-2 ${
-                  selectedTheme === theme.id
+                  settings.theme === theme.id
                     ? "border-orange-300 shadow-md"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
@@ -143,7 +106,7 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
                       <div className="text-sm text-gray-600">{theme.description}</div>
                     </div>
                   </div>
-                  {selectedTheme === theme.id && (
+                  {settings.theme === theme.id && (
                     <Check className="h-5 w-5 text-orange-600" />
                   )}
                 </div>
@@ -162,14 +125,6 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
           })}
         </CardContent>
       </Card>
-
-      <Button 
-        onClick={saveTheme}
-        disabled={loading}
-        className="w-full bg-orange-500 hover:bg-orange-600"
-      >
-        {loading ? "Saving..." : "Apply Theme"}
-      </Button>
     </div>
   );
 };

@@ -3,14 +3,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings } from "lucide-react";
+import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
 import SettingsModal from "@/components/SettingsModal";
+import TaskModal from "@/components/TaskModal";
+import AlertCards from "@/components/AlertCards";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
 
   const recentActivities = [
     { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good" },
@@ -23,6 +28,16 @@ const Index = () => {
     { id: 2, task: "Vet appointment - Pepper", due: "Friday", priority: "medium" },
     { id: 3, task: "Medication - Salt", due: "Tonight", priority: "high" },
   ];
+
+  const handleTaskSave = (taskData: any) => {
+    // Save task logic would go here
+    console.log('New task created:', taskData);
+  };
+
+  const handleActivityClick = (activity: any) => {
+    // Navigate to logs page or open edit modal
+    navigate('/logs');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
@@ -59,27 +74,45 @@ const Index = () => {
 
       {/* Quick Actions */}
       <div className="relative p-4">
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           <Button 
             onClick={() => setIsQuickLogOpen(true)}
-            className="h-24 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl transform hover:scale-105 transition-all duration-300"
+            className="h-20 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl transform hover:scale-105 transition-all duration-300"
           >
             <div className="text-center">
-              <Plus className="h-8 w-8 mx-auto mb-2" />
-              <div className="text-sm font-medium">Quick Log</div>
+              <Plus className="h-6 w-6 mx-auto mb-1" />
+              <div className="text-xs font-medium">Quick Log</div>
             </div>
           </Button>
           
-          <Button className="h-24 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl transform hover:scale-105 transition-all duration-300">
+          <Button 
+            onClick={() => setIsNewTaskOpen(true)}
+            className="h-20 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
             <div className="text-center">
-              <Activity className="h-8 w-8 mx-auto mb-2" />
-              <div className="text-sm font-medium">View Reports</div>
+              <Calendar className="h-6 w-6 mx-auto mb-1" />
+              <div className="text-xs font-medium">New Task</div>
+            </div>
+          </Button>
+          
+          <Button className="h-20 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl transform hover:scale-105 transition-all duration-300">
+            <div className="text-center">
+              <Activity className="h-6 w-6 mx-auto mb-1" />
+              <div className="text-xs font-medium">Reports</div>
             </div>
           </Button>
         </div>
 
-        {/* Upcoming Tasks - moved above Recent Activities */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6">
+        {/* Alert Cards */}
+        <div className="mb-6">
+          <AlertCards />
+        </div>
+
+        {/* Upcoming Tasks */}
+        <Card 
+          className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6 cursor-pointer hover:shadow-2xl transition-all duration-300"
+          onClick={() => navigate('/tasks')}
+        >
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Calendar className="h-5 w-5 text-cyan-300" />
@@ -106,7 +139,7 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Activities - moved below Upcoming Tasks */}
+        {/* Recent Activities */}
         <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -116,20 +149,27 @@ const Index = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
-                <div>
+              <div 
+                key={activity.id} 
+                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors group"
+                onClick={() => handleActivityClick(activity)}
+              >
+                <div className="flex-1">
                   <p className="text-white font-medium">{activity.type}</p>
                   <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
                 </div>
-                <Badge 
-                  className={`${
-                    activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
-                    activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
-                    'bg-yellow-500/20 text-yellow-100'
-                  } border-0 backdrop-blur-sm`}
-                >
-                  {activity.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    className={`${
+                      activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
+                      activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
+                      'bg-yellow-500/20 text-yellow-100'
+                    } border-0 backdrop-blur-sm`}
+                  >
+                    {activity.status}
+                  </Badge>
+                  <Edit className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+                </div>
               </div>
             ))}
           </CardContent>
@@ -139,6 +179,11 @@ const Index = () => {
       <BottomNav />
       <QuickLogModal isOpen={isQuickLogOpen} onClose={() => setIsQuickLogOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <TaskModal 
+        isOpen={isNewTaskOpen} 
+        onClose={() => setIsNewTaskOpen(false)} 
+        onSave={handleTaskSave}
+      />
     </div>
   );
 };
