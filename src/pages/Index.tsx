@@ -1,146 +1,102 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import BottomNav from "@/components/BottomNav";
-import AlertCards from "@/components/AlertCards";
-import QuickLogModal from "@/components/QuickLogModal";
-import AuthModal from "@/components/AuthModal";
-import ActivityDetailModal from "@/components/ActivityDetailModal";
-import TaskDetailModal from "@/components/TaskDetailModal";
-import LogEntryModal from "@/components/LogEntryModal";
-import { 
-  Heart, 
-  Scale, 
-  Thermometer, 
-  Calendar, 
-  Plus, 
-  Activity,
-  CheckSquare,
-  Users,
-  Bell,
-  BookOpen,
-  Edit
-} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { useAppSettings } from "@/contexts/AppSettingsContext";
+import BottomNav from "@/components/BottomNav";
+import QuickLogModal from "@/components/QuickLogModal";
+import SettingsModal from "@/components/SettingsModal";
+import TaskModal from "@/components/TaskModal";
+import ActivityDetailModal from "@/components/ActivityDetailModal";
+import AlertCards from "@/components/AlertCards";
+import { format, isBefore, isToday, isTomorrow } from "date-fns";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: Date;
+  dueTime: string;
+  priority: 'low' | 'medium' | 'high';
+  completed: boolean;
+}
+
+interface Activity {
+  id: number;
+  type: string;
+  rat: string;
+  time: string;
+  status: string;
+}
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { signOut } = useAppSettings();
-  const [quickLogOpen, setQuickLogOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [activityDetailOpen, setActivityDetailOpen] = useState(false);
-  const [taskDetailOpen, setTaskDetailOpen] = useState(false);
-  const [logEntryModalOpen, setLogEntryModalOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [editingLogEntry, setEditingLogEntry] = useState(null);
+  const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
+  const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-  // Mock data for recent activities and upcoming tasks
-  const recentActivities = [
-    { 
-      id: 1, 
-      type: "Grooming", 
-      rat: "Pepper", 
-      time: "2 mins ago", 
-      status: "good",
-      logEntry: { id: 1, type: "behavior", content: { tags: ["grooming"] }, rat_id: "1" }
-    },
-    { 
-      id: 2, 
-      type: "Weight Check", 
-      rat: "Salt", 
-      time: "1 hour ago", 
-      status: "completed",
-      logEntry: { id: 2, type: "weight", content: { weight: 250 }, rat_id: "2" }
-    },
-    { 
-      id: 3, 
-      type: "Medication", 
-      rat: "Pepper", 
-      time: "3 hours ago", 
-      status: "stable",
-      logEntry: { id: 3, type: "medication", content: { medication: "Antibiotics" }, rat_id: "1" }
-    },
+  const recentActivities: Activity[] = [
+    { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good" },
+    { id: 2, type: "Feeding", rat: "Salt", time: "4 hours ago", status: "completed" },
+    { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable" },
   ];
 
-  const upcomingTasks = [
-    {
-      id: "1",
-      title: "Clean cage",
-      description: "Weekly deep clean of main cage",
-      dueDate: new Date("2024-06-02"),
-      dueTime: "10:00",
-      priority: "high" as const,
-      completed: false,
-      location: "Living room"
-    },
-    {
-      id: "2",
-      title: "Vet appointment",
-      description: "Routine checkup for Pepper",
-      dueDate: new Date("2024-06-03"),
-      dueTime: "14:30",
-      priority: "medium" as const,
-      completed: false,
-      location: "Pet Clinic Downtown"
-    },
-    {
-      id: "3",
-      title: "Buy food",
-      description: "Stock up on rat pellets and treats",
-      dueDate: new Date("2024-06-04"),
-      dueTime: "",
-      priority: "low" as const,
-      completed: false,
-      quantity: "2",
-      unit: "bags"
-    },
-  ];
+  useEffect(() => {
+    // Load tasks from localStorage
+    const storedTasks = localStorage.getItem('ratTracker_tasks');
+    if (storedTasks) {
+      const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+        ...task,
+        dueDate: new Date(task.dueDate)
+      }));
+      setTasks(parsedTasks.filter((task: Task) => !task.completed));
+    }
+  }, []);
 
-  const handleSignOut = () => {
-    signOut();
+  const handleTaskSave = (taskData: any) => {
+    const newTask: Task = {
+      ...taskData,
+      id: Date.now().toString()
+    };
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+    localStorage.setItem('ratTracker_tasks', JSON.stringify(updatedTasks));
   };
 
-  const handleActivityClick = (activity: any) => {
+  const handleActivityCardClick = (activity: Activity) => {
     setSelectedActivity(activity);
-    setActivityDetailOpen(true);
+    setIsActivityDetailOpen(true);
   };
 
-  const handleActivityEdit = (logEntry: any) => {
-    setEditingLogEntry(logEntry);
-    setLogEntryModalOpen(true);
-    setActivityDetailOpen(false);
+  const handleActivityEdit = () => {
+    setIsActivityDetailOpen(false);
+    // Navigate to logs page for editing
+    navigate('/logs');
   };
 
-  const handleTaskClick = (task: any) => {
-    setSelectedTask(task);
-    setTaskDetailOpen(true);
-  };
-
-  const handleRecentActivitiesClick = () => {
-    navigate("/logs");
-  };
-
-  const handleUpcomingTasksClick = () => {
-    navigate("/tasks");
+  const getDateLabel = (date: Date) => {
+    if (isToday(date)) return "Today";
+    if (isTomorrow(date)) return "Tomorrow";
+    if (isBefore(date, new Date())) return "Overdue";
+    return format(date, "MMM d");
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high':
-        return 'text-red-300';
-      case 'medium':
-        return 'text-yellow-300';
-      case 'low':
-        return 'text-green-300';
-      default:
-        return 'text-white';
+      case 'high': return 'bg-red-500/20 text-red-100';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-100';
+      case 'low': return 'bg-green-500/20 text-green-100';
+      default: return 'bg-gray-500/20 text-gray-100';
     }
   };
+
+  const sortedUpcomingTasks = tasks
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
@@ -153,89 +109,112 @@ const Index = () => {
       {/* Header */}
       <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
-              RatTracker
-            </h1>
-            <p className="text-sm text-purple-100/80">Your companion care dashboard</p>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-r from-orange-400 to-pink-500 shadow-lg">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
+                RatTracker
+              </h1>
+              <p className="text-sm text-orange-100/80">Your pet care companion</p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            {user ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  Sign Out
-                </Button>
-                <Button 
-                  onClick={() => setQuickLogOpen(true)}
-                  className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Quick Log
-                </Button>
-              </>
-            ) : (
-              <Button 
-                onClick={() => setAuthModalOpen(true)}
-                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg"
-              >
-                Sign In
-              </Button>
-            )}
-          </div>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={() => setIsSettingsOpen(true)}
+            className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      <div className="relative p-4 space-y-6">
-        {user && <AlertCards />}
-
-        {/* Main Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="backdrop-blur-md bg-gradient-to-br from-pink-500/20 to-rose-600/20 border-pink-300/30 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" onClick={() => navigate('/rats')}>
-            <CardContent className="p-4 text-center">
-              <Heart className="h-8 w-8 mx-auto mb-2 text-pink-200" />
-              <div className="text-2xl font-bold text-white">2</div>
-              <div className="text-sm text-pink-100">Active Rats</div>
-            </CardContent>
-          </Card>
-
-          <Card className="backdrop-blur-md bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-300/30 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" onClick={() => navigate('/logs')}>
-            <CardContent className="p-4 text-center">
-              <Scale className="h-8 w-8 mx-auto mb-2 text-blue-200" />
-              <div className="text-2xl font-bold text-white">12</div>
-              <div className="text-sm text-blue-100">Total Logs</div>
-            </CardContent>
-          </Card>
-
-          <Card className="backdrop-blur-md bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-300/30 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" onClick={() => navigate('/tasks')}>
-            <CardContent className="p-4 text-center">
-              <CheckSquare className="h-8 w-8 mx-auto mb-2 text-green-200" />
-              <div className="text-2xl font-bold text-white">3</div>
-              <div className="text-sm text-green-100">Pending Tasks</div>
-            </CardContent>
-          </Card>
-
-          <Card className="backdrop-blur-md bg-gradient-to-br from-purple-500/20 to-indigo-600/20 border-purple-300/30 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" onClick={() => navigate('/community')}>
-            <CardContent className="p-4 text-center">
-              <Users className="h-8 w-8 mx-auto mb-2 text-purple-200" />
-              <div className="text-2xl font-bold text-white">45</div>
-              <div className="text-sm text-purple-100">Community</div>
-            </CardContent>
-          </Card>
+      {/* Quick Actions */}
+      <div className="relative p-4">
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Button 
+            onClick={() => setIsQuickLogOpen(true)}
+            className="h-20 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
+            <div className="text-center">
+              <Plus className="h-6 w-6 mx-auto mb-1" />
+              <div className="text-xs font-medium">Quick Log</div>
+            </div>
+          </Button>
+          
+          <Button 
+            onClick={() => setIsNewTaskOpen(true)}
+            className="h-20 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
+            <div className="text-center">
+              <Calendar className="h-6 w-6 mx-auto mb-1" />
+              <div className="text-xs font-medium">New Task</div>
+            </div>
+          </Button>
+          
+          <Button className="h-20 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl transform hover:scale-105 transition-all duration-300">
+            <div className="text-center">
+              <Activity className="h-6 w-6 mx-auto mb-1" />
+              <div className="text-xs font-medium">Reports</div>
+            </div>
+          </Button>
         </div>
 
+        {/* Alert Cards */}
+        <div className="mb-6">
+          <AlertCards />
+        </div>
+
+        {/* Upcoming Tasks */}
+        <Card 
+          className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6 cursor-pointer hover:shadow-2xl transition-all duration-300 rounded-xl"
+          onClick={() => navigate('/tasks')}
+        >
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-cyan-300" />
+              Upcoming Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {sortedUpcomingTasks.length > 0 ? (
+              sortedUpcomingTasks.map((task) => (
+                <div key={task.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
+                  <div>
+                    <p className="text-white font-medium">{task.title}</p>
+                    <p className="text-sm text-purple-100">Due: {getDateLabel(task.dueDate)} {task.dueTime && `at ${task.dueTime}`}</p>
+                  </div>
+                  <Badge className={`${getPriorityColor(task.priority)} border-0 backdrop-blur-sm`}>
+                    {task.priority}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-white/80">No upcoming tasks</p>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsNewTaskOpen(true);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  Create your first task
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Recent Activities */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
-          <CardHeader 
-            className="cursor-pointer hover:bg-white/5 transition-colors rounded-t-lg"
-            onClick={handleRecentActivitiesClick}
-          >
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Activity className="h-5 w-5" />
+        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Heart className="h-5 w-5 text-pink-300" />
               Recent Activities
             </CardTitle>
           </CardHeader>
@@ -243,136 +222,42 @@ const Index = () => {
             {recentActivities.map((activity) => (
               <div 
                 key={activity.id} 
-                className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
-                onClick={() => handleActivityClick(activity)}
+                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                onClick={() => handleActivityCardClick(activity)}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <div>
-                    <div className="text-white font-medium">{activity.type}</div>
-                    <div className="text-sm text-gray-300">{activity.rat} • {activity.time}</div>
-                  </div>
+                <div className="flex-1">
+                  <p className="text-white font-medium">{activity.type}</p>
+                  <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-green-500/20 text-green-100 px-2 py-1 rounded">
-                    {activity.status}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleActivityEdit(activity.logEntry);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Badge 
+                  className={`${
+                    activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
+                    activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
+                    'bg-yellow-500/20 text-yellow-100'
+                  } border-0 backdrop-blur-sm`}
+                >
+                  {activity.status}
+                </Badge>
               </div>
             ))}
           </CardContent>
         </Card>
-
-        {/* Upcoming Tasks */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
-          <CardHeader 
-            className="cursor-pointer hover:bg-white/5 transition-colors rounded-t-lg"
-            onClick={handleUpcomingTasksClick}
-          >
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Calendar className="h-5 w-5" />
-              Upcoming Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {upcomingTasks.map((task) => (
-              <div 
-                key={task.id} 
-                className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                onClick={() => handleTaskClick(task)}
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-medium">{task.title}</span>
-                      <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-300">
-                      {task.dueDate.toLocaleDateString()} {task.dueTime && `• ${task.dueTime}`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Navigation Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" onClick={() => navigate('/library')}>
-            <CardContent className="p-6 text-center">
-              <BookOpen className="h-12 w-12 mx-auto mb-3 text-cyan-200" />
-              <div className="text-lg font-semibold text-white mb-1">Library</div>
-              <div className="text-sm text-gray-300">Care guides & tips</div>
-            </CardContent>
-          </Card>
-
-          <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer" onClick={() => navigate('/community')}>
-            <CardContent className="p-6 text-center">
-              <Users className="h-12 w-12 mx-auto mb-3 text-purple-200" />
-              <div className="text-lg font-semibold text-white mb-1">Community</div>
-              <div className="text-sm text-gray-300">Connect with others</div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
-      <QuickLogModal 
-        isOpen={quickLogOpen} 
-        onClose={() => setQuickLogOpen(false)} 
+      <BottomNav />
+      <QuickLogModal isOpen={isQuickLogOpen} onClose={() => setIsQuickLogOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <TaskModal 
+        isOpen={isNewTaskOpen} 
+        onClose={() => setIsNewTaskOpen(false)} 
+        onSave={handleTaskSave}
       />
-      
-      <AuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)} 
-      />
-
       <ActivityDetailModal
-        isOpen={activityDetailOpen}
-        onClose={() => setActivityDetailOpen(false)}
+        isOpen={isActivityDetailOpen}
+        onClose={() => setIsActivityDetailOpen(false)}
         onEdit={handleActivityEdit}
         activity={selectedActivity}
       />
-
-      <TaskDetailModal
-        isOpen={taskDetailOpen}
-        onClose={() => setTaskDetailOpen(false)}
-        onEdit={() => {
-          setTaskDetailOpen(false);
-          navigate('/tasks');
-        }}
-        task={selectedTask}
-      />
-
-      <LogEntryModal
-        isOpen={logEntryModalOpen}
-        onClose={() => {
-          setLogEntryModalOpen(false);
-          setEditingLogEntry(null);
-        }}
-        logType={editingLogEntry?.type || 'behavior'}
-        onLogAdded={() => {
-          setLogEntryModalOpen(false);
-          setEditingLogEntry(null);
-        }}
-        editingLog={editingLogEntry}
-      />
-
-      <BottomNav />
     </div>
   );
 };

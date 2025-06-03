@@ -6,25 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import MultiSelectRats from "@/components/MultiSelectRats";
-import BehaviorTagSelector from "@/components/BehaviorTagSelector";
 
 interface LogEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
   logType: string;
   onLogAdded: () => void;
-  editingLog?: any;
 }
 
-const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: LogEntryModalProps) => {
+const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded }: LogEntryModalProps) => {
   const [rats, setRats] = useState<any[]>([]);
-  const [selectedRats, setSelectedRats] = useState<string[]>([]);
+  const [selectedRat, setSelectedRat] = useState("");
   const [behaviorTags, setBehaviorTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -39,18 +38,6 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
       }
     }
   }, [user, isOpen, logType]);
-
-  useEffect(() => {
-    if (editingLog) {
-      setSelectedRats(editingLog.rat_ids || [editingLog.rat_id]);
-      setFormData(editingLog.content || {});
-      if (logType === 'behavior' && editingLog.content?.tags) {
-        setSelectedTags(editingLog.content.tags);
-      }
-    } else {
-      resetForm();
-    }
-  }, [editingLog, isOpen]);
 
   const fetchRats = async () => {
     if (!user) return;
@@ -75,16 +62,18 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
     if (!error) setBehaviorTags(data?.map(tag => tag.name) || []);
   };
 
-  const addNewTag = async (newTag: string) => {
-    if (!user) return;
+  const addNewTag = async () => {
+    if (!newTag.trim() || !user) return;
     
     try {
       const { error } = await supabase
         .from('behavior_tags')
-        .insert({ user_id: user.id, name: newTag });
+        .insert({ user_id: user.id, name: newTag.trim() });
       
       if (!error) {
-        setBehaviorTags([...behaviorTags, newTag]);
+        setBehaviorTags([...behaviorTags, newTag.trim()]);
+        setSelectedTags([...selectedTags, newTag.trim()]);
+        setNewTag("");
       }
     } catch (error) {
       console.error('Error adding tag:', error);
@@ -93,7 +82,7 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || selectedRats.length === 0) return;
+    if (!user || !selectedRat) return;
 
     setLoading(true);
     try {
@@ -103,42 +92,29 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
         content.tags = selectedTags;
       }
 
-      if (editingLog) {
-        // Update existing log
-        const { error } = await supabase
-          .from('log_entries')
-          .update({ content })
-          .eq('id', editingLog.id);
-
-        if (error) throw error;
-      } else {
-        // Create new log entries for each selected rat
-        const entries = selectedRats.map(ratId => ({
+      const { error } = await supabase
+        .from('log_entries')
+        .insert({
           user_id: user.id,
-          rat_id: ratId,
+          rat_id: selectedRat,
           type: logType,
           content
-        }));
+        });
 
-        const { error } = await supabase
-          .from('log_entries')
-          .insert(entries);
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
-        description: editingLog ? "Log entry updated successfully!" : "Log entry added successfully!",
+        description: "Log entry added successfully!",
       });
       
       onLogAdded();
       onClose();
-      if (!editingLog) resetForm();
+      resetForm();
     } catch (error) {
       toast({
         title: "Error",
-        description: editingLog ? "Failed to update log entry" : "Failed to add log entry",
+        description: "Failed to add log entry",
         variant: "destructive",
       });
     } finally {
@@ -147,9 +123,14 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
   };
 
   const resetForm = () => {
-    setSelectedRats([]);
+    setSelectedRat("");
     setSelectedTags([]);
     setFormData({});
+    setNewTag("");
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
   };
 
   const renderLogTypeFields = () => {
@@ -158,21 +139,44 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
         return (
           <>
             <div className="space-y-2">
-              <Label className="text-white">Behavior Tags</Label>
-              <BehaviorTagSelector
-                availableTags={behaviorTags}
-                selectedTags={selectedTags}
-                onTagsChange={setSelectedTags}
-                onNewTag={addNewTag}
-              />
+              <Label>Behavior Tags</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedTags.map(tag => (
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    {tag}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                  </Badge>
+                ))}
+              </div>
+              <Select onValueChange={(value) => {
+                if (!selectedTags.includes(value)) {
+                  setSelectedTags([...selectedTags, value]);
+                }
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Add existing tag" />
+                </SelectTrigger>
+                <SelectContent>
+                  {behaviorTags.filter(tag => !selectedTags.includes(tag)).map(tag => (
+                    <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="New tag"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                />
+                <Button type="button" onClick={addNewTag}>Add</Button>
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-white">Notes</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
           </>
@@ -181,12 +185,9 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="status" className="text-white">Health Status</Label>
-              <Select 
-                value={formData.status || ""}
-                onValueChange={(value) => setFormData({...formData, status: value})}
-              >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+              <Label htmlFor="status">Health Status</Label>
+              <Select onValueChange={(value) => setFormData({...formData, status: value})}>
+                <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -199,12 +200,11 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-white">Notes</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
           </>
@@ -212,13 +212,12 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
       case 'weight':
         return (
           <div className="space-y-2">
-            <Label htmlFor="weight" className="text-white">Weight (grams)</Label>
+            <Label htmlFor="weight">Weight (grams)</Label>
             <Input
               id="weight"
               type="number"
               value={formData.weight || ""}
               onChange={(e) => setFormData({...formData, weight: e.target.value})}
-              className="bg-white/10 border-white/20 text-white"
               required
             />
           </div>
@@ -227,32 +226,29 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="medication" className="text-white">Medication</Label>
+              <Label htmlFor="medication">Medication</Label>
               <Input
                 id="medication"
                 value={formData.medication || ""}
                 onChange={(e) => setFormData({...formData, medication: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dose" className="text-white">Dose</Label>
+              <Label htmlFor="dose">Dose</Label>
               <Input
                 id="dose"
                 value={formData.dose || ""}
                 onChange={(e) => setFormData({...formData, dose: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-white">Notes</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
           </>
@@ -261,32 +257,29 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="food" className="text-white">Food</Label>
+              <Label htmlFor="food">Food</Label>
               <Input
                 id="food"
                 value={formData.food || ""}
                 onChange={(e) => setFormData({...formData, food: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="amount" className="text-white">Amount</Label>
+              <Label htmlFor="amount">Amount</Label>
               <Input
                 id="amount"
                 value={formData.amount || ""}
                 onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-white">Notes</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
           </>
@@ -295,34 +288,31 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="temperature" className="text-white">Temperature (°C)</Label>
+              <Label htmlFor="temperature">Temperature (°C)</Label>
               <Input
                 id="temperature"
                 type="number"
                 value={formData.temperature || ""}
                 onChange={(e) => setFormData({...formData, temperature: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="humidity" className="text-white">Humidity (%)</Label>
+              <Label htmlFor="humidity">Humidity (%)</Label>
               <Input
                 id="humidity"
                 type="number"
                 value={formData.humidity || ""}
                 onChange={(e) => setFormData({...formData, humidity: e.target.value})}
-                className="bg-white/10 border-white/20 text-white"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-white">Notes</Label>
+              <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
           </>
@@ -334,41 +324,27 @@ const LogEntryModal = ({ isOpen, onClose, logType, onLogAdded, editingLog }: Log
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-xl bg-gradient-to-br from-indigo-900/90 via-purple-900/90 to-pink-800/90 backdrop-blur-md border-white/20">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="rounded-lg bg-gray-100 hover:bg-gray-200 p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <DialogTitle className="flex-1 text-white">
-              {editingLog ? 'Edit' : 'Add'} {logType.charAt(0).toUpperCase() + logType.slice(1)} Log
-            </DialogTitle>
-          </div>
+          <DialogTitle>Add {logType.charAt(0).toUpperCase() + logType.slice(1)} Log</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          {!editingLog && (
-            <div className="space-y-2">
-              <Label className="text-white">Select Rats</Label>
-              <MultiSelectRats
-                rats={rats}
-                selectedRats={selectedRats}
-                onSelectionChange={setSelectedRats}
-                placeholder="Choose rats"
-              />
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="rat">Select Rat</Label>
+            <Select value={selectedRat} onValueChange={setSelectedRat} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a rat" />
+              </SelectTrigger>
+              <SelectContent>
+                {rats.map(rat => (
+                  <SelectItem key={rat.id} value={rat.id}>{rat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {renderLogTypeFields()}
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600" 
-            disabled={loading || (!editingLog && selectedRats.length === 0)}
-          >
-            {loading ? (editingLog ? "Updating..." : "Adding...") : (editingLog ? "Update Log Entry" : "Add Log Entry")}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Adding..." : "Add Log Entry"}
           </Button>
         </form>
       </DialogContent>
