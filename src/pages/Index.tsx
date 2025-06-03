@@ -1,43 +1,102 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit } from "lucide-react";
+import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
 import SettingsModal from "@/components/SettingsModal";
 import TaskModal from "@/components/TaskModal";
+import ActivityDetailModal from "@/components/ActivityDetailModal";
 import AlertCards from "@/components/AlertCards";
+import { format, isBefore, isToday, isTomorrow } from "date-fns";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: Date;
+  dueTime: string;
+  priority: 'low' | 'medium' | 'high';
+  completed: boolean;
+}
+
+interface Activity {
+  id: number;
+  type: string;
+  rat: string;
+  time: string;
+  status: string;
+}
 
 const Index = () => {
   const navigate = useNavigate();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
+  const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-  const recentActivities = [
+  const recentActivities: Activity[] = [
     { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good" },
     { id: 2, type: "Feeding", rat: "Salt", time: "4 hours ago", status: "completed" },
     { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable" },
   ];
 
-  const upcomingTasks = [
-    { id: 1, task: "Cage cleaning", due: "Tomorrow", priority: "high" },
-    { id: 2, task: "Vet appointment - Pepper", due: "Friday", priority: "medium" },
-    { id: 3, task: "Medication - Salt", due: "Tonight", priority: "high" },
-  ];
+  useEffect(() => {
+    // Load tasks from localStorage
+    const storedTasks = localStorage.getItem('ratTracker_tasks');
+    if (storedTasks) {
+      const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+        ...task,
+        dueDate: new Date(task.dueDate)
+      }));
+      setTasks(parsedTasks.filter((task: Task) => !task.completed));
+    }
+  }, []);
 
   const handleTaskSave = (taskData: any) => {
-    // Save task logic would go here
-    console.log('New task created:', taskData);
+    const newTask: Task = {
+      ...taskData,
+      id: Date.now().toString()
+    };
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+    localStorage.setItem('ratTracker_tasks', JSON.stringify(updatedTasks));
   };
 
-  const handleActivityClick = (activity: any) => {
-    // Navigate to logs page or open edit modal
+  const handleActivityCardClick = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setIsActivityDetailOpen(true);
+  };
+
+  const handleActivityEdit = () => {
+    setIsActivityDetailOpen(false);
+    // Navigate to logs page for editing
     navigate('/logs');
   };
+
+  const getDateLabel = (date: Date) => {
+    if (isToday(date)) return "Today";
+    if (isTomorrow(date)) return "Tomorrow";
+    if (isBefore(date, new Date())) return "Overdue";
+    return format(date, "MMM d");
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500/20 text-red-100';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-100';
+      case 'low': return 'bg-green-500/20 text-green-100';
+      default: return 'bg-gray-500/20 text-gray-100';
+    }
+  };
+
+  const sortedUpcomingTasks = tasks
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
@@ -110,7 +169,7 @@ const Index = () => {
 
         {/* Upcoming Tasks */}
         <Card 
-          className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6 cursor-pointer hover:shadow-2xl transition-all duration-300"
+          className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6 cursor-pointer hover:shadow-2xl transition-all duration-300 rounded-xl"
           onClick={() => navigate('/tasks')}
         >
           <CardHeader>
@@ -120,27 +179,39 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {upcomingTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
-                <div>
-                  <p className="text-white font-medium">{task.task}</p>
-                  <p className="text-sm text-purple-100">Due: {task.due}</p>
+            {sortedUpcomingTasks.length > 0 ? (
+              sortedUpcomingTasks.map((task) => (
+                <div key={task.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
+                  <div>
+                    <p className="text-white font-medium">{task.title}</p>
+                    <p className="text-sm text-purple-100">Due: {getDateLabel(task.dueDate)} {task.dueTime && `at ${task.dueTime}`}</p>
+                  </div>
+                  <Badge className={`${getPriorityColor(task.priority)} border-0 backdrop-blur-sm`}>
+                    {task.priority}
+                  </Badge>
                 </div>
-                <Badge 
-                  className={`${
-                    task.priority === 'high' ? 'bg-red-500/20 text-red-100' : 
-                    'bg-yellow-500/20 text-yellow-100'
-                  } border-0 backdrop-blur-sm`}
+              ))
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-white/80">No upcoming tasks</p>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsNewTaskOpen(true);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
-                  {task.priority}
-                </Badge>
+                  Create your first task
+                </Button>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 
         {/* Recent Activities */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
+        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl rounded-xl">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Heart className="h-5 w-5 text-pink-300" />
@@ -151,25 +222,22 @@ const Index = () => {
             {recentActivities.map((activity) => (
               <div 
                 key={activity.id} 
-                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors group"
-                onClick={() => handleActivityClick(activity)}
+                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                onClick={() => handleActivityCardClick(activity)}
               >
                 <div className="flex-1">
                   <p className="text-white font-medium">{activity.type}</p>
                   <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    className={`${
-                      activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
-                      activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
-                      'bg-yellow-500/20 text-yellow-100'
-                    } border-0 backdrop-blur-sm`}
-                  >
-                    {activity.status}
-                  </Badge>
-                  <Edit className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
-                </div>
+                <Badge 
+                  className={`${
+                    activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
+                    activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
+                    'bg-yellow-500/20 text-yellow-100'
+                  } border-0 backdrop-blur-sm`}
+                >
+                  {activity.status}
+                </Badge>
               </div>
             ))}
           </CardContent>
@@ -183,6 +251,12 @@ const Index = () => {
         isOpen={isNewTaskOpen} 
         onClose={() => setIsNewTaskOpen(false)} 
         onSave={handleTaskSave}
+      />
+      <ActivityDetailModal
+        isOpen={isActivityDetailOpen}
+        onClose={() => setIsActivityDetailOpen(false)}
+        onEdit={handleActivityEdit}
+        activity={selectedActivity}
       />
     </div>
   );
