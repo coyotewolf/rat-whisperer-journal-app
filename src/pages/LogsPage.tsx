@@ -4,12 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles } from "lucide-react";
+import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil } from "lucide-react"; // Added Pencil
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
+import EditLogModal from "@/components/EditLogModal"; // Uncommented and imported
 
 const LogsPage = () => {
-  const [logs] = useState([
+  const [logs, setLogs] = useState([ // Changed to setLogs for updating
     {
       id: 1,
       type: "behavior",
@@ -52,6 +53,8 @@ const LogsPage = () => {
   const [filteredLogs, setFilteredLogs] = useState(logs);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingLog, setEditingLog] = useState<any | null>(null);
 
   // Get all unique hashtags from logs
   const availableHashtags = Array.from(
@@ -118,20 +121,46 @@ const LogsPage = () => {
   const healthLogs = filteredLogs.filter(log => log.type === "health");
   const environmentLogs = filteredLogs.filter(log => log.type === "environment");
 
+  const handleEditLog = (logToEdit: any) => {
+    setEditingLog(logToEdit);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateLog = (updatedLog: any) => {
+    setLogs(prevLogs => prevLogs.map(log => log.id === updatedLog.id ? updatedLog : log));
+    setIsEditModalOpen(false);
+    setEditingLog(null);
+    // Here you would typically also make an API call to update the log in the backend
+    console.log("Log updated (simulated):", updatedLog);
+  };
+
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
     
     return (
-      <Card className={`${getLogColor(log.type)} backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}>
+      <Card className={`${getLogColor(log.type)} backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}> {/* Removed cursor-pointer to allow button click */}
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center gap-2 text-white">
               {getLogIcon(log.type)}
               <span className="font-medium capitalize">{log.type}</span>
             </div>
-            <div className="text-right text-sm text-purple-100/80">
-              <div>{date}</div>
-              <div>{time}</div>
+            <div className="flex items-center gap-2"> {/* Container for date/time and edit button */}
+              <div className="text-right text-sm text-purple-100/80">
+                <div>{date}</div>
+                <div>{time}</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-cyan-300 h-7 w-7"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click event
+                  handleEditLog(log);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           
@@ -268,6 +297,18 @@ const LogsPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {isEditModalOpen && editingLog && (
+        <EditLogModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingLog(null);
+          }}
+          logToEdit={editingLog}
+          onLogUpdated={handleUpdateLog}
+        />
+      )}
 
       <BottomNav />
     </div>

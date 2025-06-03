@@ -12,7 +12,9 @@ import { CalendarIcon, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import TaskSuggestions from "./TaskSuggestions";
+import type { TaskSuggestion } from "./settings/TaskSuggestionSettings"; // Import TaskSuggestion type
 import TaskRepeatOptions from "./TaskRepeatOptions";
+import type { RepeatOptions } from "./TaskRepeatOptions"; // Import RepeatOptions type
 
 interface Task {
   id: string;
@@ -25,12 +27,7 @@ interface Task {
   location?: string;
   quantity?: number;
   unit?: string;
-  repeatOptions?: {
-    type: 'none' | 'daily' | 'weekly' | 'monthly';
-    weekdays?: string[];
-    endDate?: Date;
-    endType: 'never' | 'date';
-  };
+  repeatOptions?: RepeatOptions; // Use imported RepeatOptions type
 }
 
 interface TaskModalProps {
@@ -42,7 +39,7 @@ interface TaskModalProps {
 
 const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   const [title, setTitle] = useState("");
-  const [selectedSuggestion, setSelectedSuggestion] = useState<string>();
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | undefined>(); // Changed to store ID
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
   const [dueTime, setDueTime] = useState("");
@@ -50,37 +47,46 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   const [location, setLocation] = useState("");
   const [quantity, setQuantity] = useState<number>();
   const [unit, setUnit] = useState("");
-  const [repeatOptions, setRepeatOptions] = useState({
-    type: 'none' as const,
-    weekdays: [] as string[],
-    endDate: undefined as Date | undefined,
-    endType: 'never' as const
+  const [repeatOptions, setRepeatOptions] = useState<RepeatOptions>({ // Explicitly type with RepeatOptions
+    type: 'none',
+    weekdays: [],
+    endDate: undefined,
+    endType: 'never'
   });
 
   useEffect(() => {
-    if (task) {
-      setTitle(task.title);
-      setDescription(task.description);
-      setDueDate(task.dueDate);
-      setDueTime(task.dueTime);
-      setPriority(task.priority);
-      setLocation(task.location || "");
-      setQuantity(task.quantity);
-      setUnit(task.unit || "");
-      setRepeatOptions(task.repeatOptions || {
-        type: 'none',
-        weekdays: [],
-        endDate: undefined,
-        endType: 'never'
-      });
-    } else {
+    if (isOpen) { // Only run when modal is open
+      if (task) {
+        setTitle(task.title);
+        setDescription(task.description);
+        setDueDate(task.dueDate);
+        setDueTime(task.dueTime);
+        setPriority(task.priority);
+        setLocation(task.location || "");
+        setQuantity(task.quantity);
+        setUnit(task.unit || "");
+        setRepeatOptions(task.repeatOptions || {
+          type: 'none',
+          weekdays: [],
+          endDate: undefined,
+          endType: 'never'
+        });
+      } else {
+        resetForm(); // Reset form for new task
+      }
+    }
+  }, [isOpen, task]); // Depend on isOpen and task
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
       resetForm();
     }
-  }, [task, isOpen]);
+  }, [isOpen]);
 
   const resetForm = () => {
     setTitle("");
-    setSelectedSuggestion(undefined);
+    setSelectedSuggestionId(undefined); // Reset ID
     setDescription("");
     setDueDate(undefined);
     setDueTime("");
@@ -96,14 +102,22 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
     });
   };
 
-  const handleSuggestionSelect = (suggestion: string) => {
-    setTitle(suggestion);
-    setSelectedSuggestion(suggestion);
+  const handleSuggestionSelect = (suggestion: TaskSuggestion) => {
+    setTitle(suggestion.title || suggestion.name); // Use suggestion.title or fallback to name
+    setDescription(suggestion.description || "");
+    setPriority(suggestion.priority || 'medium');
+    setLocation(suggestion.location || "");
+    setQuantity(suggestion.quantity);
+    setUnit(suggestion.unit || "");
+    // Note: dueDate and dueTime are not typically part of quick suggestions,
+    // as they are usually set relative to the current date/time.
+    // If you want to pre-fill them, add them to TaskSuggestion interface and set here.
+    setSelectedSuggestionId(suggestion.id);
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
-    setSelectedSuggestion(undefined);
+    setSelectedSuggestionId(undefined); // Clear selected suggestion if title is manually changed
   };
 
   const handleSave = () => {
@@ -128,9 +142,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
       onSave(taskData);
     }
 
-    if (!task) {
-      resetForm();
-    }
+    // No need to reset form here, it's handled by useEffect when modal closes
     onClose();
   };
 
@@ -161,12 +173,11 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
               onChange={handleTitleChange}
               placeholder="Enter task title"
             />
-            {!task && (
-              <TaskSuggestions 
-                onSelect={handleSuggestionSelect}
-                selectedSuggestion={selectedSuggestion}
-              />
-            )}
+            {/* Render suggestions for both new and edit modes */}
+            <TaskSuggestions
+              onSelect={handleSuggestionSelect}
+              selectedSuggestionId={selectedSuggestionId} // Pass ID
+            />
           </div>
 
           <div className="space-y-2">

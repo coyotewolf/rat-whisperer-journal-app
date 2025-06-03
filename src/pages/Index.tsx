@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit } from "lucide-react";
+import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit, Pencil } from "lucide-react"; // Added Pencil
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
@@ -11,6 +11,7 @@ import SettingsModal from "@/components/SettingsModal";
 import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
 import AlertCards from "@/components/AlertCards";
+import EditLogModal from "@/components/EditLogModal"; // Import EditLogModal
 import { format, isToday, isTomorrow, isBefore } from "date-fns";
 
 interface Task {
@@ -34,6 +35,10 @@ const Index = () => {
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [editingTask, setEditingTask] = useState<Task | null>(null); // New state for editing task
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<any | null>(null);
+
 
   useEffect(() => {
     // Load tasks from localStorage
@@ -52,11 +57,11 @@ const Index = () => {
     localStorage.setItem('ratTracker_tasks', JSON.stringify(updatedTasks));
   };
 
-  const recentActivities = [
-    { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good" },
-    { id: 2, type: "Feeding", rat: "Salt", time: "4 hours ago", status: "completed" },
-    { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable" },
-  ];
+  const [recentActivities, setRecentActivities] = useState([ // Make recentActivities stateful
+    { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good", notes: "Routine check, all clear.", rats: ["Pepper"], hashtags: ["health", "routine"] },
+    { id: 2, type: "Feeding", rat: "Salt", time: "4 hours ago", status: "completed", notes: "Ate all the food.", rats: ["Salt"], hashtags: ["feeding", "routine"] },
+    { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable", weight: 230, rats: ["Cinnamon"], hashtags: ["weight", "health"] },
+  ]);
 
   // Get upcoming tasks (not completed, sorted by due date)
   const upcomingTasks = tasks
@@ -64,12 +69,18 @@ const Index = () => {
     .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
     .slice(0, 3);
 
-  const handleTaskSave = (taskData: any) => {
-    const newTask: Task = {
-      ...taskData,
-      id: Date.now().toString()
-    };
-    saveTasks([...tasks, newTask]);
+  const handleTaskSave = (taskData: Task) => { // Changed taskData type to Task
+    if (taskData.id) { // If taskData has an ID, it's an existing task being edited
+      saveTasks(tasks.map(task => task.id === taskData.id ? taskData : task));
+    } else { // Otherwise, it's a new task
+      const newTask: Task = {
+        ...taskData,
+        id: crypto.randomUUID() // Use crypto.randomUUID for new tasks
+      };
+      saveTasks([...tasks, newTask]);
+    }
+    setIsNewTaskOpen(false); // Close the task modal after saving
+    setEditingTask(null); // Clear editing task state
   };
 
   const handleTaskCardClick = (task: Task) => {
@@ -78,14 +89,28 @@ const Index = () => {
   };
 
   const handleEditFromDetail = (task: Task) => {
-    // This would open edit modal if needed
-    setIsTaskDetailOpen(false);
-    navigate('/tasks');
+    setIsTaskDetailOpen(false); // Close the detail modal
+    setEditingTask(task); // Set the task to be edited
+    setIsNewTaskOpen(true); // Open the TaskModal in edit mode
   };
 
-  const handleActivityClick = (activity: any) => {
-    // Navigate to logs page or open edit modal
-    navigate('/logs');
+  // const handleActivityClick = (activity: any) => { // Commenting out as card click will be removed for consistency
+  //   // Navigate to logs page or open edit modal
+  //   navigate('/logs');
+  // };
+
+  const handleEditActivity = (activityToEdit: any) => {
+    setEditingActivity(activityToEdit);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateActivity = (updatedActivity: any) => {
+    setRecentActivities(prevActivities =>
+      prevActivities.map(act => act.id === updatedActivity.id ? updatedActivity : act)
+    );
+    setIsEditModalOpen(false);
+    setEditingActivity(null);
+    console.log("Activity updated (simulated):", updatedActivity);
   };
 
   const getDateLabel = (date: Date) => {
@@ -231,9 +256,8 @@ const Index = () => {
           <CardContent className="space-y-3">
             {recentActivities.map((activity) => (
               <div 
-                key={activity.id} 
-                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors group"
-                onClick={() => handleActivityClick(activity)}
+                key={activity.id}
+                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group" // Removed cursor-pointer and onClick
               >
                 <div className="flex-1">
                   <p className="text-white font-medium">{activity.type}</p>
@@ -249,7 +273,17 @@ const Index = () => {
                   >
                     {activity.status}
                   </Badge>
-                  <Edit className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white/60 hover:text-cyan-300 h-7 w-7 group-hover:text-white transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent any potential parent click events
+                      handleEditActivity(activity);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -260,10 +294,14 @@ const Index = () => {
       <BottomNav />
       <QuickLogModal isOpen={isQuickLogOpen} onClose={() => setIsQuickLogOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-      <TaskModal 
-        isOpen={isNewTaskOpen} 
-        onClose={() => setIsNewTaskOpen(false)} 
+      <TaskModal
+        isOpen={isNewTaskOpen}
+        onClose={() => {
+          setIsNewTaskOpen(false);
+          setEditingTask(null); // Clear editing task when modal closes
+        }}
         onSave={handleTaskSave}
+        task={editingTask} // Pass the task for editing
       />
       <TaskDetailModal
         isOpen={isTaskDetailOpen}
@@ -271,6 +309,17 @@ const Index = () => {
         task={selectedTask}
         onEdit={handleEditFromDetail}
       />
+      {isEditModalOpen && editingActivity && (
+        <EditLogModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingActivity(null);
+          }}
+          logToEdit={editingActivity}
+          onLogUpdated={handleUpdateActivity}
+        />
+      )}
     </div>
   );
 };

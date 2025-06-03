@@ -11,7 +11,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-interface RepeatOptions {
+export interface RepeatOptions { // Added export
   type: 'none' | 'daily' | 'weekly' | 'monthly';
   weekdays?: string[];
   endDate?: Date;

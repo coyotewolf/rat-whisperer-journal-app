@@ -3,19 +3,20 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Globe, Type, Palette, LogIn, LogOut } from "lucide-react";
+import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks } from "lucide-react"; // Added ListChecks
 import { useAuth } from "@/hooks/useAuth";
 import AccountSettings from "./settings/AccountSettings";
 import LanguageSettings from "./settings/LanguageSettings";
 import FontSettings from "./settings/FontSettings";
 import ThemeSettings from "./settings/ThemeSettings";
+import TaskSuggestionSettings from "./settings/TaskSuggestionSettings"; // Import TaskSuggestionSettings
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes';
+type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes' | 'taskSuggestions';
 
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main');
@@ -49,6 +50,13 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       title: "Themes",
       description: "Customize app appearance",
       color: "bg-pink-100 text-pink-700"
+    },
+    {
+      id: 'taskSuggestions' as const,
+      icon: ListChecks,
+      title: "Task Suggestions",
+      description: "Manage quick task suggestions",
+      color: "bg-orange-100 text-orange-700"
     }
   ];
 
@@ -62,6 +70,8 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         return <FontSettings onBack={() => setCurrentSection('main')} />;
       case 'themes':
         return <ThemeSettings onBack={() => setCurrentSection('main')} />;
+      case 'taskSuggestions':
+        return <TaskSuggestionSettings />; // No onBack needed if it's self-contained or uses Dialog for sub-actions
       default:
         return (
           <div className="grid grid-cols-1 gap-3 mt-4">
