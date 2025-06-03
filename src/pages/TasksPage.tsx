@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, Edit, Trash2, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TaskModal from "@/components/TaskModal";
+import TaskDetailModal from "@/components/TaskDetailModal";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, isBefore, isToday, isTomorrow } from "date-fns";
@@ -18,6 +19,9 @@ interface Task {
   dueTime: string;
   priority: 'low' | 'medium' | 'high';
   completed: boolean;
+  location?: string;
+  quantity?: number;
+  unit?: string;
 }
 
 const TasksPage = () => {
@@ -25,7 +29,9 @@ const TasksPage = () => {
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [taskDetailModalOpen, setTaskDetailModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
@@ -92,11 +98,31 @@ const TasksPage = () => {
     }
   };
 
+  const getTitleColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'text-red-200';
+      case 'medium': return 'text-yellow-200';
+      case 'low': return 'text-green-200';
+      default: return 'text-white';
+    }
+  };
+
   const getDateLabel = (date: Date) => {
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
     if (isBefore(date, new Date())) return "Overdue";
     return format(date, "MMM d");
+  };
+
+  const handleTaskCardClick = (task: Task) => {
+    setSelectedTask(task);
+    setTaskDetailModalOpen(true);
+  };
+
+  const handleEditFromDetail = (task: Task) => {
+    setEditingTask(task);
+    setTaskDetailModalOpen(false);
+    setTaskModalOpen(true);
   };
 
   const sortedTasks = [...tasks].sort((a, b) => {
@@ -145,11 +171,18 @@ const TasksPage = () => {
       <div className="relative p-4">
         <div className="space-y-3">
           {sortedTasks.map((task) => (
-            <Card key={task.id} className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 ${task.completed ? 'opacity-60' : ''}`}>
+            <Card 
+              key={task.id} 
+              className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 cursor-pointer hover:shadow-2xl ${task.completed ? 'opacity-60' : ''}`}
+              onClick={() => handleTaskCardClick(task)}
+            >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <button
-                    onClick={() => toggleTaskCompletion(task.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleTaskCompletion(task.id);
+                    }}
                     className="mt-1 text-white hover:text-green-300 transition-colors"
                   >
                     {task.completed ? (
@@ -161,17 +194,20 @@ const TasksPage = () => {
 
                   <div className="flex-1 space-y-2">
                     <div className="flex items-start justify-between">
-                      <h3 className={`font-semibold text-white ${task.completed ? 'line-through' : ''}`}>
-                        {task.title}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
+                      <div className="flex items-center gap-2 flex-1">
+                        <h3 className={`font-semibold ${getTitleColor(task.priority)} ${task.completed ? 'line-through' : ''}`}>
+                          {task.title}
+                        </h3>
+                        <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm text-xs`}>
                           {task.priority}
                         </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setEditingTask(task);
                             setTaskModalOpen(true);
                           }}
@@ -182,7 +218,8 @@ const TasksPage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setTaskToDelete(task.id);
                             setDeleteConfirmOpen(true);
                           }}
@@ -206,6 +243,12 @@ const TasksPage = () => {
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           <span>{task.dueTime}</span>
+                        </div>
+                      )}
+                      {task.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate max-w-32">{task.location}</span>
                         </div>
                       )}
                     </div>
@@ -242,6 +285,13 @@ const TasksPage = () => {
         }}
         task={editingTask}
         onSave={handleSaveTask}
+      />
+
+      <TaskDetailModal
+        isOpen={taskDetailModalOpen}
+        onClose={() => setTaskDetailModalOpen(false)}
+        task={selectedTask}
+        onEdit={handleEditFromDetail}
       />
 
       <ConfirmationDialog

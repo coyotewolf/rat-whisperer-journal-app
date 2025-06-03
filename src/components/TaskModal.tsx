@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import TaskSuggestions from "./TaskSuggestions";
+import TaskRepeatOptions from "./TaskRepeatOptions";
 
 interface Task {
   id: string;
@@ -20,6 +22,15 @@ interface Task {
   dueTime: string;
   priority: 'low' | 'medium' | 'high';
   completed: boolean;
+  location?: string;
+  quantity?: number;
+  unit?: string;
+  repeatOptions?: {
+    type: 'none' | 'daily' | 'weekly' | 'monthly';
+    weekdays?: string[];
+    endDate?: Date;
+    endType: 'never' | 'date';
+  };
 }
 
 interface TaskModalProps {
@@ -31,10 +42,20 @@ interface TaskModalProps {
 
 const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   const [title, setTitle] = useState("");
+  const [selectedSuggestion, setSelectedSuggestion] = useState<string>();
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
   const [dueTime, setDueTime] = useState("");
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [location, setLocation] = useState("");
+  const [quantity, setQuantity] = useState<number>();
+  const [unit, setUnit] = useState("");
+  const [repeatOptions, setRepeatOptions] = useState({
+    type: 'none' as const,
+    weekdays: [] as string[],
+    endDate: undefined as Date | undefined,
+    endType: 'never' as const
+  });
 
   useEffect(() => {
     if (task) {
@@ -43,14 +64,47 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
       setDueDate(task.dueDate);
       setDueTime(task.dueTime);
       setPriority(task.priority);
+      setLocation(task.location || "");
+      setQuantity(task.quantity);
+      setUnit(task.unit || "");
+      setRepeatOptions(task.repeatOptions || {
+        type: 'none',
+        weekdays: [],
+        endDate: undefined,
+        endType: 'never'
+      });
     } else {
-      setTitle("");
-      setDescription("");
-      setDueDate(undefined);
-      setDueTime("");
-      setPriority('medium');
+      resetForm();
     }
-  }, [task]);
+  }, [task, isOpen]);
+
+  const resetForm = () => {
+    setTitle("");
+    setSelectedSuggestion(undefined);
+    setDescription("");
+    setDueDate(undefined);
+    setDueTime("");
+    setPriority('medium');
+    setLocation("");
+    setQuantity(undefined);
+    setUnit("");
+    setRepeatOptions({
+      type: 'none',
+      weekdays: [],
+      endDate: undefined,
+      endType: 'never'
+    });
+  };
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    setTitle(suggestion);
+    setSelectedSuggestion(suggestion);
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+    setSelectedSuggestion(undefined);
+  };
 
   const handleSave = () => {
     if (!title || !dueDate) return;
@@ -61,7 +115,11 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
       dueDate,
       dueTime,
       priority,
-      completed: false
+      completed: false,
+      location: location || undefined,
+      quantity: quantity || undefined,
+      unit: unit || undefined,
+      repeatOptions: repeatOptions.type !== 'none' ? repeatOptions : undefined
     };
 
     if (task) {
@@ -70,13 +128,27 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
       onSave(taskData);
     }
 
+    if (!task) {
+      resetForm();
+    }
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md bg-gradient-to-br from-white/90 to-purple-50/90 border-0 shadow-2xl">
         <DialogHeader>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="bg-white/50 hover:bg-white/70 border-white/30"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+          </div>
           <DialogTitle>{task ? 'Edit Task' : 'New Task'}</DialogTitle>
         </DialogHeader>
         
@@ -86,9 +158,15 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder="Enter task title"
             />
+            {!task && (
+              <TaskSuggestions 
+                onSelect={handleSuggestionSelect}
+                selectedSuggestion={selectedSuggestion}
+              />
+            )}
           </div>
 
           <div className="space-y-2">
@@ -157,13 +235,53 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Location (Optional)</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter location"
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity (Optional)</Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={quantity || ""}
+                onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : undefined)}
+                placeholder="Amount"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unit (Optional)</Label>
+              <Input
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="kg, liters, etc."
+              />
+            </div>
+          </div>
+
+          {!task && (
+            <TaskRepeatOptions
+              repeatOptions={repeatOptions}
+              onRepeatChange={setRepeatOptions}
+            />
+          )}
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button 
+          <Button
             onClick={handleSave}
             disabled={!title || !dueDate}
             className="bg-orange-500 hover:bg-orange-600"

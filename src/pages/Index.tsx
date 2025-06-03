@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +9,48 @@ import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
 import SettingsModal from "@/components/SettingsModal";
 import TaskModal from "@/components/TaskModal";
+import TaskDetailModal from "@/components/TaskDetailModal";
 import AlertCards from "@/components/AlertCards";
+import { format, isToday, isTomorrow, isBefore } from "date-fns";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: Date;
+  dueTime: string;
+  priority: 'low' | 'medium' | 'high';
+  completed: boolean;
+  location?: string;
+  quantity?: number;
+  unit?: string;
+}
 
 const Index = () => {
   const navigate = useNavigate();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
+  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    // Load tasks from localStorage
+    const storedTasks = localStorage.getItem('ratTracker_tasks');
+    if (storedTasks) {
+      const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+        ...task,
+        dueDate: new Date(task.dueDate)
+      }));
+      setTasks(parsedTasks);
+    }
+  }, []);
+
+  const saveTasks = (updatedTasks: Task[]) => {
+    setTasks(updatedTasks);
+    localStorage.setItem('ratTracker_tasks', JSON.stringify(updatedTasks));
+  };
 
   const recentActivities = [
     { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good" },
@@ -23,20 +58,50 @@ const Index = () => {
     { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable" },
   ];
 
-  const upcomingTasks = [
-    { id: 1, task: "Cage cleaning", due: "Tomorrow", priority: "high" },
-    { id: 2, task: "Vet appointment - Pepper", due: "Friday", priority: "medium" },
-    { id: 3, task: "Medication - Salt", due: "Tonight", priority: "high" },
-  ];
+  // Get upcoming tasks (not completed, sorted by due date)
+  const upcomingTasks = tasks
+    .filter(task => !task.completed)
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
+    .slice(0, 3);
 
   const handleTaskSave = (taskData: any) => {
-    // Save task logic would go here
-    console.log('New task created:', taskData);
+    const newTask: Task = {
+      ...taskData,
+      id: Date.now().toString()
+    };
+    saveTasks([...tasks, newTask]);
+  };
+
+  const handleTaskCardClick = (task: Task) => {
+    setSelectedTask(task);
+    setIsTaskDetailOpen(true);
+  };
+
+  const handleEditFromDetail = (task: Task) => {
+    // This would open edit modal if needed
+    setIsTaskDetailOpen(false);
+    navigate('/tasks');
   };
 
   const handleActivityClick = (activity: any) => {
     // Navigate to logs page or open edit modal
     navigate('/logs');
+  };
+
+  const getDateLabel = (date: Date) => {
+    if (isToday(date)) return "Today";
+    if (isTomorrow(date)) return "Tomorrow";
+    if (isBefore(date, new Date())) return "Overdue";
+    return format(date, "MMM d");
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500/20 text-red-100 border-red-300';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-100 border-yellow-300';
+      case 'low': return 'bg-green-500/20 text-green-100 border-green-300';
+      default: return 'bg-gray-500/20 text-gray-100 border-gray-300';
+    }
   };
 
   return (
@@ -109,39 +174,55 @@ const Index = () => {
         </div>
 
         {/* Upcoming Tasks */}
-        <Card 
-          className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6 cursor-pointer hover:shadow-2xl transition-all duration-300"
-          onClick={() => navigate('/tasks')}
-        >
-          <CardHeader>
+        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6">
+          <CardHeader 
+            className="cursor-pointer hover:bg-white/5 transition-colors"
+            onClick={() => navigate('/tasks')}
+          >
             <CardTitle className="text-white flex items-center gap-2">
               <Calendar className="h-5 w-5 text-cyan-300" />
               Upcoming Tasks
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {upcomingTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10">
-                <div>
-                  <p className="text-white font-medium">{task.task}</p>
-                  <p className="text-sm text-purple-100">Due: {task.due}</p>
-                </div>
-                <Badge 
-                  className={`${
-                    task.priority === 'high' ? 'bg-red-500/20 text-red-100' : 
-                    'bg-yellow-500/20 text-yellow-100'
-                  } border-0 backdrop-blur-sm`}
+            {upcomingTasks.length > 0 ? (
+              upcomingTasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                  onClick={() => handleTaskCardClick(task)}
                 >
-                  {task.priority}
-                </Badge>
+                  <div>
+                    <p className="text-white font-medium">{task.title}</p>
+                    <p className="text-sm text-purple-100">Due: {getDateLabel(task.dueDate)}</p>
+                  </div>
+                  <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
+                    {task.priority}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-purple-100">No upcoming tasks</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsNewTaskOpen(true)}
+                  className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  Create Task
+                </Button>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 
         {/* Recent Activities */}
         <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
-          <CardHeader>
+          <CardHeader 
+            className="cursor-pointer hover:bg-white/5 transition-colors"
+            onClick={() => navigate('/logs')}
+          >
             <CardTitle className="text-white flex items-center gap-2">
               <Heart className="h-5 w-5 text-pink-300" />
               Recent Activities
@@ -183,6 +264,12 @@ const Index = () => {
         isOpen={isNewTaskOpen} 
         onClose={() => setIsNewTaskOpen(false)} 
         onSave={handleTaskSave}
+      />
+      <TaskDetailModal
+        isOpen={isTaskDetailOpen}
+        onClose={() => setIsTaskDetailOpen(false)}
+        task={selectedTask}
+        onEdit={handleEditFromDetail}
       />
     </div>
   );
