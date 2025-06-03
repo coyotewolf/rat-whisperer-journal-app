@@ -33,7 +33,7 @@ const ActivityDetailModal = ({ isOpen, onClose, onEdit, activity }: ActivityDeta
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-xl bg-white/95 backdrop-blur-sm border-white/20">
+      <DialogContent className="sm:max-w-md rounded-xl bg-gradient-to-br from-indigo-900/90 via-purple-900/90 to-pink-800/90 backdrop-blur-md border-white/20">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Button
@@ -44,7 +44,7 @@ const ActivityDetailModal = ({ isOpen, onClose, onEdit, activity }: ActivityDeta
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <DialogTitle className="flex-1 text-center">Activity Details</DialogTitle>
+            <DialogTitle className="flex-1 text-center text-white">Activity Details</DialogTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -58,22 +58,22 @@ const ActivityDetailModal = ({ isOpen, onClose, onEdit, activity }: ActivityDeta
         
         <div className="space-y-4 mt-4">
           <div>
-            <label className="text-sm font-medium text-gray-600">Type</label>
-            <p className="text-lg font-semibold">{activity.type}</p>
+            <label className="text-sm font-medium text-gray-300">Type</label>
+            <p className="text-lg font-semibold text-white">{activity.type}</p>
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-600">Rat</label>
-            <p className="text-lg">{activity.rat}</p>
+            <label className="text-sm font-medium text-gray-300">Rat</label>
+            <p className="text-lg text-white">{activity.rat}</p>
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-600">Time</label>
-            <p className="text-lg">{activity.time}</p>
+            <label className="text-sm font-medium text-gray-300">Time</label>
+            <p className="text-lg text-white">{activity.time}</p>
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-600">Status</label>
+            <label className="text-sm font-medium text-gray-300">Status</label>
             <Badge className={`${getStatusColor(activity.status)} border backdrop-blur-sm`}>
               {activity.status}
             </Badge>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Camera, Upload, Edit, Trash2, Heart, Star } from "lucide-react";
+import ImageCropModal from "@/components/ImageCropModal";
 
 interface ProfilePictureUploadProps {
   currentImage?: string;
@@ -13,6 +14,7 @@ interface ProfilePictureUploadProps {
 
 const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat" }: ProfilePictureUploadProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +28,14 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
     { id: "rat6", emoji: "🌟", bg: "bg-gradient-to-br from-purple-400 to-pink-500" },
   ];
 
+  // Some default rat images that can be used
+  const defaultImages = [
+    "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1501286353178-1ec881214838?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?w=400&h=400&fit=crop"
+  ];
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -33,6 +43,8 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setPreviewImage(result);
+        setIsModalOpen(false);
+        setIsCropModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
@@ -48,6 +60,8 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setPreviewImage(result);
+        setIsModalOpen(false);
+        setIsCropModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
@@ -62,12 +76,10 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
     setIsDragging(false);
   };
 
-  const saveImage = () => {
-    if (previewImage) {
-      onImageUpdate(previewImage);
-      setIsModalOpen(false);
-      setPreviewImage(null);
-    }
+  const handleCroppedImage = (croppedImageUrl: string) => {
+    onImageUpdate(croppedImageUrl);
+    setIsCropModalOpen(false);
+    setPreviewImage(null);
   };
 
   const selectDefaultAvatar = (avatar: typeof defaultAvatars[0]) => {
@@ -75,8 +87,13 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
     setIsModalOpen(false);
   };
 
+  const selectDefaultImage = (imageUrl: string) => {
+    onImageUpdate(imageUrl);
+    setIsModalOpen(false);
+  };
+
   const renderProfilePicture = () => {
-    if (currentImage?.startsWith('data:')) {
+    if (currentImage?.startsWith('data:') || currentImage?.startsWith('http')) {
       return (
         <img 
           src={currentImage} 
@@ -122,9 +139,9 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md backdrop-blur-md bg-white/95">
+        <DialogContent className="sm:max-w-md rounded-xl bg-gradient-to-br from-indigo-900/90 via-purple-900/90 to-pink-800/90 backdrop-blur-md border-white/20">
           <DialogHeader>
-            <DialogTitle className="text-center">
+            <DialogTitle className="text-center text-white">
               Update {petName}'s Photo
             </DialogTitle>
           </DialogHeader>
@@ -132,7 +149,7 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
           <div className="space-y-6">
             {/* File Upload Area */}
             <Card 
-              className={`transition-all duration-300 ${isDragging ? 'border-orange-500 bg-orange-50' : 'border-dashed border-gray-300'}`}
+              className={`transition-all duration-300 bg-white/10 border-white/20 ${isDragging ? 'border-orange-500 bg-orange-50/10' : 'border-dashed'}`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -140,16 +157,16 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
               <CardContent className="p-6">
                 <div className="text-center space-y-4">
                   <div className="flex justify-center">
-                    <Upload className="h-12 w-12 text-gray-400" />
+                    <Upload className="h-12 w-12 text-gray-300" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Drag & drop a photo here</p>
-                    <p className="text-xs text-gray-500">or click to browse</p>
+                    <p className="text-sm font-medium text-white">Drag & drop a photo here</p>
+                    <p className="text-xs text-gray-300">or click to browse</p>
                   </div>
                   <Button 
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full"
+                    className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
                   >
                     <Camera className="h-4 w-4 mr-2" />
                     Choose Photo
@@ -158,27 +175,25 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
               </CardContent>
             </Card>
 
-            {/* Preview */}
-            {previewImage && (
-              <div className="text-center space-y-4">
-                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-orange-200">
-                  <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex gap-2 justify-center">
-                  <Button onClick={saveImage} className="bg-gradient-to-r from-orange-500 to-pink-500">
-                    <Heart className="h-4 w-4 mr-2" />
-                    Save Photo
-                  </Button>
-                  <Button variant="outline" onClick={() => setPreviewImage(null)}>
-                    Cancel
-                  </Button>
-                </div>
+            {/* Default Images */}
+            <div>
+              <h3 className="text-sm font-medium mb-3 text-center text-white">Choose from default images</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {defaultImages.map((imageUrl, index) => (
+                  <button
+                    key={index}
+                    onClick={() => selectDefaultImage(imageUrl)}
+                    className="w-full h-20 rounded-lg overflow-hidden hover:scale-105 transition-transform duration-200 shadow-lg border-2 border-white/20 hover:border-orange-300"
+                  >
+                    <img src={imageUrl} alt={`Default ${index + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Default Avatars */}
             <div>
-              <h3 className="text-sm font-medium mb-3 text-center">Or choose a cute avatar</h3>
+              <h3 className="text-sm font-medium mb-3 text-center text-white">Or choose a cute avatar</h3>
               <div className="grid grid-cols-3 gap-3">
                 {defaultAvatars.map((avatar) => (
                   <button
@@ -196,7 +211,7 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
             {currentImage && (
               <Button 
                 variant="outline" 
-                className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                className="w-full text-red-300 border-red-200/20 hover:bg-red-50/10 bg-white/10"
                 onClick={() => {
                   onImageUpdate("");
                   setIsModalOpen(false);
@@ -217,6 +232,16 @@ const ProfilePictureUpload = ({ currentImage, onImageUpdate, petName = "Your Rat
           />
         </DialogContent>
       </Dialog>
+
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        onClose={() => {
+          setIsCropModalOpen(false);
+          setPreviewImage(null);
+        }}
+        imageUrl={previewImage || ''}
+        onCropComplete={handleCroppedImage}
+      />
     </>
   );
 };
