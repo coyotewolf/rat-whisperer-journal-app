@@ -282,6 +282,8 @@ const RatsPage = () => {
         isOpen={logsModalOpen}
         onClose={() => setLogsModalOpen(false)}
         ratId={selectedRat?.id || ''}
+        ratName={selectedRat?.name || ''}
+        logTypes={['behavior', 'weight', 'health', 'medication', 'feeding', 'environment']}
       />
     </div>
   );
