@@ -11,9 +11,10 @@ import { useAuth } from "@/hooks/useAuth";
 interface QuickLogModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLogCreated?: (newLog: any) => void;
 }
 
-const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
+const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) => {
   const [logEntryModalOpen, setLogEntryModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [selectedLogType, setSelectedLogType] = useState("");
@@ -40,9 +41,11 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
     setIsQuickLogVisible(false); // Hide QuickLogModal content
   };
 
-  const handleLogAdded = () => {
-    // Optionally refresh data or show success message
-    // Note: After log addition, LogEntryModal's onClose (handleLogEntryOverlayOrSubmitClose) will be called.
+  const handleLogAdded = (newLog: any) => {
+    // Call the parent's onLogCreated callback if provided
+    if (onLogCreated) {
+      onLogCreated(newLog);
+    }
   };
 
   // Called when LogEntryModal's overlay/Esc is triggered, or after successful log addition
