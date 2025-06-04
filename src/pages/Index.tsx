@@ -1,9 +1,8 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Edit, Pencil } from "lucide-react";
+import { Plus, Activity, Heart, Calendar, MapPin, Sparkles, Settings, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
@@ -11,53 +10,23 @@ import SettingsModal from "@/components/SettingsModal";
 import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
 import AlertCards from "@/components/AlertCards";
-import EditLogModal from "@/components/EditLogModal"; // Import EditLogModal
+import EditLogModal from "@/components/EditLogModal";
 import { format, isToday, isTomorrow, isBefore } from "date-fns";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: Date;
-  dueTime: string;
-  priority: 'low' | 'medium' | 'high';
-  completed: boolean;
-  location?: string;
-  quantity?: number;
-  unit?: string;
-}
+import { useTasks, type Task } from "@/hooks/useTasks";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { tasks, loading, createTask, updateTask } = useTasks();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [editingTask, setEditingTask] = useState<Task | null>(null); // New state for editing task
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any | null>(null);
 
-
-  useEffect(() => {
-    // Load tasks from localStorage
-    const storedTasks = localStorage.getItem('ratTracker_tasks');
-    if (storedTasks) {
-      const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
-        ...task,
-        dueDate: new Date(task.dueDate)
-      }));
-      setTasks(parsedTasks);
-    }
-  }, []);
-
-  const saveTasks = (updatedTasks: Task[]) => {
-    setTasks(updatedTasks);
-    localStorage.setItem('ratTracker_tasks', JSON.stringify(updatedTasks));
-  };
-
-  const [recentActivities, setRecentActivities] = useState([ // Make recentActivities stateful
+  const [recentActivities, setRecentActivities] = useState([
     { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good", notes: "Routine check, all clear.", rats: ["Pepper"], hashtags: ["health", "routine"] },
     { id: 2, type: "Feeding", rat: "Salt", time: "4 hours ago", status: "completed", notes: "Ate all the food.", rats: ["Salt"], hashtags: ["feeding", "routine"] },
     { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable", weight: 230, rats: ["Cinnamon"], hashtags: ["weight", "health"] },
@@ -66,21 +35,21 @@ const Index = () => {
   // Get upcoming tasks (not completed, sorted by due date)
   const upcomingTasks = tasks
     .filter(task => !task.completed)
-    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
     .slice(0, 3);
 
-  const handleTaskSave = (taskData: Task) => { // Changed taskData type to Task
-    if (taskData.id) { // If taskData has an ID, it's an existing task being edited
-      saveTasks(tasks.map(task => task.id === taskData.id ? taskData : task));
-    } else { // Otherwise, it's a new task
-      const newTask: Task = {
-        ...taskData,
-        id: crypto.randomUUID() // Use crypto.randomUUID for new tasks
-      };
-      saveTasks([...tasks, newTask]);
+  const handleTaskSave = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'> | Task) => {
+    try {
+      if ('id' in taskData) {
+        await updateTask(taskData.id, taskData);
+      } else {
+        await createTask(taskData);
+      }
+      setIsNewTaskOpen(false);
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error saving task:', error);
     }
-    setIsNewTaskOpen(false); // Close the task modal after saving
-    setEditingTask(null); // Clear editing task state
   };
 
   const handleTaskCardClick = (task: Task) => {
@@ -89,15 +58,10 @@ const Index = () => {
   };
 
   const handleEditFromDetail = (task: Task) => {
-    setIsTaskDetailOpen(false); // Close the detail modal
-    setEditingTask(task); // Set the task to be edited
-    setIsNewTaskOpen(true); // Open the TaskModal in edit mode
+    setIsTaskDetailOpen(false);
+    setEditingTask(task);
+    setIsNewTaskOpen(true);
   };
-
-  // const handleActivityClick = (activity: any) => { // Commenting out as card click will be removed for consistency
-  //   // Navigate to logs page or open edit modal
-  //   navigate('/logs');
-  // };
 
   const handleEditActivity = (activityToEdit: any) => {
     setEditingActivity(activityToEdit);
@@ -219,18 +183,22 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {upcomingTasks.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-4">
+                <p className="text-purple-100">Loading tasks...</p>
+              </div>
+            ) : upcomingTasks.length > 0 ? (
               upcomingTasks.map((task) => (
                 <div 
                   key={task.id} 
                   className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
                   onClick={() => handleTaskCardClick(task)}
                 >
-                  <div className="flex-1"> {/* Wrap content in a flex-1 div to push button to the right */}
-                    <p className={`font-medium ${getTitleColor(task.priority)}`}>{task.title}</p> {/* Apply priority color */}
-                    <p className="text-sm text-purple-100">Due: {getDateLabel(task.dueDate)}</p>
+                  <div className="flex-1">
+                    <p className={`font-medium ${getTitleColor(task.priority)}`}>{task.title}</p>
+                    <p className="text-sm text-purple-100">Due: {getDateLabel(new Date(task.due_date))}</p>
                   </div>
-                  <div className="flex items-center gap-2"> {/* Container for badge and edit button */}
+                  <div className="flex items-center gap-2">
                     <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
                       {task.priority}
                     </Badge>
@@ -238,13 +206,13 @@ const Index = () => {
                       variant="ghost"
                       size="icon"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent parent card's onClick
+                        e.stopPropagation();
                         handleEditFromDetail(task);
                       }}
-                      className="text-white/60 hover:text-cyan-300 h-7 w-7" // Adjusted size and color for consistency
+                      className="text-white/60 hover:text-cyan-300 h-7 w-7"
                       aria-label={`Edit task ${task.title}`}
                     >
-                      <Pencil className="h-4 w-4" /> {/* Consistent icon size */}
+                      <Pencil className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -280,7 +248,7 @@ const Index = () => {
             {recentActivities.map((activity) => (
               <div 
                 key={activity.id}
-                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group" // Removed cursor-pointer and onClick
+                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group"
               >
                 <div className="flex-1">
                   <p className="text-white font-medium">{activity.type}</p>
@@ -301,7 +269,7 @@ const Index = () => {
                     size="icon"
                     className="text-white/60 hover:text-cyan-300 h-7 w-7 group-hover:text-white transition-colors"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent any potential parent click events
+                      e.stopPropagation();
                       handleEditActivity(activity);
                     }}
                   >
@@ -321,10 +289,10 @@ const Index = () => {
         isOpen={isNewTaskOpen}
         onClose={() => {
           setIsNewTaskOpen(false);
-          setEditingTask(null); // Clear editing task when modal closes
+          setEditingTask(null);
         }}
         onSave={handleTaskSave}
-        task={editingTask} // Pass the task for editing
+        task={editingTask}
       />
       <TaskDetailModal
         isOpen={isTaskDetailOpen}

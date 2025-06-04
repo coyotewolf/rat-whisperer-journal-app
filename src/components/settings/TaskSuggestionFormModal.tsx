@@ -1,141 +1,200 @@
+
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"; // Removed DialogClose
-import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
-import { TaskSuggestion } from './TaskSuggestionSettings'; // Import the interface
-import { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from 'lucide-react';
+import { useTaskSuggestions, type TaskSuggestion } from '@/hooks/useTaskSuggestions';
 
 interface TaskSuggestionFormModalProps {
   isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   editingSuggestion: TaskSuggestion | null;
   onSave: (suggestion: TaskSuggestion) => void;
-  allSuggestions?: TaskSuggestion[]; // Optional: for validation or other logic if needed in the future
 }
 
 const TaskSuggestionFormModal = ({
   isOpen,
   onOpenChange,
   editingSuggestion,
-  onSave,
+  onSave
 }: TaskSuggestionFormModalProps) => {
-  const [currentSuggestion, setCurrentSuggestion] = useState<Partial<TaskSuggestion>>({});
-  const { toast } = useToast();
+  const { createSuggestion, updateSuggestion } = useTaskSuggestions();
+  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | ''>('');
+  const [location, setLocation] = useState('');
+  const [quantity, setQuantity] = useState<number | undefined>();
+  const [unit, setUnit] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       if (editingSuggestion) {
-        setCurrentSuggestion({ ...editingSuggestion });
+        setName(editingSuggestion.name);
+        setTitle(editingSuggestion.title || '');
+        setDescription(editingSuggestion.description || '');
+        setPriority(editingSuggestion.priority || '');
+        setLocation(editingSuggestion.location || '');
+        setQuantity(editingSuggestion.quantity);
+        setUnit(editingSuggestion.unit || '');
       } else {
-        setCurrentSuggestion({ priority: 'medium' }); // Default for new suggestion
+        resetForm();
       }
-    } else {
-      // Reset form when modal is closed externally or by DialogClose
-      setCurrentSuggestion({});
     }
   }, [isOpen, editingSuggestion]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setCurrentSuggestion(prev => ({ ...prev, [name]: value }));
+  const resetForm = () => {
+    setName('');
+    setTitle('');
+    setDescription('');
+    setPriority('');
+    setLocation('');
+    setQuantity(undefined);
+    setUnit('');
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    setCurrentSuggestion(prev => ({ ...prev, [name]: value }));
-  };
+  const handleSave = async () => {
+    if (!name) return;
 
-  const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCurrentSuggestion(prev => ({ ...prev, [name]: value ? Number(value) : undefined }));
-  };
-
-  const handleSubmit = () => {
-    if (!currentSuggestion.name?.trim()) {
-      toast({ title: "Error", description: "Suggestion name is required.", variant: "destructive" });
-      return;
-    }
-
-    const suggestionToSave: TaskSuggestion = {
-      id: editingSuggestion?.id || crypto.randomUUID(), // Use existing ID if editing, else generate new
-      name: currentSuggestion.name.trim(),
-      title: currentSuggestion.title,
-      description: currentSuggestion.description,
-      priority: currentSuggestion.priority || 'medium',
-      location: currentSuggestion.location,
-      quantity: currentSuggestion.quantity,
-      unit: currentSuggestion.unit,
+    const suggestionData = {
+      name,
+      title: title || undefined,
+      description: description || undefined,
+      priority: priority || undefined,
+      location: location || undefined,
+      quantity: quantity || undefined,
+      unit: unit || undefined,
     };
-    onSave(suggestionToSave);
-    // onOpenChange(false); // Let the parent component handle closing and toast messages
-  };
 
-  const handleClose = () => {
-    onOpenChange(false);
-  }
+    try {
+      let savedSuggestion;
+      if (editingSuggestion) {
+        savedSuggestion = await updateSuggestion(editingSuggestion.id, suggestionData);
+      } else {
+        savedSuggestion = await createSuggestion(suggestionData);
+      }
+      
+      if (savedSuggestion) {
+        onSave(savedSuggestion);
+      }
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error saving suggestion:', error);
+    }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleClose}
+              onClick={() => onOpenChange(false)}
               className="text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">{editingSuggestion ? 'Edit' : 'Add New'} Task Suggestion</DialogTitle>
-            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            <DialogTitle className="flex-1 text-center">
+              {editingSuggestion ? 'Edit Task Suggestion' : 'New Task Suggestion'}
+            </DialogTitle>
+            <div className="w-10"></div>
           </div>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div>
-            <Label htmlFor="form-name">Suggestion Name (for the list)</Label>
-            <Input id="form-name" name="name" value={currentSuggestion.name || ""} onChange={handleInputChange} placeholder="e.g., Daily Water Change" />
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Suggestion Name *</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Display name for the suggestion"
+            />
           </div>
-          <div>
-            <Label htmlFor="form-title">Pre-filled Task Title (Optional)</Label>
-            <Input id="form-title" name="title" value={currentSuggestion.title || ""} onChange={handleInputChange} placeholder="e.g., Change Rat Water Bottles" />
+
+          <div className="space-y-2">
+            <Label htmlFor="title">Pre-filled Task Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Optional task title to pre-fill"
+            />
           </div>
-          <div>
-            <Label htmlFor="form-description">Pre-filled Description (Optional)</Label>
-            <Textarea id="form-description" name="description" value={currentSuggestion.description || ""} onChange={handleInputChange} placeholder="Task details..." />
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional description"
+              rows={3}
+            />
           </div>
-          <div>
-            <Label htmlFor="form-priority">Pre-filled Priority (Optional)</Label>
-            <Select name="priority" value={currentSuggestion.priority || 'medium'} onValueChange={(value) => handleSelectChange('priority', value)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+
+          <div className="space-y-2">
+            <Label>Priority</Label>
+            <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="low">Low Priority</SelectItem>
+                <SelectItem value="medium">Medium Priority</SelectItem>
+                <SelectItem value="high">High Priority</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label htmlFor="form-location">Pre-filled Location (Optional)</Label>
-            <Input id="form-location" name="location" value={currentSuggestion.location || ""} onChange={handleInputChange} placeholder="e.g., Main Cage" />
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Optional location"
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="form-quantity">Pre-filled Quantity (Optional)</Label>
-              <Input id="form-quantity" name="quantity" type="number" value={currentSuggestion.quantity || ""} onChange={handleNumberInputChange} placeholder="e.g., 2" />
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={quantity || ""}
+                onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : undefined)}
+                placeholder="Amount"
+              />
             </div>
-            <div>
-              <Label htmlFor="form-unit">Pre-filled Unit (Optional)</Label>
-              <Input id="form-unit" name="unit" value={currentSuggestion.unit || ""} onChange={handleInputChange} placeholder="e.g., bottles" />
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unit</Label>
+              <Input
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="kg, liters, etc."
+              />
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit}>{editingSuggestion ? 'Save Changes' : 'Add Suggestion'}</Button>
-        </DialogFooter>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button
+            onClick={handleSave}
+            disabled={!name}
+            className="bg-orange-500 hover:bg-orange-600"
+          >
+            {editingSuggestion ? 'Update Suggestion' : 'Create Suggestion'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

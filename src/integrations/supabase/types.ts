@@ -104,6 +104,99 @@ export type Database = {
         }
         Relationships: []
       }
+      task_suggestions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          priority: string | null
+          quantity: number | null
+          title: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          priority?: string | null
+          quantity?: number | null
+          title?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          priority?: string | null
+          quantity?: number | null
+          title?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          completed: boolean
+          created_at: string
+          description: string | null
+          due_date: string
+          due_time: string | null
+          id: string
+          location: string | null
+          priority: string
+          quantity: number | null
+          repeat_options: Json | null
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          due_date: string
+          due_time?: string | null
+          id?: string
+          location?: string | null
+          priority: string
+          quantity?: number | null
+          repeat_options?: Json | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          due_time?: string | null
+          id?: string
+          location?: string | null
+          priority?: string
+          quantity?: number | null
+          repeat_options?: Json | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string

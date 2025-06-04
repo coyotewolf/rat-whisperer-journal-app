@@ -1,33 +1,18 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, Edit, Trash2, MapPin, Pencil } from "lucide-react"; // Added Pencil
+import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, MapPin, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { useToast } from "@/hooks/use-toast";
 import { format, isBefore, isToday, isTomorrow } from "date-fns";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: Date;
-  dueTime: string;
-  priority: 'low' | 'medium' | 'high';
-  completed: boolean;
-  location?: string;
-  quantity?: number;
-  unit?: string;
-}
+import { useTasks, type Task } from "@/hooks/useTasks";
 
 const TasksPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const { tasks, loading, createTask, updateTask, deleteTask, toggleTaskCompletion } = useTasks();
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [taskDetailModalOpen, setTaskDetailModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -35,58 +20,29 @@ const TasksPage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Load tasks from localStorage
-    const storedTasks = localStorage.getItem('ratTracker_tasks');
-    if (storedTasks) {
-      const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
-        ...task,
-        dueDate: new Date(task.dueDate)
-      }));
-      setTasks(parsedTasks);
+  const handleSaveTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'> | Task) => {
+    try {
+      if ('id' in taskData) {
+        await updateTask(taskData.id, taskData);
+      } else {
+        await createTask(taskData);
+      }
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error saving task:', error);
     }
-  }, []);
-
-  const saveTasks = (updatedTasks: Task[]) => {
-    setTasks(updatedTasks);
-    localStorage.setItem('ratTracker_tasks', JSON.stringify(updatedTasks));
   };
 
-  const handleSaveTask = (taskData: Omit<Task, 'id'> | Task) => {
-    if ('id' in taskData) {
-      // Update existing task
-      const updatedTasks = tasks.map(task => 
-        task.id === taskData.id ? taskData : task
-      );
-      saveTasks(updatedTasks);
-      toast({ title: "Success", description: "Task updated successfully!" });
-    } else {
-      // Create new task
-      const newTask: Task = {
-        ...taskData,
-        id: Date.now().toString()
-      };
-      saveTasks([...tasks, newTask]);
-      toast({ title: "Success", description: "Task created successfully!" });
-    }
-    setEditingTask(null);
-  };
-
-  const handleDeleteTask = () => {
+  const handleDeleteTask = async () => {
     if (taskToDelete) {
-      const updatedTasks = tasks.filter(task => task.id !== taskToDelete);
-      saveTasks(updatedTasks);
-      toast({ title: "Success", description: "Task deleted successfully!" });
-      setTaskToDelete(null);
-      setDeleteConfirmOpen(false);
+      try {
+        await deleteTask(taskToDelete);
+        setTaskToDelete(null);
+        setDeleteConfirmOpen(false);
+      } catch (error) {
+        console.error('Error deleting task:', error);
+      }
     }
-  };
-
-  const toggleTaskCompletion = (taskId: string) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    );
-    saveTasks(updatedTasks);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -127,12 +83,19 @@ const TasksPage = () => {
 
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    return a.dueDate.getTime() - b.dueDate.getTime();
+    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+        <div className="text-white text-lg">Loading tasks...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
       <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -225,7 +188,7 @@ const TasksPage = () => {
                           }}
                           className="text-white hover:bg-white/20 hover:text-red-300 h-8 w-8 p-0"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Pencil className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -237,12 +200,12 @@ const TasksPage = () => {
                     <div className="flex items-center gap-4 text-sm text-blue-100">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        <span>{getDateLabel(task.dueDate)}</span>
+                        <span>{getDateLabel(new Date(task.due_date))}</span>
                       </div>
-                      {task.dueTime && (
+                      {task.due_time && (
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          <span>{task.dueTime}</span>
+                          <span>{task.due_time}</span>
                         </div>
                       )}
                       {task.location && (

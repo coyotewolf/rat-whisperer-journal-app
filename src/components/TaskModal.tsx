@@ -12,34 +12,21 @@ import { CalendarIcon, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import TaskSuggestions from "./TaskSuggestions";
-import type { TaskSuggestion } from "./settings/TaskSuggestionSettings"; // Import TaskSuggestion type
+import type { TaskSuggestion } from "@/hooks/useTaskSuggestions";
 import TaskRepeatOptions from "./TaskRepeatOptions";
-import type { RepeatOptions } from "./TaskRepeatOptions"; // Import RepeatOptions type
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: Date;
-  dueTime: string;
-  priority: 'low' | 'medium' | 'high';
-  completed: boolean;
-  location?: string;
-  quantity?: number;
-  unit?: string;
-  repeatOptions?: RepeatOptions; // Use imported RepeatOptions type
-}
+import type { RepeatOptions } from "./TaskRepeatOptions";
+import type { Task } from "@/hooks/useTasks";
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   task?: Task | null;
-  onSave: (task: Omit<Task, 'id'> | Task) => void;
+  onSave: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'> | Task) => void;
 }
 
 const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   const [title, setTitle] = useState("");
-  const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | undefined>(); // Changed to store ID
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | undefined>();
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
   const [dueTime, setDueTime] = useState("");
@@ -47,7 +34,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   const [location, setLocation] = useState("");
   const [quantity, setQuantity] = useState<number>();
   const [unit, setUnit] = useState("");
-  const [repeatOptions, setRepeatOptions] = useState<RepeatOptions>({ // Explicitly type with RepeatOptions
+  const [repeatOptions, setRepeatOptions] = useState<RepeatOptions>({
     type: 'none',
     weekdays: [],
     endDate: undefined,
@@ -55,29 +42,28 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   });
 
   useEffect(() => {
-    if (isOpen) { // Only run when modal is open
+    if (isOpen) {
       if (task) {
         setTitle(task.title);
         setDescription(task.description);
-        setDueDate(task.dueDate);
-        setDueTime(task.dueTime);
+        setDueDate(new Date(task.due_date));
+        setDueTime(task.due_time || "");
         setPriority(task.priority);
         setLocation(task.location || "");
         setQuantity(task.quantity);
         setUnit(task.unit || "");
-        setRepeatOptions(task.repeatOptions || {
+        setRepeatOptions(task.repeat_options || {
           type: 'none',
           weekdays: [],
           endDate: undefined,
           endType: 'never'
         });
       } else {
-        resetForm(); // Reset form for new task
+        resetForm();
       }
     }
-  }, [isOpen, task]); // Depend on isOpen and task
+  }, [isOpen, task]);
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
       resetForm();
@@ -86,7 +72,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
 
   const resetForm = () => {
     setTitle("");
-    setSelectedSuggestionId(undefined); // Reset ID
+    setSelectedSuggestionId(undefined);
     setDescription("");
     setDueDate(undefined);
     setDueTime("");
@@ -103,21 +89,18 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   };
 
   const handleSuggestionSelect = (suggestion: TaskSuggestion) => {
-    setTitle(suggestion.title || suggestion.name); // Use suggestion.title or fallback to name
+    setTitle(suggestion.title || suggestion.name);
     setDescription(suggestion.description || "");
     setPriority(suggestion.priority || 'medium');
     setLocation(suggestion.location || "");
     setQuantity(suggestion.quantity);
     setUnit(suggestion.unit || "");
-    // Note: dueDate and dueTime are not typically part of quick suggestions,
-    // as they are usually set relative to the current date/time.
-    // If you want to pre-fill them, add them to TaskSuggestion interface and set here.
     setSelectedSuggestionId(suggestion.id);
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
-    setSelectedSuggestionId(undefined); // Clear selected suggestion if title is manually changed
+    setSelectedSuggestionId(undefined);
   };
 
   const handleSave = () => {
@@ -126,23 +109,22 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
     const taskData = {
       title,
       description,
-      dueDate,
-      dueTime,
+      due_date: dueDate.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
+      due_time: dueTime || null,
       priority,
       completed: false,
       location: location || undefined,
       quantity: quantity || undefined,
       unit: unit || undefined,
-      repeatOptions: repeatOptions.type !== 'none' ? repeatOptions : undefined
+      repeat_options: repeatOptions.type !== 'none' ? repeatOptions : undefined
     };
 
     if (task) {
-      onSave({ ...taskData, id: task.id, completed: task.completed });
+      onSave({ ...taskData, id: task.id, completed: task.completed, created_at: task.created_at, updated_at: task.updated_at });
     } else {
       onSave(taskData);
     }
 
-    // No need to reset form here, it's handled by useEffect when modal closes
     onClose();
   };
 
@@ -150,7 +132,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between"> {/* Changed to justify-between to accommodate back button */}
+          <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
@@ -160,7 +142,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <DialogTitle className="flex-1 text-center">{task ? 'Edit Task' : 'New Task'}</DialogTitle>
-            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            <div className="w-10"></div>
           </div>
         </DialogHeader>
         
@@ -173,10 +155,9 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
               onChange={handleTitleChange}
               placeholder="Enter task title"
             />
-            {/* Render suggestions for both new and edit modes */}
             <TaskSuggestions
               onSelect={handleSuggestionSelect}
-              selectedSuggestionId={selectedSuggestionId} // Pass ID
+              selectedSuggestionId={selectedSuggestionId}
             />
           </div>
 

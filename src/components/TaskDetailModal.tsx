@@ -2,21 +2,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Clock, MapPin, Edit, Pencil } from "lucide-react"; // Added Pencil
+import { ArrowLeft, Calendar, Clock, MapPin, Pencil } from "lucide-react";
 import { format } from "date-fns";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: Date;
-  dueTime: string;
-  priority: 'low' | 'medium' | 'high';
-  completed: boolean;
-  location?: string;
-  quantity?: number;
-  unit?: string;
-}
+import type { Task } from "@/hooks/useTasks";
 
 interface TaskDetailModalProps {
   isOpen: boolean;
@@ -58,7 +46,7 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between"> {/* Changed to justify-between to accommodate back button */}
+          <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
@@ -79,7 +67,7 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
               onClick={() => onEdit(task)}
               className="bg-white/50 hover:bg-white/70 border-white/30"
             >
-              <Pencil className="h-4 w-4 mr-1" /> {/* Changed to Pencil */}
+              <Pencil className="h-4 w-4 mr-1" />
               Edit
             </Button>
           </div>
@@ -96,12 +84,12 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="h-4 w-4" />
-              <span>{format(task.dueDate, "MMM d, yyyy")}</span>
+              <span>{format(new Date(task.due_date), "MMM d, yyyy")}</span>
             </div>
-            {task.dueTime && (
+            {task.due_time && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Clock className="h-4 w-4" />
-                <span>{task.dueTime}</span>
+                <span>{task.due_time}</span>
               </div>
             )}
           </div>

@@ -1,56 +1,34 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog"; // Added DialogFooter
-import { PlusCircle, Settings2 as ManageIcon } from 'lucide-react'; // Using Settings2 for manage icon
-import { useState, useEffect, useCallback } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { PlusCircle, Settings2 as ManageIcon } from 'lucide-react';
+import { useState, useEffect } from "react";
 import TaskSuggestionFormModal from "./settings/TaskSuggestionFormModal";
-import TaskSuggestionSettings, { STORAGE_KEY, TaskSuggestion } from "./settings/TaskSuggestionSettings"; // Import STORAGE_KEY and TaskSuggestion interface
+import TaskSuggestionSettings from "./settings/TaskSuggestionSettings";
+import { useTaskSuggestions, type TaskSuggestion } from "@/hooks/useTaskSuggestions";
 
 interface TaskSuggestionsProps {
   onSelect: (suggestion: TaskSuggestion) => void;
-  selectedSuggestionId?: string; // Changed to track by ID
+  selectedSuggestionId?: string;
 }
 
 const TaskSuggestions = ({ onSelect, selectedSuggestionId }: TaskSuggestionsProps) => {
-  const [suggestions, setSuggestions] = useState<TaskSuggestion[]>([]);
+  const { suggestions, loading } = useTaskSuggestions();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
-  const loadSuggestions = useCallback(() => {
-    const storedSuggestions = localStorage.getItem(STORAGE_KEY);
-    if (storedSuggestions) {
-      setSuggestions(JSON.parse(storedSuggestions));
-    } else {
-      // If no suggestions in localStorage, TaskSuggestionSettings will seed defaults when it's first mounted.
-      // We can also initialize with an empty array here, or let TaskSuggestionSettings handle it.
-      // For consistency, if TaskSuggestionSettings seeds, this component should reflect that.
-      // However, TaskSuggestionSettings seeds on its own mount.
-      // For this component, if nothing is found, it means nothing is there yet or settings haven't run.
-      setSuggestions([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadSuggestions();
-    // Listen for custom event that signals suggestions have been updated elsewhere (e.g. in main settings)
-    // This is a more robust way than relying on localStorage events which can be tricky.
-    // For simplicity now, we'll re-load when the manage modal closes.
-  }, [loadSuggestions]);
-
-
   const handleSaveNewSuggestion = (newSuggestion: TaskSuggestion) => {
-    const currentSuggestions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as TaskSuggestion[];
-    const updatedSuggestions = [...currentSuggestions, newSuggestion];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSuggestions));
-    loadSuggestions(); // Reload suggestions to reflect the new one
-    setIsAddModalOpen(false); // Close the add modal
-     // Potentially add a toast message here for success
+    // The suggestion is already saved via the hook
+    setIsAddModalOpen(false);
   };
 
   const handleManageModalClose = () => {
     setIsManageModalOpen(false);
-    loadSuggestions(); // Reload suggestions when the management modal is closed
+  };
+
+  if (loading) {
+    return <div className="text-sm text-gray-500">Loading suggestions...</div>;
   }
 
   return (
@@ -73,34 +51,34 @@ const TaskSuggestions = ({ onSelect, selectedSuggestionId }: TaskSuggestionsProp
         <div className="flex flex-wrap gap-2">
           {suggestions.map((suggestion) => (
             <Badge
-            key={suggestion.id}
-            variant={selectedSuggestionId === suggestion.id ? "default" : "outline"}
-            className={`cursor-pointer transition-colors ${
-              selectedSuggestionId === suggestion.id
-                ? "bg-orange-500 text-white"
-                : "hover:bg-orange-100"
-            }`}
-            onClick={() => onSelect(suggestion)}
-          >
-            {suggestion.name} {/* Display suggestion.name */}
-          </Badge>
-        ))}
+              key={suggestion.id}
+              variant={selectedSuggestionId === suggestion.id ? "default" : "outline"}
+              className={`cursor-pointer transition-colors ${
+                selectedSuggestionId === suggestion.id
+                  ? "bg-orange-500 text-white"
+                  : "hover:bg-orange-100"
+              }`}
+              onClick={() => onSelect(suggestion)}
+            >
+              {suggestion.name}
+            </Badge>
+          ))}
         </div>
       )}
 
       <TaskSuggestionFormModal
         isOpen={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
-        editingSuggestion={null} // Always for new suggestion from here
+        editingSuggestion={null}
         onSave={handleSaveNewSuggestion}
       />
 
       <Dialog open={isManageModalOpen} onOpenChange={handleManageModalClose}>
-        <DialogContent className="sm:max-w-xl"> {/* Adjusted width for a more compact, Apple-style modal */}
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Manage Task Suggestions</DialogTitle>
           </DialogHeader>
-          <div className="py-4 max-h-[70vh] overflow-y-auto"> {/* Scrollable content */}
+          <div className="py-4 max-h-[70vh] overflow-y-auto">
             <TaskSuggestionSettings />
           </div>
            <DialogFooter>
