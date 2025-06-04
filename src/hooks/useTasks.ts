@@ -32,7 +32,11 @@ export const useTasks = () => {
         .order('due_date', { ascending: true });
 
       if (error) throw error;
-      setTasks(data || []);
+      // Type cast the data to match our interface
+      setTasks((data || []).map(task => ({
+        ...task,
+        priority: task.priority as 'low' | 'medium' | 'high'
+      })));
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -61,13 +65,19 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      setTasks(prev => [...prev, data]);
+      // Type cast the data to match our interface
+      const typedTask = {
+        ...data,
+        priority: data.priority as 'low' | 'medium' | 'high'
+      };
+      
+      setTasks(prev => [...prev, typedTask]);
       toast({
         title: "Success",
         description: "Task created successfully!"
       });
       
-      return data;
+      return typedTask;
     } catch (error) {
       console.error('Error creating task:', error);
       toast({
@@ -90,13 +100,19 @@ export const useTasks = () => {
 
       if (error) throw error;
       
-      setTasks(prev => prev.map(task => task.id === id ? data : task));
+      // Type cast the data to match our interface
+      const typedTask = {
+        ...data,
+        priority: data.priority as 'low' | 'medium' | 'high'
+      };
+      
+      setTasks(prev => prev.map(task => task.id === id ? typedTask : task));
       toast({
         title: "Success",
         description: "Task updated successfully!"
       });
       
-      return data;
+      return typedTask;
     } catch (error) {
       console.error('Error updating task:', error);
       toast({

@@ -29,7 +29,11 @@ export const useTaskSuggestions = () => {
         .order('name', { ascending: true });
 
       if (error) throw error;
-      setSuggestions(data || []);
+      // Type cast the data to match our interface
+      setSuggestions((data || []).map(suggestion => ({
+        ...suggestion,
+        priority: suggestion.priority ? suggestion.priority as 'low' | 'medium' | 'high' : undefined
+      })));
     } catch (error) {
       console.error('Error fetching task suggestions:', error);
       // Create default suggestions if none exist
@@ -62,7 +66,11 @@ export const useTaskSuggestions = () => {
         .select();
 
       if (error) throw error;
-      setSuggestions(data || []);
+      // Type cast the data to match our interface
+      setSuggestions((data || []).map(suggestion => ({
+        ...suggestion,
+        priority: suggestion.priority ? suggestion.priority as 'low' | 'medium' | 'high' : undefined
+      })));
     } catch (error) {
       console.error('Error creating default suggestions:', error);
     }
@@ -84,13 +92,19 @@ export const useTaskSuggestions = () => {
 
       if (error) throw error;
       
-      setSuggestions(prev => [...prev, data]);
+      // Type cast the data to match our interface
+      const typedSuggestion = {
+        ...data,
+        priority: data.priority ? data.priority as 'low' | 'medium' | 'high' : undefined
+      };
+      
+      setSuggestions(prev => [...prev, typedSuggestion]);
       toast({
         title: "Success",
         description: "Task suggestion created successfully!"
       });
       
-      return data;
+      return typedSuggestion;
     } catch (error) {
       console.error('Error creating task suggestion:', error);
       toast({
@@ -113,13 +127,19 @@ export const useTaskSuggestions = () => {
 
       if (error) throw error;
       
-      setSuggestions(prev => prev.map(suggestion => suggestion.id === id ? data : suggestion));
+      // Type cast the data to match our interface
+      const typedSuggestion = {
+        ...data,
+        priority: data.priority ? data.priority as 'low' | 'medium' | 'high' : undefined
+      };
+      
+      setSuggestions(prev => prev.map(suggestion => suggestion.id === id ? typedSuggestion : suggestion));
       toast({
         title: "Success",
         description: "Task suggestion updated successfully!"
       });
       
-      return data;
+      return typedSuggestion;
     } catch (error) {
       console.error('Error updating task suggestion:', error);
       toast({
