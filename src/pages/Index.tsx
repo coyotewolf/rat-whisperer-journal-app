@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +13,12 @@ import AlertCards from "@/components/AlertCards";
 import EditLogModal from "@/components/EditLogModal";
 import { format, isToday, isTomorrow, isBefore } from "date-fns";
 import { useTasks, type Task } from "@/hooks/useTasks";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const navigate = useNavigate();
   const { tasks, loading, createTask, updateTask } = useTasks();
+  const { user } = useAuth();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
@@ -26,11 +28,148 @@ const Index = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any | null>(null);
 
-  const [recentActivities, setRecentActivities] = useState([
-    { id: 1, type: "Health Check", rat: "Pepper", time: "2 hours ago", status: "good", notes: "Routine check, all clear.", rats: ["Pepper"], hashtags: ["health", "routine"] },
-    { id: 2, type: "Feeding", rat: "Salt", time: "4 hours ago", status: "completed", notes: "Ate all the food.", rats: ["Salt"], hashtags: ["feeding", "routine"] },
-    { id: 3, type: "Weight", rat: "Cinnamon", time: "1 day ago", status: "stable", weight: 230, rats: ["Cinnamon"], hashtags: ["weight", "health"] },
+  // Activity logs state - synchronized with LogsPage
+  const [activityLogs, setActivityLogs] = useState([
+    {
+      id: 1,
+      type: "behavior",
+      rats: ["Pepper", "Salt"],
+      behavior: "Grooming",
+      timestamp: "2024-06-01T10:30:00",
+      notes: "Pepper grooming Salt for 5 minutes",
+      hashtags: ["social", "grooming", "bonding"]
+    },
+    {
+      id: 2,
+      type: "health",
+      rats: ["Pepper"],
+      weight: 250,
+      symptoms: [],
+      timestamp: "2024-06-01T09:15:00",
+      notes: "Weekly weigh-in",
+      hashtags: ["health", "weight", "routine"]
+    },
+    {
+      id: 3,
+      type: "environment",
+      temperature: 22,
+      humidity: 65,
+      timestamp: "2024-06-01T08:00:00",
+      notes: "Cage cleaning completed",
+      hashtags: ["cleaning", "environment", "maintenance"]
+    },
+    {
+      id: 4,
+      type: "behavior",
+      rats: ["Salt", "Pepper"],
+      behavior: "Chasing",
+      timestamp: "2024-05-31T19:45:00",
+      notes: "Playful chase around the cage",
+      hashtags: ["playful", "exercise", "social"]
+    },
   ]);
+
+  // Clear activity logs when user logs out
+  useEffect(() => {
+    if (!user) {
+      setActivityLogs([]);
+    } else {
+      // Reset to default logs when user logs in (if logs are empty)
+      if (activityLogs.length === 0) {
+        const defaultLogs = [
+          {
+            id: 1,
+            type: "behavior",
+            rats: ["Pepper", "Salt"],
+            behavior: "Grooming",
+            timestamp: "2024-06-01T10:30:00",
+            notes: "Pepper grooming Salt for 5 minutes",
+            hashtags: ["social", "grooming", "bonding"]
+          },
+          {
+            id: 2,
+            type: "health",
+            rats: ["Pepper"],
+            weight: 250,
+            symptoms: [],
+            timestamp: "2024-06-01T09:15:00",
+            notes: "Weekly weigh-in",
+            hashtags: ["health", "weight", "routine"]
+          },
+          {
+            id: 3,
+            type: "environment",
+            temperature: 22,
+            humidity: 65,
+            timestamp: "2024-06-01T08:00:00",
+            notes: "Cage cleaning completed",
+            hashtags: ["cleaning", "environment", "maintenance"]
+          },
+          {
+            id: 4,
+            type: "behavior",
+            rats: ["Salt", "Pepper"],
+            behavior: "Chasing",
+            timestamp: "2024-05-31T19:45:00",
+            notes: "Playful chase around the cage",
+            hashtags: ["playful", "exercise", "social"]
+          },
+        ];
+        setActivityLogs(defaultLogs);
+      }
+    }
+  }, [user]);
+
+  // Get the three most recent activities, sorted by timestamp (most recent first)
+  const recentActivities = activityLogs
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 3)
+    .map((log) => {
+      const timeDiff = Date.now() - new Date(log.timestamp).getTime();
+      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+      const days = Math.floor(hours / 24);
+      
+      let timeAgo;
+      if (days > 0) {
+        timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
+      } else if (hours > 0) {
+        timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      } else {
+        timeAgo = 'Just now';
+      }
+
+      return {
+        id: log.id,
+        type: log.behavior || log.type,
+        rat: log.rats ? log.rats.join(', ') : 'Unknown',
+        time: timeAgo,
+        status: log.type === 'health' ? 'good' : log.type === 'environment' ? 'completed' : 'completed',
+        notes: log.notes,
+        rats: log.rats || [],
+        hashtags: log.hashtags || [],
+        weight: log.weight,
+        originalLog: log
+      };
+    });
+
+  // Function to handle new log entries from QuickLogModal
+  const handleNewLogEntry = (newLog: any) => {
+    const logEntry = {
+      id: Date.now(), // Generate a unique ID
+      type: newLog.type,
+      rats: newLog.rats || [],
+      behavior: newLog.behavior,
+      weight: newLog.weight,
+      temperature: newLog.temperature,
+      humidity: newLog.humidity,
+      timestamp: new Date().toISOString(),
+      notes: newLog.notes || '',
+      hashtags: newLog.hashtags || []
+    };
+    
+    setActivityLogs(prev => [logEntry, ...prev]);
+    console.log("New log entry added:", logEntry);
+  };
 
   // Get upcoming tasks (not completed, sorted by due date)
   const upcomingTasks = tasks
@@ -64,13 +203,13 @@ const Index = () => {
   };
 
   const handleEditActivity = (activityToEdit: any) => {
-    setEditingActivity(activityToEdit);
+    setEditingActivity(activityToEdit.originalLog || activityToEdit);
     setIsEditModalOpen(true);
   };
 
   const handleUpdateActivity = (updatedActivity: any) => {
-    setRecentActivities(prevActivities =>
-      prevActivities.map(act => act.id === updatedActivity.id ? updatedActivity : act)
+    setActivityLogs(prevLogs =>
+      prevLogs.map(log => log.id === updatedActivity.id ? updatedActivity : log)
     );
     setIsEditModalOpen(false);
     setEditingActivity(null);
@@ -245,45 +384,66 @@ const Index = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {recentActivities.map((activity) => (
-              <div 
-                key={activity.id}
-                className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group"
-              >
-                <div className="flex-1">
-                  <p className="text-white font-medium">{activity.type}</p>
-                  <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity) => (
+                <div 
+                  key={activity.id}
+                  className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group"
+                >
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{activity.type}</p>
+                    <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
+                    {activity.weight && (
+                      <p className="text-xs text-purple-200/80">Weight: {activity.weight}g</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      className={`${
+                        activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
+                        activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
+                        'bg-yellow-500/20 text-yellow-100'
+                      } border-0 backdrop-blur-sm`}
+                    >
+                      {activity.status}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white/60 hover:text-cyan-300 h-7 w-7 group-hover:text-white transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditActivity(activity);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    className={`${
-                      activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
-                      activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
-                      'bg-yellow-500/20 text-yellow-100'
-                    } border-0 backdrop-blur-sm`}
-                  >
-                    {activity.status}
-                  </Badge>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-white/60 hover:text-cyan-300 h-7 w-7 group-hover:text-white transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditActivity(activity);
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-purple-100">No recent activities</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsQuickLogOpen(true)}
+                  className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                  Add Activity
+                </Button>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
       </div>
 
       <BottomNav />
-      <QuickLogModal isOpen={isQuickLogOpen} onClose={() => setIsQuickLogOpen(false)} />
+      <QuickLogModal 
+        isOpen={isQuickLogOpen} 
+        onClose={() => setIsQuickLogOpen(false)}
+        onLogCreated={handleNewLogEntry}
+      />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <TaskModal
         isOpen={isNewTaskOpen}
