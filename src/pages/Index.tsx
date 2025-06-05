@@ -13,6 +13,7 @@ import AlertCards from "@/components/AlertCards";
 import EditLogModal from "@/components/EditLogModal";
 import { format, isToday, isTomorrow, isBefore } from "date-fns";
 import { useTasks, type Task } from "@/hooks/useTasks";
+import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +21,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { tasks, loading, createTask, updateTask } = useTasks();
+  const { logs, addLog, updateLog } = useLogEntries();
   const { user } = useAuth();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -30,101 +32,8 @@ const Index = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any | null>(null);
 
-  // Activity logs state - synchronized with LogsPage
-  const [activityLogs, setActivityLogs] = useState([
-    {
-      id: 1,
-      type: "behavior",
-      rats: ["Pepper", "Salt"],
-      behavior: t("Grooming"),
-      timestamp: "2024-06-01T10:30:00",
-      notes: t("Pepper grooming Salt for 5 minutes"),
-      hashtags: [t("social"), t("grooming"), t("bonding")]
-    },
-    {
-      id: 2,
-      type: "health",
-      rats: ["Pepper"],
-      weight: 250,
-      symptoms: [],
-      timestamp: "2024-06-01T09:15:00",
-      notes: t("Weekly weigh-in"),
-      hashtags: [t("health"), t("weight"), t("routine")]
-    },
-    {
-      id: 3,
-      type: "environment",
-      temperature: 22,
-      humidity: 65,
-      timestamp: "2024-06-01T08:00:00",
-      notes: t("Cage cleaning completed"),
-      hashtags: [t("cleaning"), t("environment"), t("maintenance")]
-    },
-    {
-      id: 4,
-      type: "behavior",
-      rats: ["Salt", "Pepper"],
-      behavior: t("Chasing"),
-      timestamp: "2024-05-31T19:45:00",
-      notes: t("Playful chase around the cage"),
-      hashtags: [t("playful"), t("exercise"), t("social")]
-    },
-  ]);
-
-  // Clear activity logs when user logs out
-  useEffect(() => {
-    if (!user) {
-      setActivityLogs([]);
-    } else {
-      // Reset to default logs when user logs in (if logs are empty)
-      if (activityLogs.length === 0) {
-        const defaultLogs = [
-          {
-            id: 1,
-            type: "behavior",
-            rats: ["Pepper", "Salt"],
-            behavior: t("Grooming"),
-            timestamp: "2024-06-01T10:30:00",
-            notes: t("Pepper grooming Salt for 5 minutes"),
-            hashtags: [t("social"), t("grooming"), t("bonding")]
-          },
-          {
-            id: 2,
-            type: "health",
-            rats: ["Pepper"],
-            weight: 250,
-            symptoms: [],
-            timestamp: "2024-06-01T09:15:00",
-            notes: t("Weekly weigh-in"),
-            hashtags: [t("health"), t("weight"), t("routine")]
-          },
-          {
-            id: 3,
-            type: "environment",
-            temperature: 22,
-            humidity: 65,
-            timestamp: "2024-06-01T08:00:00",
-            notes: t("Cage cleaning completed"),
-            hashtags: [t("cleaning"), t("environment"), t("maintenance")]
-          },
-          {
-            id: 4,
-            type: "behavior",
-            rats: ["Salt", "Pepper"],
-            behavior: t("Chasing"),
-            timestamp: "2024-05-31T19:45:00",
-            notes: t("Playful chase around the cage"),
-            hashtags: [t("playful"), t("exercise"), t("social")]
-          },
-        ];
-        setActivityLogs(defaultLogs);
-      }
-    }
-  }, [user, t]);
-
   // Get the three most recent activities, sorted by timestamp (most recent first)
-  const recentActivities = activityLogs
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  const recentActivities = logs
     .slice(0, 3)
     .map((log) => {
       const timeDiff = Date.now() - new Date(log.timestamp).getTime();
@@ -155,22 +64,22 @@ const Index = () => {
     });
 
   // Function to handle new log entries from QuickLogModal
-  const handleNewLogEntry = (newLog: any) => {
-    const logEntry = {
-      id: Date.now(), // Generate a unique ID
-      type: newLog.type,
-      rats: newLog.rats || [],
-      behavior: newLog.behavior,
-      weight: newLog.weight,
-      temperature: newLog.temperature,
-      humidity: newLog.humidity,
-      timestamp: new Date().toISOString(),
-      notes: newLog.notes || '',
-      hashtags: newLog.hashtags || []
-    };
-    
-    setActivityLogs(prev => [logEntry, ...prev]);
-    console.log(t("New log entry added:"), logEntry);
+  const handleNewLogEntry = async (newLog: any) => {
+    try {
+      await addLog({
+        type: newLog.type,
+        rats: newLog.rats || [],
+        behavior: newLog.behavior,
+        weight: newLog.weight,
+        temperature: newLog.temperature,
+        humidity: newLog.humidity,
+        notes: newLog.notes || '',
+        hashtags: newLog.hashtags || []
+      });
+      console.log(t("New log entry added to Supabase"));
+    } catch (error) {
+      console.error(t("Failed to add log entry:"), error);
+    }
   };
 
   // Get upcoming tasks (not completed, sorted by due date)
@@ -209,13 +118,15 @@ const Index = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateActivity = (updatedActivity: any) => {
-    setActivityLogs(prevLogs =>
-      prevLogs.map(log => log.id === updatedActivity.id ? updatedActivity : log)
-    );
-    setIsEditModalOpen(false);
-    setEditingActivity(null);
-    console.log(t("Activity updated (simulated):"), updatedActivity);
+  const handleUpdateActivity = async (updatedActivity: any) => {
+    try {
+      await updateLog(updatedActivity.id, updatedActivity);
+      setIsEditModalOpen(false);
+      setEditingActivity(null);
+      console.log(t("Activity updated in Supabase:"), updatedActivity);
+    } catch (error) {
+      console.error(t("Failed to update activity:"), error);
+    }
   };
 
   const getDateLabel = (date: Date) => {

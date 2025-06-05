@@ -7,114 +7,25 @@ import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil } from "
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
+import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
 
 const LogsPage = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { logs, loading, updateLog } = useLogEntries();
   
-  const [logs, setLogs] = useState([
-    {
-      id: 1,
-      type: "behavior",
-      rats: ["Pepper", "Salt"],
-      behavior: t("Grooming"),
-      timestamp: "2024-06-01T10:30:00",
-      notes: t("Pepper grooming Salt for 5 minutes"),
-      hashtags: [t("social"), t("grooming"), t("bonding")]
-    },
-    {
-      id: 2,
-      type: "health",
-      rats: ["Pepper"],
-      weight: 250,
-      symptoms: [],
-      timestamp: "2024-06-01T09:15:00",
-      notes: t("Weekly weigh-in"),
-      hashtags: [t("health"), t("weight"), t("routine")]
-    },
-    {
-      id: 3,
-      type: "environment",
-      temperature: 22,
-      humidity: 65,
-      timestamp: "2024-06-01T08:00:00",
-      notes: t("Cage cleaning completed"),
-      hashtags: [t("cleaning"), t("environment"), t("maintenance")]
-    },
-    {
-      id: 4,
-      type: "behavior",
-      rats: ["Salt", "Pepper"],
-      behavior: t("Chasing"),
-      timestamp: "2024-05-31T19:45:00",
-      notes: t("Playful chase around the cage"),
-      hashtags: [t("playful"), t("exercise"), t("social")]
-    },
-  ]);
-
   const [filteredLogs, setFilteredLogs] = useState(logs);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<any | null>(null);
 
-  // Clear logs when user logs out
+  // Update filtered logs when logs change
   useEffect(() => {
-    if (!user) {
-      setLogs([]);
-      setFilteredLogs([]);
-      setSearchQuery("");
-      setSelectedHashtags([]);
-      setIsEditModalOpen(false);
-      setEditingLog(null);
-    } else {
-      // Reset to default logs when user logs in (if logs are empty)
-      if (logs.length === 0) {
-        const defaultLogs = [
-          {
-            id: 1,
-            type: "behavior",
-            rats: ["Pepper", "Salt"],
-            behavior: t("Grooming"),
-            timestamp: "2024-06-01T10:30:00",
-            notes: t("Pepper grooming Salt for 5 minutes"),
-            hashtags: [t("social"), t("grooming"), t("bonding")]
-          },
-          {
-            id: 2,
-            type: "health",
-            rats: ["Pepper"],
-            weight: 250,
-            symptoms: [],
-            timestamp: "2024-06-01T09:15:00",
-            notes: t("Weekly weigh-in"),
-            hashtags: [t("health"), t("weight"), t("routine")]
-          },
-          {
-            id: 3,
-            type: "environment",
-            temperature: 22,
-            humidity: 65,
-            timestamp: "2024-06-01T08:00:00",
-            notes: t("Cage cleaning completed"),
-            hashtags: [t("cleaning"), t("environment"), t("maintenance")]
-          },
-          {
-            id: 4,
-            type: "behavior",
-            rats: ["Salt", "Pepper"],
-            behavior: t("Chasing"),
-            timestamp: "2024-05-31T19:45:00",
-            notes: t("Playful chase around the cage"),
-            hashtags: [t("playful"), t("exercise"), t("social")]
-          },
-        ];
-        setLogs(defaultLogs);
-      }
-    }
-  }, [user, t]);
+    setFilteredLogs(logs);
+  }, [logs]);
 
   // Get all unique hashtags from logs
   const availableHashtags = Array.from(
@@ -186,11 +97,15 @@ const LogsPage = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateLog = (updatedLog: any) => {
-    setLogs(prevLogs => prevLogs.map(log => log.id === updatedLog.id ? updatedLog : log));
-    setIsEditModalOpen(false);
-    setEditingLog(null);
-    console.log("Log updated (simulated):", updatedLog);
+  const handleUpdateLog = async (updatedLog: any) => {
+    try {
+      await updateLog(updatedLog.id, updatedLog);
+      setIsEditModalOpen(false);
+      setEditingLog(null);
+      console.log("Log updated in Supabase:", updatedLog);
+    } catch (error) {
+      console.error("Failed to update log:", error);
+    }
   };
 
   const LogCard = ({ log }: { log: any }) => {
@@ -271,7 +186,7 @@ const LogsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      {/* Animated Background */}
+      {/* ... keep existing code (animated background and header) */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
       <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -322,7 +237,9 @@ const LogsPage = () => {
           </TabsList>
           
           <TabsContent value="all" className="space-y-3">
-            {filteredLogs.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-8 text-white">{t("Loading logs...")}</div>
+            ) : filteredLogs.length === 0 ? (
               <div className="text-center py-8 text-white">
                 {searchQuery || selectedHashtags.length > 0 ? t("No logs match your filters") : t("No logs found")}
               </div>
