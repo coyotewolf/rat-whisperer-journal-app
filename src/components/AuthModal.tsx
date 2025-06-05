@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,6 +23,16 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -39,13 +49,16 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       } else {
         toast({
           title: "Success",
-          description: isSignUp ? "Account created successfully!" : "Signed in successfully!",
+          description: isSignUp 
+            ? "Account created successfully! Please check your email to confirm your account." 
+            : "Signed in successfully!",
         });
         onClose();
         setEmail("");
         setPassword("");
       }
     } catch (error) {
+      console.error("Auth error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -54,6 +67,12 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setEmail("");
+    setPassword("");
   };
 
   return (
@@ -70,7 +89,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <DialogTitle className="flex-1 text-center">{isSignUp ? "Create Account" : "Sign In"}</DialogTitle>
-            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            <div className="w-10"></div>
           </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,7 +100,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -91,17 +112,25 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
+              disabled={loading}
+              minLength={6}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={loading || !email || !password}
+          >
             {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
           </Button>
           <Button
             type="button"
             variant="ghost"
             className="w-full"
-            onClick={() => setIsSignUp(!isSignUp)}
+            onClick={handleToggleMode}
+            disabled={loading}
           >
             {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
           </Button>
