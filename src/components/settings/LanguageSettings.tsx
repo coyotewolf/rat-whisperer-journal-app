@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Globe, Check } from "lucide-react";
@@ -11,19 +12,22 @@ interface LanguageSettingsProps {
 }
 
 const LanguageSettings = ({ onBack }: LanguageSettingsProps) => {
+  const { t } = useTranslation();
   const { settings, updateSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const languages = [
-    { code: "en", name: "English", flag: "🇺🇸" },
-    { code: "es", name: "Español", flag: "🇪🇸" },
-    { code: "fr", name: "Français", flag: "🇫🇷" },
-    { code: "de", name: "Deutsch", flag: "🇩🇪" },
-    { code: "ja", name: "日本語", flag: "🇯🇵" },
-    { code: "ko", name: "한국어", flag: "🇰🇷" },
-    { code: "zh", name: "中文", flag: "🇨🇳" },
-    { code: "pt", name: "Português", flag: "🇧🇷" },
+    { code: "en", name: t("English"), flag: "🇺🇸" },
+    { code: "zh-TW", name: t("Traditional Chinese"), flag: "🇹🇼" },
+    // Add other languages here as needed, ensure they have corresponding translations in i18n.ts
+    // { code: "es", name: t("Spanish"), flag: "🇪🇸" },
+    // { code: "fr", name: t("French"), flag: "🇫🇷" },
+    // { code: "de", name: t("German"), flag: "🇩🇪" },
+    // { code: "ja", name: t("Japanese"), flag: "🇯🇵" },
+    // { code: "ko", name: t("Korean"), flag: "🇰🇷" },
+    // { code: "zh-CN", name: t("Simplified Chinese"), flag: "🇨🇳" },
+    // { code: "pt", name: t("Portuguese"), flag: "🇧🇷" },
   ];
 
   const saveLanguage = async (languageCode: string) => {
@@ -47,16 +51,18 @@ const LanguageSettings = ({ onBack }: LanguageSettingsProps) => {
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={onBack} className="mb-4 p-0 h-auto text-gray-500 hover:text-gray-700">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Settings
-      </Button>
+      <div className="flex items-center mb-4">
+        <Button variant="ghost" onClick={onBack} className="p-0 h-auto text-gray-500 hover:text-gray-700">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("Back to Settings")}
+        </Button>
+      </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Language Selection
+            {t("Language Selection")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const RatsPage = () => {
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [addRatModalOpen, setAddRatModalOpen] = useState(false);
@@ -86,7 +88,7 @@ const RatsPage = () => {
     const diffTime = Math.abs(now.getTime() - birth.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const months = Math.floor(diffDays / 30);
-    return months > 0 ? `${months} months` : `${diffDays} days`;
+    return months > 0 ? t("{{count}} months", { count: months }) : t("{{count}} days", { count: diffDays });
   };
 
   const getStatusColor = (status: string) => {
@@ -132,7 +134,7 @@ const RatsPage = () => {
 
   if (authLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
-      <div className="text-white">Loading...</div>
+      <div className="text-white">{t("Loading...")}</div>
     </div>;
   }
 
@@ -154,9 +156,9 @@ const RatsPage = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
-                  My Rats
+                  {t("My Rats")}
                 </h1>
-                <p className="text-sm text-purple-100/80">Manage your furry family</p>
+                <p className="text-sm text-purple-100/80">{t("Manage your furry family")}</p>
               </div>
             </div>
           </div>
@@ -166,13 +168,13 @@ const RatsPage = () => {
           <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
             <Sparkles className="h-12 w-12 text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Sign in to manage your rats</h3>
-          <p className="text-purple-100 mb-4">Create an account or sign in to add and track your furry friends!</p>
-          <Button 
+          <h3 className="text-xl font-semibold text-white mb-2">{t("Sign in to manage your rats")}</h3>
+          <p className="text-purple-100 mb-4">{t("Create an account or sign in to add and track your furry friends!")}</p>
+          <Button
             onClick={() => setAuthModalOpen(true)}
             className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
           >
-            Sign In / Sign Up
+            {t("Sign In / Sign Up")}
           </Button>
         </div>
 
@@ -199,9 +201,9 @@ const RatsPage = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
-                My Rats
+                {t("My Rats")}
               </h1>
-              <p className="text-sm text-purple-100/80">Manage your furry family</p>
+              <p className="text-sm text-purple-100/80">{t("Manage your furry family")}</p>
             </div>
           </div>
           <Button 
@@ -209,7 +211,7 @@ const RatsPage = () => {
             className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Rat
+            {t("Add Rat")}
           </Button>
         </div>
       </div>
@@ -217,7 +219,7 @@ const RatsPage = () => {
       {/* Rats Grid */}
       <div className="relative p-4">
         {loading ? (
-          <div className="text-center text-white py-8">Loading your rats...</div>
+          <div className="text-center text-white py-8">{t("Loading your rats...")}</div>
         ) : (
           <div className="grid gap-4">
             {rats.map((rat) => (
@@ -253,14 +255,14 @@ const RatsPage = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-xl font-bold text-white">{rat.name}</h3>
-                          <p className="text-sm text-purple-100">{rat.sex} • {calculateAge(rat.birthday)}</p>
+                          <p className="text-sm text-purple-100">{t(rat.sex)} • {calculateAge(rat.birthday)}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge
                             variant="outline"
                             className={`${rat.status === 'active' ? 'border-green-300 text-green-100' : 'border-gray-300 text-gray-200'} backdrop-blur-sm`}
                           >
-                            {rat.status}
+                            {t(rat.status)}
                           </Badge>
                           <Button
                             size="sm"
@@ -276,7 +278,7 @@ const RatsPage = () => {
                       {/* Birthday */}
                       <div className="flex items-center gap-2 text-blue-100">
                         <Calendar className="h-4 w-4" />
-                        <span className="text-sm">Born {new Date(rat.birthday).toLocaleDateString()}</span>
+                        <span className="text-sm">{t("Born {{date}}", { date: new Date(rat.birthday).toLocaleDateString() })}</span>
                       </div>
 
                       {/* Personality Traits */}
@@ -287,7 +289,7 @@ const RatsPage = () => {
                               key={index} 
                               className={`${getPersonalityColor(trait)} border-0 text-xs backdrop-blur-sm`}
                             >
-                              {trait}
+                              {t(trait)}
                             </Badge>
                           ))}
                         </div>
@@ -302,7 +304,7 @@ const RatsPage = () => {
                           className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
                         >
                           <Heart className="h-3 w-3 mr-1" />
-                          Health
+                          {t("Health")}
                         </Button>
                         <Button 
                           size="sm" 
@@ -311,7 +313,7 @@ const RatsPage = () => {
                           className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
                         >
                           <MapPin className="h-3 w-3 mr-1" />
-                          Track
+                          {t("Track")}
                         </Button>
                       </div>
                     </div>
@@ -326,14 +328,14 @@ const RatsPage = () => {
                 <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
                   <Sparkles className="h-12 w-12 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">No rats yet</h3>
-                <p className="text-purple-100 mb-4">Add your first furry friend to get started!</p>
-                <Button 
+                <h3 className="text-xl font-semibold text-white mb-2">{t("No rats yet")}</h3>
+                <p className="text-purple-100 mb-4">{t("Add your first furry friend to get started!")}</p>
+                <Button
                   onClick={() => setAddRatModalOpen(true)}
                   className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Rat
+                  {t("Add Your First Rat")}
                 </Button>
               </div>
             )}
@@ -368,7 +370,7 @@ const RatsPage = () => {
             {imagePreviewUrl && (
               <img
                 src={imagePreviewUrl}
-                alt="Profile Preview"
+                alt={t("Profile Preview")}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-xl"
               />
             )}

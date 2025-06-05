@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,14 +25,15 @@ interface TaskRepeatOptionsProps {
 }
 
 const TaskRepeatOptions = ({ repeatOptions, onRepeatChange }: TaskRepeatOptionsProps) => {
+  const { t } = useTranslation();
   const weekdayOptions = [
-    { value: 'monday', label: 'Mon' },
-    { value: 'tuesday', label: 'Tue' },
-    { value: 'wednesday', label: 'Wed' },
-    { value: 'thursday', label: 'Thu' },
-    { value: 'friday', label: 'Fri' },
-    { value: 'saturday', label: 'Sat' },
-    { value: 'sunday', label: 'Sun' }
+    { value: 'monday', label: t('Mon') },
+    { value: 'tuesday', label: t('Tue') },
+    { value: 'wednesday', label: t('Wed') },
+    { value: 'thursday', label: t('Thu') },
+    { value: 'friday', label: t('Fri') },
+    { value: 'saturday', label: t('Sat') },
+    { value: 'sunday', label: t('Sun') }
   ];
 
   const handleRepeatTypeChange = (type: string) => {
@@ -72,23 +74,23 @@ const TaskRepeatOptions = ({ repeatOptions, onRepeatChange }: TaskRepeatOptionsP
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Repeat</Label>
+        <Label>{t("Repeat")}</Label>
         <Select value={repeatOptions.type} onValueChange={handleRepeatTypeChange}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Never</SelectItem>
-            <SelectItem value="daily">Daily</SelectItem>
-            <SelectItem value="weekly">Weekly</SelectItem>
-            <SelectItem value="monthly">Monthly</SelectItem>
+            <SelectItem value="none">{t("Never")}</SelectItem>
+            <SelectItem value="daily">{t("Daily")}</SelectItem>
+            <SelectItem value="weekly">{t("Weekly")}</SelectItem>
+            <SelectItem value="monthly">{t("Monthly")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {repeatOptions.type === 'weekly' && (
         <div className="space-y-2">
-          <Label>Select Days</Label>
+          <Label>{t("Select Days")}</Label>
           <div className="flex flex-wrap gap-2">
             {weekdayOptions.map((day) => (
               <div key={day.value} className="flex items-center space-x-2">
@@ -106,7 +108,7 @@ const TaskRepeatOptions = ({ repeatOptions, onRepeatChange }: TaskRepeatOptionsP
 
       {repeatOptions.type !== 'none' && (
         <div className="space-y-2">
-          <Label>End Repeat</Label>
+          <Label>{t("End Repeat")}</Label>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -114,7 +116,7 @@ const TaskRepeatOptions = ({ repeatOptions, onRepeatChange }: TaskRepeatOptionsP
                 checked={repeatOptions.endType === 'never'}
                 onCheckedChange={() => handleEndTypeChange('never')}
               />
-              <Label htmlFor="never" className="text-sm">Never</Label>
+              <Label htmlFor="never" className="text-sm">{t("Never")}</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -122,7 +124,7 @@ const TaskRepeatOptions = ({ repeatOptions, onRepeatChange }: TaskRepeatOptionsP
                 checked={repeatOptions.endType === 'date'}
                 onCheckedChange={() => handleEndTypeChange('date')}
               />
-              <Label htmlFor="date" className="text-sm">On date</Label>
+              <Label htmlFor="date" className="text-sm">{t("On date")}</Label>
             </div>
             {repeatOptions.endType === 'date' && (
               <Popover>
@@ -135,7 +137,7 @@ const TaskRepeatOptions = ({ repeatOptions, onRepeatChange }: TaskRepeatOptionsP
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {repeatOptions.endDate ? format(repeatOptions.endDate, "PPP") : "Pick end date"}
+                    {repeatOptions.endDate ? format(repeatOptions.endDate, "PPP") : t("Pick end date")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">

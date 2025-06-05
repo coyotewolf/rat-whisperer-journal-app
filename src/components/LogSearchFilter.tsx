@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, X } from "lucide-react";
@@ -11,6 +12,7 @@ interface LogSearchFilterProps {
 }
 
 const LogSearchFilter = ({ onSearch, onHashtagFilter, availableHashtags = [] }: LogSearchFilterProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
 
@@ -40,7 +42,7 @@ const LogSearchFilter = ({ onSearch, onHashtagFilter, availableHashtags = [] }: 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Search logs..."
+          placeholder={t("Search logs...")}
           value={searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10 backdrop-blur-md bg-white/10 border-white/20 text-white placeholder:text-gray-300"
@@ -49,7 +51,7 @@ const LogSearchFilter = ({ onSearch, onHashtagFilter, availableHashtags = [] }: 
       
       {availableHashtags.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm text-purple-100/80">Filter by tags:</p>
+          <p className="text-sm text-purple-100/80">{t("Filter by tags:")}</p>
           <div className="flex flex-wrap gap-2">
             {availableHashtags.map((hashtag) => (
               <Badge
@@ -71,10 +73,10 @@ const LogSearchFilter = ({ onSearch, onHashtagFilter, availableHashtags = [] }: 
 
       {(searchQuery || selectedHashtags.length > 0) && (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-purple-100/80">Active filters:</span>
+          <span className="text-sm text-purple-100/80">{t("Active filters:")}</span>
           {searchQuery && (
             <Badge variant="secondary" className="bg-white/20 text-white">
-              Search: {searchQuery}
+              {t("Search")}: {searchQuery}
             </Badge>
           )}
           {selectedHashtags.map((hashtag) => (
@@ -87,7 +89,7 @@ const LogSearchFilter = ({ onSearch, onHashtagFilter, availableHashtags = [] }: 
             className="ml-auto text-sm text-purple-100/80 hover:text-white flex items-center gap-1"
           >
             <X className="h-3 w-3" />
-            Clear all
+            {t("Clear all")}
           </button>
         </div>
       )}

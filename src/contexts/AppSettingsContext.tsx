@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AppSettings {
   language: string;
@@ -35,40 +36,50 @@ interface AppSettingsProviderProps {
 }
 
 export const AppSettingsProvider = ({ children }: AppSettingsProviderProps) => {
-  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
-
-  useEffect(() => {
-    // Load settings from localStorage
+  const { i18n } = useTranslation();
+  const [settings, setSettings] = useState<AppSettings>(() => {
     const savedSettings = localStorage.getItem('ratTracker_settings');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        setSettings({ ...defaultSettings, ...parsed });
+        // Ensure language from localStorage is applied to i18n on initial load
+        if (parsed.language) {
+          i18n.changeLanguage(parsed.language);
+        }
+        return { ...defaultSettings, ...parsed };
       } catch (error) {
         console.error('Error loading settings:', error);
+        return defaultSettings;
       }
     }
-  }, []);
+    return defaultSettings;
+  });
 
   useEffect(() => {
     // Apply settings to document
     document.documentElement.style.fontSize = `${settings.fontSize}px`;
     document.documentElement.setAttribute('data-theme', settings.theme);
-    document.documentElement.setAttribute('data-language', settings.language);
-    
+    // document.documentElement.setAttribute('data-language', settings.language); // i18next handles this
+
     // Apply font family
     if (settings.fontFamily !== 'system') {
       document.documentElement.style.fontFamily = settings.fontFamily;
     } else {
       document.documentElement.style.fontFamily = 'system-ui, -apple-system, sans-serif';
     }
-    
+
     // Save to localStorage
     localStorage.setItem('ratTracker_settings', JSON.stringify(settings));
   }, [settings]);
 
   const updateSetting = (key: keyof AppSettings, value: string | number) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings(prev => {
+      const newSettings = { ...prev, [key]: value };
+      if (key === 'language' && typeof value === 'string') {
+        i18n.changeLanguage(value);
+      }
+      return newSettings;
+    });
   };
 
   return (

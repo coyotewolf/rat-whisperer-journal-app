@@ -8,19 +8,21 @@ import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from 'react-i18next';
 
 const LogsPage = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   
   const [logs, setLogs] = useState([
     {
       id: 1,
       type: "behavior",
       rats: ["Pepper", "Salt"],
-      behavior: "Grooming",
+      behavior: t("Grooming"),
       timestamp: "2024-06-01T10:30:00",
-      notes: "Pepper grooming Salt for 5 minutes",
-      hashtags: ["social", "grooming", "bonding"]
+      notes: t("Pepper grooming Salt for 5 minutes"),
+      hashtags: [t("social"), t("grooming"), t("bonding")]
     },
     {
       id: 2,
@@ -29,8 +31,8 @@ const LogsPage = () => {
       weight: 250,
       symptoms: [],
       timestamp: "2024-06-01T09:15:00",
-      notes: "Weekly weigh-in",
-      hashtags: ["health", "weight", "routine"]
+      notes: t("Weekly weigh-in"),
+      hashtags: [t("health"), t("weight"), t("routine")]
     },
     {
       id: 3,
@@ -38,17 +40,17 @@ const LogsPage = () => {
       temperature: 22,
       humidity: 65,
       timestamp: "2024-06-01T08:00:00",
-      notes: "Cage cleaning completed",
-      hashtags: ["cleaning", "environment", "maintenance"]
+      notes: t("Cage cleaning completed"),
+      hashtags: [t("cleaning"), t("environment"), t("maintenance")]
     },
     {
       id: 4,
       type: "behavior",
       rats: ["Salt", "Pepper"],
-      behavior: "Chasing",
+      behavior: t("Chasing"),
       timestamp: "2024-05-31T19:45:00",
-      notes: "Playful chase around the cage",
-      hashtags: ["playful", "exercise", "social"]
+      notes: t("Playful chase around the cage"),
+      hashtags: [t("playful"), t("exercise"), t("social")]
     },
   ]);
 
@@ -75,10 +77,10 @@ const LogsPage = () => {
             id: 1,
             type: "behavior",
             rats: ["Pepper", "Salt"],
-            behavior: "Grooming",
+            behavior: t("Grooming"),
             timestamp: "2024-06-01T10:30:00",
-            notes: "Pepper grooming Salt for 5 minutes",
-            hashtags: ["social", "grooming", "bonding"]
+            notes: t("Pepper grooming Salt for 5 minutes"),
+            hashtags: [t("social"), t("grooming"), t("bonding")]
           },
           {
             id: 2,
@@ -87,8 +89,8 @@ const LogsPage = () => {
             weight: 250,
             symptoms: [],
             timestamp: "2024-06-01T09:15:00",
-            notes: "Weekly weigh-in",
-            hashtags: ["health", "weight", "routine"]
+            notes: t("Weekly weigh-in"),
+            hashtags: [t("health"), t("weight"), t("routine")]
           },
           {
             id: 3,
@@ -96,23 +98,23 @@ const LogsPage = () => {
             temperature: 22,
             humidity: 65,
             timestamp: "2024-06-01T08:00:00",
-            notes: "Cage cleaning completed",
-            hashtags: ["cleaning", "environment", "maintenance"]
+            notes: t("Cage cleaning completed"),
+            hashtags: [t("cleaning"), t("environment"), t("maintenance")]
           },
           {
             id: 4,
             type: "behavior",
             rats: ["Salt", "Pepper"],
-            behavior: "Chasing",
+            behavior: t("Chasing"),
             timestamp: "2024-05-31T19:45:00",
-            notes: "Playful chase around the cage",
-            hashtags: ["playful", "exercise", "social"]
+            notes: t("Playful chase around the cage"),
+            hashtags: [t("playful"), t("exercise"), t("social")]
           },
         ];
         setLogs(defaultLogs);
       }
     }
-  }, [user]);
+  }, [user, t]);
 
   // Get all unique hashtags from logs
   const availableHashtags = Array.from(
@@ -200,7 +202,7 @@ const LogsPage = () => {
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center gap-2 text-white">
               {getLogIcon(log.type)}
-              <span className="font-medium capitalize">{log.type}</span>
+              <span className="font-medium capitalize">{t(log.type)}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="text-right text-sm text-purple-100/80">
@@ -233,31 +235,31 @@ const LogsPage = () => {
           
           {log.behavior && (
             <p className="text-sm font-medium text-white mb-1">
-              Behavior: {log.behavior}
+              {t("Behavior")}: {t(log.behavior)}
             </p>
           )}
           
           {log.weight && (
             <p className="text-sm font-medium text-white mb-1">
-              Weight: {log.weight}g
+              {t("Weight")}: {log.weight}g
             </p>
           )}
           
           {log.temperature && (
             <p className="text-sm font-medium text-white mb-1">
-              Temperature: {log.temperature}°C
+              {t("Temperature")}: {log.temperature}°C
             </p>
           )}
           
           {log.notes && (
-            <p className="text-sm text-purple-100/90 mt-2">{log.notes}</p>
+            <p className="text-sm text-purple-100/90 mt-2">{t(log.notes)}</p>
           )}
 
           {log.hashtags && log.hashtags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {log.hashtags.map((hashtag: string, index: number) => (
                 <Badge key={index} variant="secondary" className="text-xs bg-orange-500/20 text-orange-100">
-                  #{hashtag}
+                  #{t(hashtag)}
                 </Badge>
               ))}
             </div>
@@ -284,14 +286,14 @@ const LogsPage = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
-                Activity Logs
+                {t("Activity Logs")}
               </h1>
-              <p className="text-sm text-cyan-100/80">Track your rats' daily activities</p>
+              <p className="text-sm text-cyan-100/80">{t("Track your rats' daily activities")}</p>
             </div>
           </div>
           <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300">
             <Plus className="h-4 w-4 mr-2" />
-            New Log
+            {t("New Log")}
           </Button>
         </div>
       </div>
@@ -306,23 +308,23 @@ const LogsPage = () => {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6 backdrop-blur-md bg-white/10 border-white/20">
             <TabsTrigger value="all" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
-              All ({filteredLogs.length})
+              {t("All")} ({filteredLogs.length})
             </TabsTrigger>
             <TabsTrigger value="behavior" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
-              Behavior ({behaviorLogs.length})
+              {t("Behavior")} ({behaviorLogs.length})
             </TabsTrigger>
             <TabsTrigger value="health" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
-              Health ({healthLogs.length})
+              {t("Health")} ({healthLogs.length})
             </TabsTrigger>
             <TabsTrigger value="environment" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
-              Environment ({environmentLogs.length})
+              {t("Environment")} ({environmentLogs.length})
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="all" className="space-y-3">
             {filteredLogs.length === 0 ? (
               <div className="text-center py-8 text-white">
-                {searchQuery || selectedHashtags.length > 0 ? "No logs match your filters" : "No logs found"}
+                {searchQuery || selectedHashtags.length > 0 ? t("No logs match your filters") : t("No logs found")}
               </div>
             ) : (
               filteredLogs.map((log) => <LogCard key={log.id} log={log} />)
@@ -331,7 +333,7 @@ const LogsPage = () => {
           
           <TabsContent value="behavior" className="space-y-3">
             {behaviorLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">No behavior logs found</div>
+              <div className="text-center py-8 text-white">{t("No behavior logs found")}</div>
             ) : (
               behaviorLogs.map((log) => <LogCard key={log.id} log={log} />)
             )}
@@ -339,7 +341,7 @@ const LogsPage = () => {
           
           <TabsContent value="health" className="space-y-3">
             {healthLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">No health logs found</div>
+              <div className="text-center py-8 text-white">{t("No health logs found")}</div>
             ) : (
               healthLogs.map((log) => <LogCard key={log.id} log={log} />)
             )}
@@ -347,7 +349,7 @@ const LogsPage = () => {
           
           <TabsContent value="environment" className="space-y-3">
             {environmentLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">No environment logs found</div>
+              <div className="text-center py-8 text-white">{t("No environment logs found")}</div>
             ) : (
               environmentLogs.map((log) => <LogCard key={log.id} log={log} />)
             )}

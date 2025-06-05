@@ -9,9 +9,11 @@ import TaskDetailModal from "@/components/TaskDetailModal";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { format, isBefore, isToday, isTomorrow } from "date-fns";
 import { useTasks, type Task } from "@/hooks/useTasks";
+import { useTranslation } from 'react-i18next';
 
 const TasksPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { tasks, loading, createTask, updateTask, deleteTask, toggleTaskCompletion } = useTasks();
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [taskDetailModalOpen, setTaskDetailModalOpen] = useState(false);
@@ -29,7 +31,7 @@ const TasksPage = () => {
       }
       setEditingTask(null);
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error(t('Error saving task:'), error);
     }
   };
 
@@ -40,7 +42,7 @@ const TasksPage = () => {
         setTaskToDelete(null);
         setDeleteConfirmOpen(false);
       } catch (error) {
-        console.error('Error deleting task:', error);
+        console.error(t('Error deleting task:'), error);
       }
     }
   };
@@ -64,9 +66,9 @@ const TasksPage = () => {
   };
 
   const getDateLabel = (date: Date) => {
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
-    if (isBefore(date, new Date())) return "Overdue";
+    if (isToday(date)) return t("Today");
+    if (isTomorrow(date)) return t("Tomorrow");
+    if (isBefore(date, new Date())) return t("Overdue");
     return format(date, "MMM d");
   };
 
@@ -89,7 +91,7 @@ const TasksPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
-        <div className="text-white text-lg">Loading tasks...</div>
+        <div className="text-white text-lg">{t("Loading tasks...")}</div>
       </div>
     );
   }
@@ -105,9 +107,9 @@ const TasksPage = () => {
       <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => navigate('/')}
               className="text-white hover:bg-white/20"
             >
@@ -115,17 +117,17 @@ const TasksPage = () => {
             </Button>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
-                Task Management
+                {t("Task Management")}
               </h1>
-              <p className="text-sm text-purple-100/80">Organize your rat care tasks</p>
+              <p className="text-sm text-purple-100/80">{t("Organize your rat care tasks")}</p>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={() => setTaskModalOpen(true)}
             className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
-            New Task
+            {t("New Task")}
           </Button>
         </div>
       </div>
@@ -134,8 +136,8 @@ const TasksPage = () => {
       <div className="relative p-4">
         <div className="space-y-3">
           {sortedTasks.map((task) => (
-            <Card 
-              key={task.id} 
+            <Card
+              key={task.id}
               className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 cursor-pointer hover:shadow-2xl ${task.completed ? 'opacity-60' : ''}`}
               onClick={() => handleTaskCardClick(task)}
             >
@@ -162,7 +164,7 @@ const TasksPage = () => {
                           {task.title}
                         </h3>
                         <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm text-xs`}>
-                          {task.priority}
+                          {t(task.priority)}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
@@ -226,14 +228,14 @@ const TasksPage = () => {
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
                 <Calendar className="h-12 w-12 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No tasks yet</h3>
-              <p className="text-purple-100 mb-4">Create your first task to get organized!</p>
-              <Button 
+              <h3 className="text-xl font-semibold text-white mb-2">{t("No tasks yet")}</h3>
+              <p className="text-purple-100 mb-4">{t("Create your first task to get organized!")}</p>
+              <Button
                 onClick={() => setTaskModalOpen(true)}
                 className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create Your First Task
+                {t("Create Your First Task")}
               </Button>
             </div>
           )}
@@ -261,9 +263,9 @@ const TasksPage = () => {
         isOpen={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={handleDeleteTask}
-        title="Delete Task"
-        description="Are you sure you want to delete this task? This action cannot be undone."
-        confirmText="Delete"
+        title={t("Delete Task")}
+        description={t("Are you sure you want to delete this task? This action cannot be undone.")}
+        confirmText={t("Delete")}
         variant="destructive"
       />
     </div>

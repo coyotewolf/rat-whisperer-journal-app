@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,6 +22,7 @@ interface MultiSelectRatsProps {
 }
 
 const MultiSelectRats = ({ selectedRatIds, onSelectionChange, placeholder = "Select rats..." }: MultiSelectRatsProps) => {
+  const { t } = useTranslation();
   const [rats, setRats] = useState<Rat[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
@@ -74,7 +76,7 @@ const MultiSelectRats = ({ selectedRatIds, onSelectionChange, placeholder = "Sel
         >
           <div className="flex flex-wrap gap-1 flex-1">
             {selectedNames.length === 0 ? (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-muted-foreground">{t(placeholder)}</span>
             ) : selectedNames.length === 1 ? (
               <span>{selectedNames[0]}</span>
             ) : (
@@ -84,7 +86,7 @@ const MultiSelectRats = ({ selectedRatIds, onSelectionChange, placeholder = "Sel
                 </Badge>
                 {selectedNames.length > 1 && (
                   <Badge variant="secondary" className="text-xs">
-                    +{selectedNames.length - 1} more
+                    {t("+{{count}} more", { count: selectedNames.length - 1 })}
                   </Badge>
                 )}
               </>
@@ -96,7 +98,7 @@ const MultiSelectRats = ({ selectedRatIds, onSelectionChange, placeholder = "Sel
       <PopoverContent className="w-full p-2">
         <div className="space-y-2">
           {rats.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No active rats found</p>
+            <p className="text-sm text-muted-foreground">{t("No active rats found")}</p>
           ) : (
             rats.map((rat) => (
               <div key={rat.id} className="flex items-center space-x-2">

@@ -1,5 +1,6 @@
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -13,6 +14,7 @@ interface ImageCropModalProps {
 }
 
 const ImageCropModal = ({ isOpen, onClose, imageFile, onCropComplete }: ImageCropModalProps) => {
+  const { t } = useTranslation();
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -76,7 +78,7 @@ const ImageCropModal = ({ isOpen, onClose, imageFile, onCropComplete }: ImageCro
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Crop Profile Picture</DialogTitle>
+          <DialogTitle>{t("Crop Profile Picture")}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -127,7 +129,7 @@ const ImageCropModal = ({ isOpen, onClose, imageFile, onCropComplete }: ImageCro
                 <RotateCw className="h-4 w-4 rotate-180" />
               </Button>
               <span className="text-sm text-gray-600 flex-1 text-center">
-                Rotation: {rotation}°
+                {t("Rotation")}: {rotation}°
               </span>
               <Button
                 variant="outline"
@@ -142,10 +144,10 @@ const ImageCropModal = ({ isOpen, onClose, imageFile, onCropComplete }: ImageCro
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button onClick={handleCrop} className="bg-orange-500 hover:bg-orange-600">
-            Apply Crop
+            {t("Apply Crop")}
           </Button>
         </DialogFooter>
       </DialogContent>

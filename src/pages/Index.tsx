@@ -14,9 +14,11 @@ import EditLogModal from "@/components/EditLogModal";
 import { format, isToday, isTomorrow, isBefore } from "date-fns";
 import { useTasks, type Task } from "@/hooks/useTasks";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { tasks, loading, createTask, updateTask } = useTasks();
   const { user } = useAuth();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
@@ -34,10 +36,10 @@ const Index = () => {
       id: 1,
       type: "behavior",
       rats: ["Pepper", "Salt"],
-      behavior: "Grooming",
+      behavior: t("Grooming"),
       timestamp: "2024-06-01T10:30:00",
-      notes: "Pepper grooming Salt for 5 minutes",
-      hashtags: ["social", "grooming", "bonding"]
+      notes: t("Pepper grooming Salt for 5 minutes"),
+      hashtags: [t("social"), t("grooming"), t("bonding")]
     },
     {
       id: 2,
@@ -46,8 +48,8 @@ const Index = () => {
       weight: 250,
       symptoms: [],
       timestamp: "2024-06-01T09:15:00",
-      notes: "Weekly weigh-in",
-      hashtags: ["health", "weight", "routine"]
+      notes: t("Weekly weigh-in"),
+      hashtags: [t("health"), t("weight"), t("routine")]
     },
     {
       id: 3,
@@ -55,17 +57,17 @@ const Index = () => {
       temperature: 22,
       humidity: 65,
       timestamp: "2024-06-01T08:00:00",
-      notes: "Cage cleaning completed",
-      hashtags: ["cleaning", "environment", "maintenance"]
+      notes: t("Cage cleaning completed"),
+      hashtags: [t("cleaning"), t("environment"), t("maintenance")]
     },
     {
       id: 4,
       type: "behavior",
       rats: ["Salt", "Pepper"],
-      behavior: "Chasing",
+      behavior: t("Chasing"),
       timestamp: "2024-05-31T19:45:00",
-      notes: "Playful chase around the cage",
-      hashtags: ["playful", "exercise", "social"]
+      notes: t("Playful chase around the cage"),
+      hashtags: [t("playful"), t("exercise"), t("social")]
     },
   ]);
 
@@ -81,10 +83,10 @@ const Index = () => {
             id: 1,
             type: "behavior",
             rats: ["Pepper", "Salt"],
-            behavior: "Grooming",
+            behavior: t("Grooming"),
             timestamp: "2024-06-01T10:30:00",
-            notes: "Pepper grooming Salt for 5 minutes",
-            hashtags: ["social", "grooming", "bonding"]
+            notes: t("Pepper grooming Salt for 5 minutes"),
+            hashtags: [t("social"), t("grooming"), t("bonding")]
           },
           {
             id: 2,
@@ -93,8 +95,8 @@ const Index = () => {
             weight: 250,
             symptoms: [],
             timestamp: "2024-06-01T09:15:00",
-            notes: "Weekly weigh-in",
-            hashtags: ["health", "weight", "routine"]
+            notes: t("Weekly weigh-in"),
+            hashtags: [t("health"), t("weight"), t("routine")]
           },
           {
             id: 3,
@@ -102,23 +104,23 @@ const Index = () => {
             temperature: 22,
             humidity: 65,
             timestamp: "2024-06-01T08:00:00",
-            notes: "Cage cleaning completed",
-            hashtags: ["cleaning", "environment", "maintenance"]
+            notes: t("Cage cleaning completed"),
+            hashtags: [t("cleaning"), t("environment"), t("maintenance")]
           },
           {
             id: 4,
             type: "behavior",
             rats: ["Salt", "Pepper"],
-            behavior: "Chasing",
+            behavior: t("Chasing"),
             timestamp: "2024-05-31T19:45:00",
-            notes: "Playful chase around the cage",
-            hashtags: ["playful", "exercise", "social"]
+            notes: t("Playful chase around the cage"),
+            hashtags: [t("playful"), t("exercise"), t("social")]
           },
         ];
         setActivityLogs(defaultLogs);
       }
     }
-  }, [user]);
+  }, [user, t]);
 
   // Get the three most recent activities, sorted by timestamp (most recent first)
   const recentActivities = activityLogs
@@ -131,17 +133,17 @@ const Index = () => {
       
       let timeAgo;
       if (days > 0) {
-        timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
+        timeAgo = t("{{count}} day(s) ago", { count: days });
       } else if (hours > 0) {
-        timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        timeAgo = t("{{count}} hour(s) ago", { count: hours });
       } else {
-        timeAgo = 'Just now';
+        timeAgo = t('Just now');
       }
 
       return {
         id: log.id,
         type: log.behavior || log.type,
-        rat: log.rats ? log.rats.join(', ') : 'Unknown',
+        rat: log.rats ? log.rats.join(', ') : t('Unknown'),
         time: timeAgo,
         status: log.type === 'health' ? 'good' : log.type === 'environment' ? 'completed' : 'completed',
         notes: log.notes,
@@ -168,7 +170,7 @@ const Index = () => {
     };
     
     setActivityLogs(prev => [logEntry, ...prev]);
-    console.log("New log entry added:", logEntry);
+    console.log(t("New log entry added:"), logEntry);
   };
 
   // Get upcoming tasks (not completed, sorted by due date)
@@ -187,7 +189,7 @@ const Index = () => {
       setIsNewTaskOpen(false);
       setEditingTask(null);
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error(t('Error saving task:'), error);
     }
   };
 
@@ -213,13 +215,13 @@ const Index = () => {
     );
     setIsEditModalOpen(false);
     setEditingActivity(null);
-    console.log("Activity updated (simulated):", updatedActivity);
+    console.log(t("Activity updated (simulated):"), updatedActivity);
   };
 
   const getDateLabel = (date: Date) => {
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
-    if (isBefore(date, new Date())) return "Overdue";
+    if (isToday(date)) return t("Today");
+    if (isTomorrow(date)) return t("Tomorrow");
+    if (isBefore(date, new Date())) return t("Overdue");
     return format(date, "MMM d");
   };
 
@@ -258,13 +260,13 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
-                RatTracker
+                {t("RatTracker")}
               </h1>
-              <p className="text-sm text-orange-100/80">Your pet care companion</p>
+              <p className="text-sm text-orange-100/80">{t("Your pet care companion")}</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="icon"
             onClick={() => setIsSettingsOpen(true)}
             className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
@@ -277,30 +279,30 @@ const Index = () => {
       {/* Quick Actions */}
       <div className="relative p-4">
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <Button 
+          <Button
             onClick={() => setIsQuickLogOpen(true)}
             className="h-20 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl transform hover:scale-105 transition-all duration-300"
           >
             <div className="text-center">
               <Plus className="h-6 w-6 mx-auto mb-1" />
-              <div className="text-xs font-medium">Quick Log</div>
+              <div className="text-xs font-medium">{t("Quick Log")}</div>
             </div>
           </Button>
           
-          <Button 
+          <Button
             onClick={() => setIsNewTaskOpen(true)}
             className="h-20 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl transform hover:scale-105 transition-all duration-300"
           >
             <div className="text-center">
               <Calendar className="h-6 w-6 mx-auto mb-1" />
-              <div className="text-xs font-medium">New Task</div>
+              <div className="text-xs font-medium">{t("New Task")}</div>
             </div>
           </Button>
           
           <Button className="h-20 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl transform hover:scale-105 transition-all duration-300">
             <div className="text-center">
               <Activity className="h-6 w-6 mx-auto mb-1" />
-              <div className="text-xs font-medium">Reports</div>
+              <div className="text-xs font-medium">{t("Reports")}</div>
             </div>
           </Button>
         </div>
@@ -312,34 +314,34 @@ const Index = () => {
 
         {/* Upcoming Tasks */}
         <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6">
-          <CardHeader 
+          <CardHeader
             className="cursor-pointer hover:bg-white/5 transition-colors"
             onClick={() => navigate('/tasks')}
           >
             <CardTitle className="text-white flex items-center gap-2">
               <Calendar className="h-5 w-5 text-cyan-300" />
-              Upcoming Tasks
+              {t("Upcoming Tasks")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading ? (
               <div className="text-center py-4">
-                <p className="text-purple-100">Loading tasks...</p>
+                <p className="text-purple-100">{t("Loading tasks...")}</p>
               </div>
             ) : upcomingTasks.length > 0 ? (
               upcomingTasks.map((task) => (
-                <div 
-                  key={task.id} 
+                <div
+                  key={task.id}
                   className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
                   onClick={() => handleTaskCardClick(task)}
                 >
                   <div className="flex-1">
                     <p className={`font-medium ${getTitleColor(task.priority)}`}>{task.title}</p>
-                    <p className="text-sm text-purple-100">Due: {getDateLabel(new Date(task.due_date))}</p>
+                    <p className="text-sm text-purple-100">{t("Due")}: {getDateLabel(new Date(task.due_date))}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
-                      {task.priority}
+                      {t(task.priority)}
                     </Badge>
                     <Button
                       variant="ghost"
@@ -349,7 +351,7 @@ const Index = () => {
                         handleEditFromDetail(task);
                       }}
                       className="text-white/60 hover:text-cyan-300 h-7 w-7"
-                      aria-label={`Edit task ${task.title}`}
+                      aria-label={t("Edit task {{taskTitle}}", { taskTitle: task.title })}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -358,14 +360,14 @@ const Index = () => {
               ))
             ) : (
               <div className="text-center py-4">
-                <p className="text-purple-100">No upcoming tasks</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <p className="text-purple-100">{t("No upcoming tasks")}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setIsNewTaskOpen(true)}
                   className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
-                  Create Task
+                  {t("Create Task")}
                 </Button>
               </div>
             )}
@@ -374,38 +376,38 @@ const Index = () => {
 
         {/* Recent Activities */}
         <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
-          <CardHeader 
+          <CardHeader
             className="cursor-pointer hover:bg-white/5 transition-colors"
             onClick={() => navigate('/logs')}
           >
             <CardTitle className="text-white flex items-center gap-2">
               <Heart className="h-5 w-5 text-pink-300" />
-              Recent Activities
+              {t("Recent Activities")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {recentActivities.length > 0 ? (
               recentActivities.map((activity) => (
-                <div 
+                <div
                   key={activity.id}
                   className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group"
                 >
                   <div className="flex-1">
-                    <p className="text-white font-medium">{activity.type}</p>
+                    <p className="text-white font-medium">{t(activity.type)}</p>
                     <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
                     {activity.weight && (
-                      <p className="text-xs text-purple-200/80">Weight: {activity.weight}g</p>
+                      <p className="text-xs text-purple-200/80">{t("Weight")}: {activity.weight}g</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge 
+                    <Badge
                       className={`${
-                        activity.status === 'good' ? 'bg-green-500/20 text-green-100' : 
-                        activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' : 
+                        activity.status === 'good' ? 'bg-green-500/20 text-green-100' :
+                        activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' :
                         'bg-yellow-500/20 text-yellow-100'
                       } border-0 backdrop-blur-sm`}
                     >
-                      {activity.status}
+                      {t(activity.status)}
                     </Badge>
                     <Button
                       variant="ghost"
@@ -423,14 +425,14 @@ const Index = () => {
               ))
             ) : (
               <div className="text-center py-4">
-                <p className="text-purple-100">No recent activities</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <p className="text-purple-100">{t("No recent activities")}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setIsQuickLogOpen(true)}
                   className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
-                  Add Activity
+                  {t("Add Activity")}
                 </Button>
               </div>
             )}
@@ -439,8 +441,8 @@ const Index = () => {
       </div>
 
       <BottomNav />
-      <QuickLogModal 
-        isOpen={isQuickLogOpen} 
+      <QuickLogModal
+        isOpen={isQuickLogOpen}
         onClose={() => setIsQuickLogOpen(false)}
         onLogCreated={handleNewLogEntry}
       />

@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ const TaskSuggestionFormModal = ({
   editingSuggestion,
   onSave
 }: TaskSuggestionFormModalProps) => {
+  const { t } = useTranslation();
   const { createSuggestion, updateSuggestion } = useTaskSuggestions();
   const [name, setName] = useState('');
   const [title, setTitle] = useState('');
@@ -101,7 +103,7 @@ const TaskSuggestionFormModal = ({
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <DialogTitle className="flex-1 text-center">
-              {editingSuggestion ? 'Edit Task Suggestion' : 'New Task Suggestion'}
+              {editingSuggestion ? t('Edit Task Suggestion') : t('New Task Suggestion')}
             </DialogTitle>
             <div className="w-10"></div>
           </div>
@@ -109,78 +111,78 @@ const TaskSuggestionFormModal = ({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Suggestion Name *</Label>
+            <Label htmlFor="name">{t("Suggestion Name")} *</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Display name for the suggestion"
+              placeholder={t("Display name for the suggestion")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title">Pre-filled Task Title</Label>
+            <Label htmlFor="title">{t("Pre-filled Task Title")}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Optional task title to pre-fill"
+              placeholder={t("Optional task title to pre-fill")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("Description")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
+              placeholder={t("Optional description")}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Priority</Label>
+            <Label>{t("Priority")}</Label>
             <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select priority" />
+                <SelectValue placeholder={t("Select priority")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low Priority</SelectItem>
-                <SelectItem value="medium">Medium Priority</SelectItem>
-                <SelectItem value="high">High Priority</SelectItem>
+                <SelectItem value="low">{t("Low Priority")}</SelectItem>
+                <SelectItem value="medium">{t("Medium Priority")}</SelectItem>
+                <SelectItem value="high">{t("High Priority")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">{t("Location")}</Label>
             <Input
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Optional location"
+              placeholder={t("Optional location")}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
+              <Label htmlFor="quantity">{t("Quantity")}</Label>
               <Input
                 id="quantity"
                 type="number"
                 value={quantity || ""}
                 onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="Amount"
+                placeholder={t("Amount")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit">Unit</Label>
+              <Label htmlFor="unit">{t("Unit")}</Label>
               <Input
                 id="unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="kg, liters, etc."
+                placeholder={t("kg, liters, etc.")}
               />
             </div>
           </div>
@@ -192,7 +194,7 @@ const TaskSuggestionFormModal = ({
             disabled={!name}
             className="bg-orange-500 hover:bg-orange-600"
           >
-            {editingSuggestion ? 'Update Suggestion' : 'Create Suggestion'}
+            {editingSuggestion ? t('Update Suggestion') : t('Create Suggestion')}
           </Button>
         </div>
       </DialogContent>

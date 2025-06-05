@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ const colorOptions = [
 ];
 
 const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagManagerProps) => {
+  const { t } = useTranslation();
   const [availableTags, setAvailableTags] = useState<PersonalityTag[]>(defaultTags);
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [editingTag, setEditingTag] = useState<PersonalityTag | null>(null);
@@ -136,7 +138,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
           className="h-7"
         >
           <Plus className="h-3 w-3 mr-1" />
-          Add Tag
+          {t("Add Tag")}
         </Button>
       </div>
 
@@ -144,17 +146,17 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       <Dialog open={isAddingTag} onOpenChange={setIsAddingTag}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Personality Tag</DialogTitle>
+            <DialogTitle>{t("Add New Personality Tag")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Tag name"
+              placeholder={t("Tag name")}
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
             />
             <div className="space-y-2">
-              <p className="text-sm font-medium">Choose color:</p>
+              <p className="text-sm font-medium">{t("Choose color:")}</p>
               <div className="flex flex-wrap gap-2">
                 {colorOptions.map((color) => (
                   <Badge
@@ -164,17 +166,17 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                     }`}
                     onClick={() => setSelectedColor(color)}
                   >
-                    Sample
+                    {t("Sample")}
                   </Badge>
                 ))}
               </div>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleAddTag} disabled={!newTagName.trim()}>
-                Add Tag
+                {t("Add Tag")}
               </Button>
               <Button variant="outline" onClick={() => setIsAddingTag(false)}>
-                Cancel
+                {t("Cancel")}
               </Button>
             </div>
           </div>
@@ -185,17 +187,17 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       <Dialog open={!!editingTag} onOpenChange={() => setEditingTag(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Personality Tag</DialogTitle>
+            <DialogTitle>{t("Edit Personality Tag")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Tag name"
+              placeholder={t("Tag name")}
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleUpdateTag()}
             />
             <div className="space-y-2">
-              <p className="text-sm font-medium">Choose color:</p>
+              <p className="text-sm font-medium">{t("Choose color:")}</p>
               <div className="flex flex-wrap gap-2">
                 {colorOptions.map((color) => (
                   <Badge
@@ -205,17 +207,17 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                     }`}
                     onClick={() => setSelectedColor(color)}
                   >
-                    Sample
+                    {t("Sample")}
                   </Badge>
                 ))}
               </div>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleUpdateTag} disabled={!newTagName.trim()}>
-                Update Tag
+                {t("Update Tag")}
               </Button>
               <Button variant="outline" onClick={() => setEditingTag(null)}>
-                Cancel
+                {t("Cancel")}
               </Button>
             </div>
           </div>

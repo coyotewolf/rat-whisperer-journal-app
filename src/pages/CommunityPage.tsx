@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,18 +9,19 @@ import { MessageSquare, Heart, Share2, Plus, Send, Sparkles, MoreHorizontal } fr
 import BottomNav from "@/components/BottomNav";
 
 const CommunityPage = () => {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState([
     {
       id: 1,
       author: "RatParent123",
       avatar: "RP",
-      timestamp: "2 hours ago",
-      content: "My rat won't stop sneezing - should I be worried? Pepper has been sneezing for 2 days now. No other symptoms visible. Has anyone experienced this?",
+      timestamp: t("2 hours ago"),
+      content: t("My rat won't stop sneezing - should I be worried? Pepper has been sneezing for 2 days now. No other symptoms visible. Has anyone experienced this?"),
       image: null,
       likes: 12,
       comments: [
-        { id: 1, author: "VetExpert", content: "Could be dust or allergies. Monitor for other symptoms!", timestamp: "1 hour ago" },
-        { id: 2, author: "RatMom2023", content: "Same happened to my rat. Turned out to be new bedding!", timestamp: "45 mins ago" }
+        { id: 1, author: t("VetExpert"), content: t("Could be dust or allergies. Monitor for other symptoms!"), timestamp: t("1 hour ago") },
+        { id: 2, author: t("RatMom2023"), content: t("Same happened to my rat. Turned out to be new bedding!"), timestamp: t("45 mins ago") }
       ],
       category: "health",
       liked: false,
@@ -29,14 +30,14 @@ const CommunityPage = () => {
       id: 2,
       author: "CaringOwner",
       avatar: "CO",
-      timestamp: "5 hours ago",
-      content: "Best bedding for sensitive rats? Looking for recommendations for hypoallergenic bedding. My rats seem to have reactions to wood shavings.",
+      timestamp: t("5 hours ago"),
+      content: t("Best bedding for sensitive rats? Looking for recommendations for hypoallergenic bedding. My rats seem to have reactions to wood shavings."),
       image: null,
       likes: 24,
       comments: [
-        { id: 1, author: "NaturalRatCare", content: "Hemp bedding works great! Super absorbent and dust-free.", timestamp: "3 hours ago" },
-        { id: 2, author: "EcoRatParent", content: "Paper-based bedding is my go-to for sensitive babies", timestamp: "2 hours ago" },
-        { id: 3, author: "RatWhisperer", content: "Avoid cedar and pine - stick to aspen or paper", timestamp: "1 hour ago" }
+        { id: 1, author: t("NaturalRatCare"), content: t("Hemp bedding works great! Super absorbent and dust-free."), timestamp: t("3 hours ago") },
+        { id: 2, author: t("EcoRatParent"), content: t("Paper-based bedding is my go-to for sensitive babies"), timestamp: t("2 hours ago") },
+        { id: 3, author: t("RatWhisperer"), content: t("Avoid cedar and pine - stick to aspen or paper"), timestamp: t("1 hour ago") }
       ],
       category: "environment",
       liked: true,
@@ -45,15 +46,15 @@ const CommunityPage = () => {
       id: 3,
       author: "CreativeRatDad",
       avatar: "CD",
-      timestamp: "1 day ago",
-      content: "DIY enrichment ideas that actually work! Just made cardboard castles for my rats and they're going CRAZY for them! 🏰 Here's what I used: old cardboard boxes, toilet paper tubes, and some safe tape. Total cost: $0! 💝",
+      timestamp: t("1 day ago"),
+      content: t("DIY enrichment ideas that actually work! Just made cardboard castles for my rats and they're going CRAZY for them! 🏰 Here's what I used: old cardboard boxes, toilet paper tubes, and some safe tape. Total cost: $0! 💝"),
       image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=400&h=300&fit=crop",
       likes: 89,
       comments: [
-        { id: 1, author: "DIYRatMom", content: "This is amazing! Definitely trying this weekend 😍", timestamp: "18 hours ago" },
-        { id: 2, author: "BudgetRatCare", content: "Love free enrichment ideas! My wallet thanks you 🙏", timestamp: "12 hours ago" },
-        { id: 3, author: "CraftyCritters", content: "Adding some hiding holes makes it even better!", timestamp: "8 hours ago" },
-        { id: 4, author: "RatCastle", content: "My rats would destroy this in 5 minutes 😂", timestamp: "6 hours ago" }
+        { id: 1, author: t("DIYRatMom"), content: t("This is amazing! Definitely trying this weekend 😍"), timestamp: t("18 hours ago") },
+        { id: 2, author: t("BudgetRatCare"), content: t("Love free enrichment ideas! My wallet thanks you 🙏"), timestamp: t("12 hours ago") },
+        { id: 3, author: t("CraftyCritters"), content: t("Adding some hiding holes makes it even better!"), timestamp: t("8 hours ago") },
+        { id: 4, author: t("RatCastle"), content: t("My rats would destroy this in 5 minutes 😂"), timestamp: t("6 hours ago") }
       ],
       category: "environment",
       liked: false,
@@ -83,9 +84,9 @@ const CommunityPage = () => {
               ...post, 
               comments: [...post.comments, {
                 id: post.comments.length + 1,
-                author: "You",
+                author: t("You"),
                 content: commentText,
-                timestamp: "now"
+                timestamp: t("now")
               }]
             }
           : post
@@ -124,14 +125,14 @@ const CommunityPage = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-pink-100 bg-clip-text text-transparent">
-                Community
+                {t("Community")}
               </h1>
-              <p className="text-sm text-pink-100/80">Connect with fellow rat parents</p>
+              <p className="text-sm text-pink-100/80">{t("Connect with fellow rat parents")}</p>
             </div>
           </div>
           <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300">
             <Plus className="h-4 w-4 mr-2" />
-            New Post
+            {t("New Post")}
           </Button>
         </div>
       </div>
@@ -155,7 +156,7 @@ const CommunityPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge className={`${getCategoryColor(post.category)} backdrop-blur-sm border text-xs`}>
-                    {post.category}
+                    {t(post.category)}
                   </Badge>
                   <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
                     <MoreHorizontal className="h-4 w-4" />
@@ -171,9 +172,9 @@ const CommunityPage = () => {
               {/* Post Image */}
               {post.image && (
                 <div className="rounded-lg overflow-hidden">
-                  <img 
-                    src={post.image} 
-                    alt="Post content" 
+                  <img
+                    src={post.image}
+                    alt={t("Post content")}
                     className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
@@ -181,28 +182,28 @@ const CommunityPage = () => {
               
               {/* Engagement Stats */}
               <div className="flex items-center gap-4 text-sm text-purple-100/70 border-t border-white/10 pt-3">
-                <span>{post.likes} likes</span>
-                <span>{post.comments.length} comments</span>
+                <span>{t("{{count}} likes", { count: post.likes })}</span>
+                <span>{t("{{count}} comments", { count: post.comments.length })}</span>
               </div>
               
               {/* Action Buttons */}
               <div className="flex items-center gap-1 border-t border-white/10 pt-3">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleLike(post.id)}
                   className={`flex-1 ${post.liked ? 'text-red-400 hover:text-red-300' : 'text-white/70 hover:text-white'} hover:bg-white/10 transition-all duration-300`}
                 >
                   <Heart className={`h-4 w-4 mr-2 ${post.liked ? 'fill-current' : ''}`} />
-                  Like
+                  {t("Like")}
                 </Button>
                 <Button variant="ghost" size="sm" className="flex-1 text-white/70 hover:text-white hover:bg-white/10">
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Comment
+                  {t("Comment")}
                 </Button>
                 <Button variant="ghost" size="sm" className="flex-1 text-white/70 hover:text-white hover:bg-white/10">
                   <Share2 className="h-4 w-4 mr-2" />
-                  Share
+                  {t("Share")}
                 </Button>
               </div>
               
@@ -232,19 +233,19 @@ const CommunityPage = () => {
               <div className="flex gap-3 mt-3">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs">
-                    Y
+                    {t("Y")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 flex gap-2">
                   <Input
-                    placeholder="Write a comment..."
+                    placeholder={t("Write a comment...")}
                     value={newComment[post.id] || ""}
                     onChange={(e) => setNewComment(prev => ({ ...prev, [post.id]: e.target.value }))}
                     className="backdrop-blur-md bg-white/10 border-white/20 text-white placeholder-white/50 focus:bg-white/20"
                     onKeyPress={(e) => e.key === 'Enter' && handleComment(post.id)}
                   />
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => handleComment(post.id)}
                     className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg transform hover:scale-105 transition-all duration-300"
                   >
@@ -258,11 +259,11 @@ const CommunityPage = () => {
         
         {/* Load More */}
         <div className="text-center py-8">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="backdrop-blur-md bg-white/10 border-white/20 text-white hover:bg-white/20 transform hover:scale-105 transition-all duration-300"
           >
-            Load More Posts
+            {t("Load More Posts")}
           </Button>
         </div>
       </div>

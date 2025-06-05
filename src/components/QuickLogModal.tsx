@@ -6,6 +6,7 @@ import { Activity, Heart, Scale, Thermometer, Pill, Utensils, ArrowLeft } from "
 import LogEntryModal from "@/components/LogEntryModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from 'react-i18next';
 
 interface QuickLogModalProps {
   isOpen: boolean;
@@ -20,14 +21,15 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
   const [isQuickLogVisible, setIsQuickLogVisible] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const logTypes = [
-    { type: "behavior", label: "Behavior", icon: Activity, color: "from-blue-500 to-cyan-500" },
-    { type: "health", label: "Health Check", icon: Heart, color: "from-red-500 to-pink-500" },
-    { type: "weight", label: "Weight", icon: Scale, color: "from-green-500 to-emerald-500" },
-    { type: "environment", label: "Environment", icon: Thermometer, color: "from-orange-500 to-amber-500" },
-    { type: "medication", label: "Medication", icon: Pill, color: "from-purple-500 to-violet-500" },
-    { type: "feeding", label: "Feeding", icon: Utensils, color: "from-yellow-500 to-orange-500" },
+    { type: "behavior", label: t("Behavior"), icon: Activity, color: "from-blue-500 to-cyan-500" },
+    { type: "health", label: t("Health Check"), icon: Heart, color: "from-red-500 to-pink-500" },
+    { type: "weight", label: t("Weight"), icon: Scale, color: "from-green-500 to-emerald-500" },
+    { type: "environment", label: t("Environment"), icon: Thermometer, color: "from-orange-500 to-amber-500" },
+    { type: "medication", label: t("Medication"), icon: Pill, color: "from-purple-500 to-violet-500" },
+    { type: "feeding", label: t("Feeding"), icon: Utensils, color: "from-yellow-500 to-orange-500" },
   ];
 
   const handleLogTypeClick = (logType: string) => {
@@ -45,7 +47,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
     // Since LogEntryModal doesn't pass the log data in its callback,
     // we can't access the actual log data here. The parent component
     // will need to handle log updates through other means.
-    console.log("Log added successfully");
+    console.log(t("Log added successfully"));
   };
 
   // Called when LogEntryModal's overlay/Esc is triggered, or after successful log addition
@@ -100,7 +102,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center text-white">Quick Log Entry</DialogTitle>
+              <DialogTitle className="flex-1 text-center text-white">{t("Quick Log Entry")}</DialogTitle>
               <div className="w-10"></div> {/* Placeholder to balance the back button */}
             </div>
           </DialogHeader>
@@ -130,7 +132,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
         onClose={handleLogEntryOverlayOrSubmitClose} // For overlay/Esc/submit on LogEntryModal
         onBack={handleLogEntryBackNavigation}       // For internal back button on LogEntryModal
         logType={selectedLogType}
-        onLogAdded={handleLogAdded}
+        onLogAdded={onLogCreated}
       />
 
       <AuthModal

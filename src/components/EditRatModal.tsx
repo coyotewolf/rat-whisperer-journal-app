@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
+import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import PersonalityTagManager from "@/components/PersonalityTagManager";
+import { useTranslation } from 'react-i18next';
 
 interface Rat {
   id: string;
@@ -36,6 +37,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (rat) {
@@ -67,16 +69,16 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Rat updated successfully!",
+        title: t("Success"),
+        description: t("Rat updated successfully!"),
       });
       
       onRatUpdated();
       onClose();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update rat",
+        title: t("Error"),
+        description: t("Failed to update rat"),
         variant: "destructive",
       });
     } finally {
@@ -97,8 +99,8 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Rat deleted successfully!",
+        title: t("Success"),
+        description: t("Rat deleted successfully!"),
       });
       
       onRatUpdated();
@@ -106,8 +108,8 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
       setShowDeleteConfirm(false);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete rat",
+        title: t("Error"),
+        description: t("Failed to delete rat"),
         variant: "destructive",
       });
     } finally {
@@ -129,13 +131,13 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center">Edit Rat</DialogTitle>
+              <DialogTitle className="flex-1 text-center">{t("Edit Rat")}</DialogTitle>
               <div className="w-10"></div> {/* Placeholder to balance the back button */}
             </div>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t("Name")}</Label>
               <Input
                 id="name"
                 value={name}
@@ -144,19 +146,19 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sex">Sex</Label>
+              <Label htmlFor="sex">{t("Sex")}</Label>
               <Select value={sex} onValueChange={setSex} required>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Male">{t("Male")}</SelectItem>
+                  <SelectItem value="Female">{t("Female")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="birthday">Birthday</Label>
+              <Label htmlFor="birthday">{t("Birthday")}</Label>
               <Input
                 id="birthday"
                 type="date"
@@ -166,19 +168,19 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t("Status")}</Label>
               <Select value={status} onValueChange={setStatus} required>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="deceased">Deceased</SelectItem>
+                  <SelectItem value="active">{t("Active")}</SelectItem>
+                  <SelectItem value="deceased">{t("Deceased")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Personality Tags</Label>
+              <Label>{t("Personality Tags")}</Label>
               <PersonalityTagManager
                 selectedTags={personality}
                 onTagsChange={setPersonality}
@@ -186,15 +188,15 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
             </div>
             <div className="flex gap-2">
               <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? "Updating..." : "Update Rat"}
+                {loading ? t("Updating...") : t("Update Rat")}
               </Button>
-              <Button 
-                type="button" 
-                variant="destructive" 
+              <Button
+                type="button"
+                variant="destructive"
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={loading}
               >
-                Delete
+                {t("Delete")}
               </Button>
             </div>
           </form>
@@ -205,10 +207,10 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDelete}
-        title="Delete Rat"
-        description={`Are you sure you want to delete ${rat?.name}? This action cannot be undone and will also delete all associated logs.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t("Delete Rat")}
+        description={t("Are you sure you want to delete {{ratName}}? This action cannot be undone and will also delete all associated logs.", { ratName: rat?.name })}
+        confirmText={t("Delete")}
+        cancelText={t("Cancel")}
         variant="destructive"
       />
     </>

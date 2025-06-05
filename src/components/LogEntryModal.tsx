@@ -7,17 +7,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2 } from "lucide-react"; // Import ArrowLeft icon, Trash2 icon
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 
 interface LogEntryModalProps {
   isOpen: boolean;
-  onClose: () => void; // For overlay click, Esc, or successful submit (full close & navigate)
-  onBack: () => void;  // For internal back button (return to parent modal)
+  onClose: () => void;
+  onBack: () => void;
   logType: string;
-  onLogAdded: () => void;
+  onLogAdded: (newLog: any) => void; // Modified to accept newLog parameter
 }
 
 const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntryModalProps) => {
@@ -30,6 +31,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user && isOpen) {
@@ -77,7 +79,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         setNewTag("");
       }
     } catch (error) {
-      console.error('Error adding tag:', error);
+      console.error(t('Error adding tag:'), error);
     }
   };
 
@@ -93,30 +95,32 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         content.tags = selectedTags;
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('log_entries')
         .insert({
           user_id: user.id,
           rat_id: selectedRat,
           type: logType,
           content
-        });
+        }).select(); // Select the inserted data to pass to onLogAdded
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Log entry added successfully!",
+        title: t("Success"),
+        description: t("Log entry added successfully!"),
       });
       
-      onLogAdded();
+      if (data && data.length > 0) {
+        onLogAdded(data[0]); // Pass the newly created log entry
+      }
       // After successful submission, call onClose (which should trigger full close and navigate)
       onClose();
       resetForm();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to add log entry",
+        title: t("Error"),
+        description: t("Failed to add log entry"),
         variant: "destructive",
       });
     } finally {
@@ -141,7 +145,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         return (
           <>
             <div className="space-y-2">
-              <Label>Behavior Tags</Label>
+              <Label>{t("Behavior Tags")}</Label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {selectedTags.map(tag => (
                   <Badge key={tag} variant="secondary" className="flex items-center gap-1">
@@ -156,7 +160,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
                 }
               }}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Add existing tag" />
+                  <SelectValue placeholder={t("Add existing tag")} />
                 </SelectTrigger>
                 <SelectContent>
                   {behaviorTags.filter(tag => !selectedTags.includes(tag)).map(tag => (
@@ -166,15 +170,15 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               </Select>
               <div className="flex gap-2">
                 <Input
-                  placeholder="New tag"
+                  placeholder={t("New tag")}
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                 />
-                <Button type="button" onClick={addNewTag}>Add</Button>
+                <Button type="button" onClick={addNewTag}>{t("Add")}</Button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("Notes")}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
@@ -187,22 +191,22 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="status">Health Status</Label>
+              <Label htmlFor="status">{t("Health Status")}</Label>
               <Select onValueChange={(value) => setFormData({...formData, status: value})}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={t("Select status")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                  <SelectItem value="sick">Sick</SelectItem>
+                  <SelectItem value="excellent">{t("Excellent")}</SelectItem>
+                  <SelectItem value="good">{t("Good")}</SelectItem>
+                  <SelectItem value="fair">{t("Fair")}</SelectItem>
+                  <SelectItem value="poor">{t("Poor")}</SelectItem>
+                  <SelectItem value="sick">{t("Sick")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("Notes")}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
@@ -214,7 +218,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
       case 'weight':
         return (
           <div className="space-y-2">
-            <Label htmlFor="weight">Weight (grams)</Label>
+            <Label htmlFor="weight">{t("Weight (grams)")}</Label>
             <Input
               id="weight"
               type="number"
@@ -228,7 +232,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="medication">Medication</Label>
+              <Label htmlFor="medication">{t("Medication")}</Label>
               <Input
                 id="medication"
                 value={formData.medication || ""}
@@ -237,7 +241,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dose">Dose</Label>
+              <Label htmlFor="dose">{t("Dose")}</Label>
               <Input
                 id="dose"
                 value={formData.dose || ""}
@@ -246,7 +250,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("Notes")}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
@@ -259,7 +263,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="food">Food</Label>
+              <Label htmlFor="food">{t("Food")}</Label>
               <Input
                 id="food"
                 value={formData.food || ""}
@@ -268,7 +272,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
+              <Label htmlFor="amount">{t("Amount")}</Label>
               <Input
                 id="amount"
                 value={formData.amount || ""}
@@ -277,7 +281,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("Notes")}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
@@ -290,7 +294,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="temperature">Temperature (°C)</Label>
+              <Label htmlFor="temperature">{t("Temperature (°C)")}</Label>
               <Input
                 id="temperature"
                 type="number"
@@ -300,7 +304,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="humidity">Humidity (%)</Label>
+              <Label htmlFor="humidity">{t("Humidity (%)")}</Label>
               <Input
                 id="humidity"
                 type="number"
@@ -310,7 +314,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("Notes")}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ""}
@@ -341,16 +345,16 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">Add {logType.charAt(0).toUpperCase() + logType.slice(1)} Log</DialogTitle>
+            <DialogTitle className="flex-1 text-center">{t("Add {{logType}} Log", { logType: logType.charAt(0).toUpperCase() + logType.slice(1) })}</DialogTitle>
             <div className="w-10"></div> {/* Placeholder to balance the back button */}
           </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="rat">Select Rat</Label>
+            <Label htmlFor="rat">{t("Select Rat")}</Label>
             <Select value={selectedRat} onValueChange={setSelectedRat} required>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a rat" />
+                <SelectValue placeholder={t("Choose a rat")} />
               </SelectTrigger>
               <SelectContent>
                 {rats.map(rat => (
@@ -361,7 +365,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
           </div>
           {renderLogTypeFields()}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Adding..." : "Add Log Entry"}
+            {loading ? t("Adding...") : t("Add Log Entry")}
           </Button>
         </form>
       </DialogContent>

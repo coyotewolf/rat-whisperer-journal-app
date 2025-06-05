@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Type, Minus, Plus } from "lucide-react";
@@ -11,17 +12,18 @@ interface FontSettingsProps {
 }
 
 const FontSettings = ({ onBack }: FontSettingsProps) => {
+  const { t } = useTranslation();
   const { settings, updateSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const fontOptions = [
-    { id: "system", name: "System Default", preview: "The quick brown fox jumps over the lazy dog" },
-    { id: "Inter", name: "Inter", preview: "The quick brown fox jumps over the lazy dog" },
-    { id: "Roboto", name: "Roboto", preview: "The quick brown fox jumps over the lazy dog" },
-    { id: "Open Sans", name: "Open Sans", preview: "The quick brown fox jumps over the lazy dog" },
-    { id: "Lato", name: "Lato", preview: "The quick brown fox jumps over the lazy dog" },
-    { id: "Montserrat", name: "Montserrat", preview: "The quick brown fox jumps over the lazy dog" },
+    { id: "system", name: t("System Default"), preview: t("The quick brown fox jumps over the lazy dog") },
+    { id: "Inter", name: "Inter", preview: t("The quick brown fox jumps over the lazy dog") },
+    { id: "Roboto", name: "Roboto", preview: t("The quick brown fox jumps over the lazy dog") },
+    { id: "Open Sans", name: "Open Sans", preview: t("The quick brown fox jumps over the lazy dog") },
+    { id: "Lato", name: "Lato", preview: t("The quick brown fox jumps over the lazy dog") },
+    { id: "Montserrat", name: "Montserrat", preview: t("The quick brown fox jumps over the lazy dog") },
   ];
 
   const adjustFontSize = (delta: number) => {
@@ -49,17 +51,19 @@ const FontSettings = ({ onBack }: FontSettingsProps) => {
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={onBack} className="mb-4 p-0 h-auto text-gray-500 hover:text-gray-700">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Settings
-      </Button>
+      <div className="flex items-center mb-4">
+        <Button variant="ghost" onClick={onBack} className="p-0 h-auto text-gray-500 hover:text-gray-700">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("Back to Settings")}
+        </Button>
+      </div>
 
       {/* Font Size */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Type className="h-5 w-5" />
-            Font Size
+            {t("Font Size")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -75,11 +79,11 @@ const FontSettings = ({ onBack }: FontSettingsProps) => {
             
             <div className="flex-1 text-center">
               <div className="text-lg font-medium">{settings.fontSize}px</div>
-              <div 
+              <div
                 className="text-gray-600 mt-2"
                 style={{ fontSize: `${settings.fontSize}px` }}
               >
-                Sample text preview
+                {t("Sample text preview")}
               </div>
             </div>
             
@@ -98,7 +102,7 @@ const FontSettings = ({ onBack }: FontSettingsProps) => {
       {/* Font Family */}
       <Card>
         <CardHeader>
-          <CardTitle>Font Family</CardTitle>
+          <CardTitle>{t("Font Family")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {fontOptions.map((font) => (
@@ -131,7 +135,7 @@ const FontSettings = ({ onBack }: FontSettingsProps) => {
         disabled={loading}
         className="w-full bg-orange-500 hover:bg-orange-600"
       >
-        {loading ? "Saving..." : "Apply Font Settings"}
+        {loading ? t("Saving...") : t("Apply Font Settings")}
       </Button>
     </div>
   );

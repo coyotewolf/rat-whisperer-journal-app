@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 
 interface AddRatModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +46,8 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Rat added successfully!",
+        title: t("Success"),
+        description: t("Rat added successfully!"),
       });
       
       onRatAdded();
@@ -55,8 +57,8 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
       setBirthday("");
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to add rat",
+        title: t("Error"),
+        description: t("Failed to add rat"),
         variant: "destructive",
       });
     } finally {
@@ -77,13 +79,13 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">Add New Rat</DialogTitle>
+            <DialogTitle className="flex-1 text-center">{t("Add New Rat")}</DialogTitle>
             <div className="w-10"></div> {/* Placeholder to balance the back button */}
           </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("Name")}</Label>
             <Input
               id="name"
               value={name}
@@ -92,19 +94,19 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sex">Sex</Label>
+            <Label htmlFor="sex">{t("Sex")}</Label>
             <Select value={sex} onValueChange={setSex} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select sex" />
+                <SelectValue placeholder={t("Select sex")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Male">Male</SelectItem>
-                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Male">{t("Male")}</SelectItem>
+                <SelectItem value="Female">{t("Female")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="birthday">Birthday</Label>
+            <Label htmlFor="birthday">{t("Birthday")}</Label>
             <Input
               id="birthday"
               type="date"
@@ -114,7 +116,7 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Adding..." : "Add Rat"}
+            {loading ? t("Adding...") : t("Add Rat")}
           </Button>
         </form>
       </DialogContent>

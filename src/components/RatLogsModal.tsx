@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button"; // Import Button
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ interface RatLogsModalProps {
 }
 
 const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModalProps) => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -74,11 +76,11 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
           </div>
         );
       case 'weight':
-        return <p className="text-sm">Weight: {log.content.weight}g</p>;
+        return <p className="text-sm">{t("Weight")}: {log.content.weight}g</p>;
       case 'health':
         return (
           <div>
-            <p className="text-sm font-medium">Status: {log.content.status}</p>
+            <p className="text-sm font-medium">{t("Status")}: {t(log.content.status)}</p>
             {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
@@ -86,7 +88,7 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
         return (
           <div>
             <p className="text-sm font-medium">{log.content.medication}</p>
-            <p className="text-sm">Dose: {log.content.dose}</p>
+            <p className="text-sm">{t("Dose")}: {log.content.dose}</p>
             {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
@@ -94,15 +96,15 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
         return (
           <div>
             <p className="text-sm font-medium">{log.content.food}</p>
-            <p className="text-sm">Amount: {log.content.amount}</p>
+            <p className="text-sm">{t("Amount")}: {log.content.amount}</p>
             {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
       case 'environment':
         return (
           <div>
-            <p className="text-sm font-medium">Temperature: {log.content.temperature}°C</p>
-            <p className="text-sm">Humidity: {log.content.humidity}%</p>
+            <p className="text-sm font-medium">{t("Temperature")}: {log.content.temperature}°C</p>
+            <p className="text-sm">{t("Humidity")}: {log.content.humidity}%</p>
             {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
@@ -124,21 +126,21 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">{ratName} - Logs</DialogTitle>
+            <DialogTitle className="flex-1 text-center">{t("{{ratName}} - Logs", { ratName })}</DialogTitle>
             <div className="w-10"></div> {/* Placeholder to balance the back button */}
           </div>
         </DialogHeader>
         <div className="space-y-4">
           {loading ? (
-            <p>Loading logs...</p>
+            <p>{t("Loading logs...")}</p>
           ) : logs.length === 0 ? (
-            <p>No logs found for {ratName}.</p>
+            <p>{t("No logs found for {{ratName}}.", { ratName })}</p>
           ) : (
             logs.map((log) => (
               <Card key={log.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm capitalize">{log.type}</CardTitle>
+                    <CardTitle className="text-sm capitalize">{t(log.type)}</CardTitle>
                     <Badge variant="outline" className="text-xs">
                       {new Date(log.created_at).toLocaleDateString()}
                     </Badge>

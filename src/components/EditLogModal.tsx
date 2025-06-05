@@ -6,15 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2 } from "lucide-react"; // Import ArrowLeft and Trash2 icons
-// import { supabase } from "@/integrations/supabase/client"; // Not used for now as data is local
-// import { useAuth } from "@/hooks/useAuth"; // Not used for now
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 
 interface EditLogModalProps {
   isOpen: boolean;
   onClose: () => void;
-  logToEdit: any; // Type will be more specific based on actual log structure
+  logToEdit: any;
   onLogUpdated: (updatedLog: any) => void;
 }
 
@@ -25,6 +24,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
   const [newHashtag, setNewHashtag] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Hardcoded rats for now, similar to LogsPage
   const availableRats = ["Pepper", "Salt", "Sugar", "Spice"]; // Example, adjust as needed
@@ -72,7 +72,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+ 
     const updatedLogData = {
       ...logToEdit,
       ...formData,
@@ -87,8 +87,8 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
 
     onLogUpdated(updatedLogData);
     toast({
-      title: "Success",
-      description: "Log entry updated successfully!",
+      title: t("Success"),
+      description: t("Log entry updated successfully!"),
     });
     setLoading(false);
     onClose(); // Close modal after successful update
@@ -102,7 +102,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="behavior">Behavior</Label>
+              <Label htmlFor="behavior">{t("Behavior")}</Label>
               <Input
                 id="behavior"
                 value={formData.behavior || ""}
@@ -115,7 +115,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="weight">Weight (g)</Label>
+              <Label htmlFor="weight">{t("Weight (g)")}</Label>
               <Input
                 id="weight"
                 type="number"
@@ -130,7 +130,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
         return (
           <>
             <div className="space-y-2">
-              <Label htmlFor="temperature">Temperature (°C)</Label>
+              <Label htmlFor="temperature">{t("Temperature (°C)")}</Label>
               <Input
                 id="temperature"
                 type="number"
@@ -139,7 +139,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="humidity">Humidity (%)</Label>
+              <Label htmlFor="humidity">{t("Humidity (%)")}</Label>
               <Input
                 id="humidity"
                 type="number"
@@ -167,20 +167,20 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">Edit Log Entry - {logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1)}</DialogTitle>
+            <DialogTitle className="flex-1 text-center">{t("Edit Log Entry")} - {t(logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1))}</DialogTitle>
             <div className="w-10"></div> {/* Placeholder to balance the back button */}
           </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="rats">Rats</Label>
+            <Label htmlFor="rats">{t("Rats")}</Label>
             {/* This is a simplified single select. If multiple rats can be associated, this needs to be a multi-select component */}
             <Select
               value={selectedRats[0] || ""} // Assuming one rat for simplicity, adjust if multiple
               onValueChange={(value) => handleSelectChange("rats", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a rat" />
+                <SelectValue placeholder={t("Select a rat")} />
               </SelectTrigger>
               <SelectContent>
                 {availableRats.map(rat => (
@@ -197,7 +197,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
           {renderSpecificFields()}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t("Notes")}</Label>
             <Textarea
               id="notes"
               value={formData.notes || ""}
@@ -206,7 +206,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
           </div>
 
           <div className="space-y-2">
-            <Label>Hashtags</Label>
+            <Label>{t("Hashtags")}</Label>
             <div className="flex flex-wrap gap-1 mb-2">
               {hashtags.map(tag => (
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
@@ -217,18 +217,18 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
             </div>
             <div className="flex gap-2">
               <Input
-                placeholder="New hashtag"
+                placeholder={t("New hashtag")}
                 value={newHashtag}
                 onChange={(e) => setNewHashtag(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addHashtag();}}}
               />
-              <Button type="button" onClick={addHashtag} variant="outline">Add Tag</Button>
+              <Button type="button" onClick={addHashtag} variant="outline">{t("Add Tag")}</Button>
             </div>
           </div>
           
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? t("Saving...") : t("Save Changes")}
             </Button>
           </DialogFooter>
         </form>

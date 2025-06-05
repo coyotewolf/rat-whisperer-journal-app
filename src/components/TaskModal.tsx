@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ interface TaskModalProps {
 }
 
 const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | undefined>();
   const [description, setDescription] = useState("");
@@ -141,19 +143,19 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">{task ? 'Edit Task' : 'New Task'}</DialogTitle>
+            <DialogTitle className="flex-1 text-center">{task ? t('Edit Task') : t('New Task')}</DialogTitle>
             <div className="w-10"></div>
           </div>
         </DialogHeader>
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Task Title</Label>
+            <Label htmlFor="title">{t("Task Title")}</Label>
             <Input
               id="title"
               value={title}
               onChange={handleTitleChange}
-              placeholder="Enter task title"
+              placeholder={t("Enter task title")}
             />
             <TaskSuggestions
               onSelect={handleSuggestionSelect}
@@ -162,19 +164,19 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("Description")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter task description"
+              placeholder={t("Enter task description")}
               rows={3}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Due Date</Label>
+              <Label>{t("Due Date")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -185,7 +187,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dueDate ? format(dueDate, "PPP") : "Pick a date"}
+                    {dueDate ? format(dueDate, "PPP") : t("Pick a date")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -200,7 +202,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
+              <Label htmlFor="time">{t("Time")}</Label>
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -215,28 +217,28 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Priority</Label>
+            <Label>{t("Priority")}</Label>
             <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low Priority</SelectItem>
-                <SelectItem value="medium">Medium Priority</SelectItem>
-                <SelectItem value="high">High Priority</SelectItem>
+                <SelectItem value="low">{t("Low Priority")}</SelectItem>
+                <SelectItem value="medium">{t("Medium Priority")}</SelectItem>
+                <SelectItem value="high">{t("High Priority")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Location (Optional)</Label>
+            <Label htmlFor="location">{t("Location (Optional)")}</Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter location"
+                placeholder={t("Enter location")}
                 className="pl-10"
               />
             </div>
@@ -244,22 +246,22 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity (Optional)</Label>
+              <Label htmlFor="quantity">{t("Quantity (Optional)")}</Label>
               <Input
                 id="quantity"
                 type="number"
                 value={quantity || ""}
                 onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="Amount"
+                placeholder={t("Amount")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit">Unit (Optional)</Label>
+              <Label htmlFor="unit">{t("Unit (Optional)")}</Label>
               <Input
                 id="unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="kg, liters, etc."
+                placeholder={t("kg, liters, etc.")}
               />
             </div>
           </div>
@@ -278,7 +280,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
             disabled={!title || !dueDate}
             className="bg-orange-500 hover:bg-orange-600"
           >
-            {task ? 'Update Task' : 'Create Task'}
+            {task ? t('Update Task') : t('Create Task')}
           </Button>
         </div>
       </DialogContent>

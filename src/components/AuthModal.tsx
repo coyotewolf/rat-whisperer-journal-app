@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
+  const { t } = useTranslation();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,8 +28,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     
     if (!email || !password) {
       toast({
-        title: "Error",
-        description: "Please fill in all fields",
+        title: t("Error"),
+        description: t("Please fill in all fields"),
         variant: "destructive",
       });
       return;
@@ -42,16 +44,16 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
       if (error) {
         toast({
-          title: "Error",
+          title: t("Error"),
           description: error.message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Success",
-          description: isSignUp 
-            ? "Account created successfully! Please check your email to confirm your account." 
-            : "Signed in successfully!",
+          title: t("Success"),
+          description: isSignUp
+            ? t("Account created successfully! Please check your email to confirm your account.")
+            : t("Signed in successfully!"),
         });
         onClose();
         setEmail("");
@@ -60,8 +62,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     } catch (error) {
       console.error("Auth error:", error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("Error"),
+        description: t("An unexpected error occurred"),
         variant: "destructive",
       });
     } finally {
@@ -90,33 +92,33 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
             <Sparkles className="h-12 w-12 text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">{isSignUp ? "Create Account" : "Sign In"}</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">{isSignUp ? t("Create Account") : t("Sign In")}</h3>
           <p className="text-purple-100 mb-4">
-            {isSignUp ? "Join us to track your furry friends!" : "Sign in to manage your rats"}
+            {isSignUp ? t("Join us to track your furry friends!") : t("Sign in to manage your rats")}
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("Email")}</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder={t("Enter your email")}
               required
               disabled={loading}
               className="bg-white/50 border-gray-300 text-gray-800 placeholder:text-gray-500"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("Password")}</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t("Enter your password")}
               required
               disabled={loading}
               minLength={6}
@@ -128,31 +130,31 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white"
             disabled={loading || !email || !password}
           >
-            {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
+            {loading ? t("Loading...") : (isSignUp ? t("Create Account") : t("Sign In"))}
           </Button>
           <div className="text-center text-sm text-gray-600">
             {isSignUp ? (
               <>
-                Already have an account?{" "}
+                {t("Already have an account?")}{" "}
                 <button
                   type="button"
                   onClick={handleToggleMode}
                   disabled={loading}
                   className="font-medium text-blue-600 hover:text-blue-800 underline"
                 >
-                  Sign in
+                  {t("Sign in")}
                 </button>
               </>
             ) : (
               <>
-                Don't have an account?{" "}
+                {t("Don't have an account?")}{" "}
                 <button
                   type="button"
                   onClick={handleToggleMode}
                   disabled={loading}
                   className="font-medium text-blue-600 hover:text-blue-800 underline"
                 >
-                  Sign up to sync your data across devices.
+                  {t("Sign up to sync your data across devices.")}
                 </button>
               </>
             )}

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Palette, Check, Sun, Moon, Smartphone } from "lucide-react";
@@ -11,6 +12,7 @@ interface ThemeSettingsProps {
 }
 
 const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
+  const { t } = useTranslation();
   const { settings, updateSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -18,33 +20,33 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
   const themes = [
     {
       id: "light",
-      name: "Light",
+      name: t("Light"),
       icon: Sun,
-      description: "Clean and bright interface",
+      description: t("Clean and bright interface"),
       preview: "bg-white border-gray-200",
       colors: ["bg-orange-500", "bg-blue-500", "bg-green-500"]
     },
     {
       id: "dark",
-      name: "Dark",
+      name: t("Dark"),
       icon: Moon,
-      description: "Easy on the eyes",
+      description: t("Easy on the eyes"),
       preview: "bg-gray-900 border-gray-700",
       colors: ["bg-orange-400", "bg-blue-400", "bg-green-400"]
     },
     {
       id: "sakura",
-      name: "Sakura Pink",
+      name: t("Sakura Pink"),
       icon: Palette,
-      description: "Soft and cute pink theme",
+      description: t("Soft and cute pink theme"),
       preview: "bg-pink-50 border-pink-200",
       colors: ["bg-pink-500", "bg-rose-500", "bg-purple-500"]
     },
     {
       id: "system",
-      name: "System",
+      name: t("System"),
       icon: Smartphone,
-      description: "Follow device settings",
+      description: t("Follow device settings"),
       preview: "bg-gradient-to-r from-gray-100 to-gray-200 border-gray-300",
       colors: ["bg-gray-500", "bg-gray-600", "bg-gray-700"]
     }
@@ -71,16 +73,18 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={onBack} className="mb-4 p-0 h-auto text-gray-500 hover:text-gray-700">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Settings
-      </Button>
+      <div className="flex items-center mb-4">
+        <Button variant="ghost" onClick={onBack} className="p-0 h-auto text-gray-500 hover:text-gray-700">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("Back to Settings")}
+        </Button>
+      </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" />
-            Theme Selection
+            {t("Theme Selection")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -118,7 +122,7 @@ const ThemeSettings = ({ onBack }: ThemeSettingsProps) => {
                       <div key={index} className={`w-4 h-4 rounded-full ${color}`}></div>
                     ))}
                   </div>
-                  <div className="text-xs opacity-70">Preview</div>
+                  <div className="text-xs opacity-70">{t("Preview")}</div>
                 </div>
               </div>
             );

@@ -1,5 +1,6 @@
 
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,6 +25,7 @@ const ProfilePictureUpload = ({
   forceOpen,
   onClose
 }: ProfilePictureUploadProps) => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -153,7 +155,7 @@ const ProfilePictureUpload = ({
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <DialogTitle className="flex-1 text-center">
-                Update {petName}'s Photo
+                {t("Update {{petName}}'s Photo", { petName })}
               </DialogTitle>
               <div className="w-10"></div> {/* Placeholder to balance the back button */}
             </div>
@@ -173,16 +175,16 @@ const ProfilePictureUpload = ({
                     <Upload className="h-12 w-12 text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Drag & drop a photo here</p>
-                    <p className="text-xs text-gray-500">or click to browse</p>
+                    <p className="text-sm font-medium">{t("Drag & drop a photo here")}</p>
+                    <p className="text-xs text-gray-500">{t("or click to browse")}</p>
                   </div>
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full"
                   >
                     <Camera className="h-4 w-4 mr-2" />
-                    Choose Photo
+                    {t("Choose Photo")}
                   </Button>
                 </div>
               </CardContent>
@@ -197,10 +199,10 @@ const ProfilePictureUpload = ({
                 <div className="flex gap-2 justify-center">
                   <Button onClick={saveImage} className="bg-gradient-to-r from-orange-500 to-pink-500">
                     <Heart className="h-4 w-4 mr-2" />
-                    Save Photo
+                    {t("Save Photo")}
                   </Button>
                   <Button variant="outline" onClick={() => setPreviewImage(null)}>
-                    Cancel
+                    {t("Cancel")}
                   </Button>
                 </div>
               </div>
@@ -208,7 +210,7 @@ const ProfilePictureUpload = ({
 
             {/* Default Avatars */}
             <div>
-              <h3 className="text-sm font-medium mb-3 text-center">Or choose a cute avatar</h3>
+              <h3 className="text-sm font-medium mb-3 text-center">{t("Or choose a cute avatar")}</h3>
               <div className="grid grid-cols-3 gap-3">
                 {defaultAvatars.map((avatar) => (
                   <button
@@ -233,7 +235,7 @@ const ProfilePictureUpload = ({
                 }}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Remove Photo
+                {t("Remove Photo")}
               </Button>
             )}
           </div>
