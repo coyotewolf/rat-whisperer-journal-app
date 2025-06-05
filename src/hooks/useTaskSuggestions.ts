@@ -36,43 +36,10 @@ export const useTaskSuggestions = () => {
       })));
     } catch (error) {
       console.error('Error fetching task suggestions:', error);
-      // Create default suggestions if none exist
-      await createDefaultSuggestions();
+      // No need to create default suggestions here anymore - the database trigger handles this
+      setSuggestions([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const createDefaultSuggestions = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const defaultSuggestions = [
-        { name: "Cage Cleaning", title: "Perform cage cleaning", priority: 'medium' as const },
-        { name: "Vet Appointment", title: "Vet Appointment for [Rat Name]", priority: 'high' as const },
-        { name: "Bedding Restock", title: "Restock bedding supplies", priority: 'low' as const },
-        { name: "Food Restock", title: "Restock rat food", priority: 'medium' as const },
-        { name: "Water Refill", title: "Refill water bottles", priority: 'medium' as const },
-        { name: "Playtime", title: "Schedule playtime", priority: 'low' as const },
-      ];
-
-      const { data, error } = await supabase
-        .from('task_suggestions')
-        .insert(defaultSuggestions.map(suggestion => ({
-          ...suggestion,
-          user_id: user.id
-        })))
-        .select();
-
-      if (error) throw error;
-      // Type cast the data to match our interface
-      setSuggestions((data || []).map(suggestion => ({
-        ...suggestion,
-        priority: suggestion.priority ? suggestion.priority as 'low' | 'medium' | 'high' : undefined
-      })));
-    } catch (error) {
-      console.error('Error creating default suggestions:', error);
     }
   };
 
