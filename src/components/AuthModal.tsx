@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -77,22 +77,25 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md backdrop-blur-md bg-white/80">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <DialogTitle className="flex-1 text-center">{isSignUp ? "Create Account" : "Sign In"}</DialogTitle>
-            <div className="w-10"></div>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-background/80 border-none shadow-none">
+        <div className="relative p-4 text-center py-12 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="absolute top-4 left-4 text-white hover:text-gray-200"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
+            <Sparkles className="h-12 w-12 text-white" />
           </div>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+          <h3 className="text-xl font-semibold text-white mb-2">{isSignUp ? "Create Account" : "Sign In"}</h3>
+          <p className="text-purple-100 mb-4">
+            {isSignUp ? "Join us to track your furry friends!" : "Sign in to manage your rats"}
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -103,6 +106,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               placeholder="Enter your email"
               required
               disabled={loading}
+              className="bg-white/50 border-gray-300 text-gray-800 placeholder:text-gray-500"
             />
           </div>
           <div className="space-y-2">
@@ -116,24 +120,43 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               required
               disabled={loading}
               minLength={6}
+              className="bg-white/50 border-gray-300 text-gray-800 placeholder:text-gray-500"
             />
           </div>
-          <Button 
-            type="submit" 
-            className="w-full" 
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white"
             disabled={loading || !email || !password}
           >
             {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={handleToggleMode}
-            disabled={loading}
-          >
-            {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-          </Button>
+          <div className="text-center text-sm text-gray-600">
+            {isSignUp ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={handleToggleMode}
+                  disabled={loading}
+                  className="font-medium text-blue-600 hover:text-blue-800 underline"
+                >
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <>
+                Don't have an account?{" "}
+                <button
+                  type="button"
+                  onClick={handleToggleMode}
+                  disabled={loading}
+                  className="font-medium text-blue-600 hover:text-blue-800 underline"
+                >
+                  Sign up to sync your data across devices.
+                </button>
+              </>
+            )}
+          </div>
         </form>
       </DialogContent>
     </Dialog>

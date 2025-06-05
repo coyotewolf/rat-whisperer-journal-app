@@ -3,33 +3,27 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks, ArrowLeft } from "lucide-react"; // Added ListChecks, ArrowLeft
+import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks, ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import AccountSettings from "./settings/AccountSettings";
+import AuthModal from "@/components/AuthModal"; // Import AuthModal
 import LanguageSettings from "./settings/LanguageSettings";
 import FontSettings from "./settings/FontSettings";
 import ThemeSettings from "./settings/ThemeSettings";
-import TaskSuggestionSettings from "./settings/TaskSuggestionSettings"; // Import TaskSuggestionSettings
+import TaskSuggestionSettings from "./settings/TaskSuggestionSettings";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes' | 'taskSuggestions';
+type SettingsSection = 'main' | 'language' | 'fonts' | 'themes' | 'taskSuggestions';
 
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main');
-  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); // State for AuthModal
+  const { user, signOut } = useAuth();
 
   const settingsSections = [
-    {
-      id: 'account' as const,
-      icon: user ? LogOut : LogIn,
-      title: user ? "Account" : "Sign In",
-      description: user ? "Manage your account settings" : "Sign in to sync your data",
-      color: "bg-blue-100 text-blue-700"
-    },
     {
       id: 'language' as const,
       icon: Globe,
@@ -62,8 +56,6 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
   const renderContent = () => {
     switch (currentSection) {
-      case 'account':
-        return <AccountSettings onBack={() => setCurrentSection('main')} />;
       case 'language':
         return <LanguageSettings onBack={() => setCurrentSection('main')} />;
       case 'fonts':
@@ -71,10 +63,29 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       case 'themes':
         return <ThemeSettings onBack={() => setCurrentSection('main')} />;
       case 'taskSuggestions':
-        return <TaskSuggestionSettings />; // No onBack needed if it's self-contained or uses Dialog for sub-actions
+        return <TaskSuggestionSettings />;
       default:
         return (
           <div className="grid grid-cols-1 gap-3 mt-4">
+            {/* Account/Sign In Card */}
+            <Card
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => user ? signOut() : setIsAuthModalOpen(true)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`inline-flex p-2 rounded-lg bg-blue-100 text-blue-700`}>
+                    {user ? <LogOut className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-800">{user ? "Sign Out" : "Sign In"}</p>
+                    <p className="text-xs text-gray-600">{user ? "Sign out of your account" : "Sign in to sync your data"}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Other Settings Sections */}
             {settingsSections.map((section) => {
               const Icon = section.icon;
               return (
@@ -99,34 +110,37 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            {currentSection !== 'main' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCurrentSection('main')}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            )}
-            <DialogTitle className={`flex-1 ${currentSection === 'main' ? 'text-center' : 'text-left'}`}>
-              {currentSection === 'main' ? 'Settings' : settingsSections.find(s => s.id === currentSection)?.title}
-            </DialogTitle>
-            {currentSection === 'main' && <div className="w-10"></div>} {/* Placeholder for main section */}
-          </div>
-        </DialogHeader>
-        {renderContent()}
-        {currentSection === 'main' && (
-          <Button variant="ghost" onClick={onClose} className="mt-4 text-gray-500 hover:text-gray-700">
-            Close
-          </Button>
-        )}
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              {currentSection !== 'main' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentSection('main')}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              )}
+              <DialogTitle className={`flex-1 ${currentSection === 'main' ? 'text-center' : 'text-left'}`}>
+                {currentSection === 'main' ? 'Settings' : settingsSections.find(s => s.id === currentSection)?.title}
+              </DialogTitle>
+              {currentSection === 'main' && <div className="w-10"></div>} {/* Placeholder for main section */}
+            </div>
+          </DialogHeader>
+          {renderContent()}
+          {currentSection === 'main' && (
+            <Button variant="ghost" onClick={onClose} className="mt-4 text-gray-500 hover:text-gray-700">
+              Close
+            </Button>
+          )}
+        </DialogContent>
+      </Dialog>
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+    </>
   );
 };
 
