@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,8 +7,8 @@ import { useTranslation } from 'react-i18next';
 export interface LogEntry {
   id: string;
   type: string;
-  ratId?: string; // Changed from rats?: string[]
-  ratName?: string; // Added for display purposes
+  ratIds?: string[]; // Changed from ratId to ratIds for multiple rats
+  ratNames?: string[]; // Added for display purposes (multiple names)
   behavior?: string;
   weight?: number;
   temperature?: number;
@@ -58,7 +57,8 @@ export const useLogEntries = () => {
         .from('log_entries')
         .select(`
           *,
-          rats!inner(id, name)
+          rat_ids,
+          rats(id, name)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -70,11 +70,16 @@ export const useLogEntries = () => {
         // Safely cast content to our expected type
         const content = (entry.content as LogEntryContent) || {};
         
+        // Ensure rat_ids is an array, even if null or undefined
+        const ratIds = entry.rat_ids || [];
+        // Map rat names from the joined 'rats' data if available, otherwise empty array
+        const ratNames = entry.rats ? (Array.isArray(entry.rats) ? entry.rats.map((r: any) => r.name) : [entry.rats.name]) : [];
+        
         return {
           id: entry.id,
           type: entry.type,
-          ratId: entry.rats?.id, // Map rat ID
-          ratName: entry.rats?.name, // Map rat name for display
+          ratIds: ratIds, // Directly use the rat_ids array
+          ratNames: ratNames, // Array of rat names for display
           behavior: content.behavior,
           weight: content.weight,
           temperature: content.temperature,
@@ -125,7 +130,8 @@ export const useLogEntries = () => {
         .from('log_entries')
         .insert({
           user_id: user.id,
-          rat_id: logData.ratId || null, // Use ratId directly
+          rat_id: logData.ratIds && logData.ratIds.length > 0 ? logData.ratIds[0] : null, // Provide a single rat_id for compatibility
+          rat_ids: logData.ratIds || [], // Use ratIds array
           type: logData.type,
           content: content as any // Cast to any to satisfy Json type
         })
@@ -176,7 +182,8 @@ export const useLogEntries = () => {
         .from('log_entries')
         .update({
           content: content as any, // Cast to any to satisfy Json type
-          rat_id: updates.ratId || null, // Update ratId as well
+          rat_id: updates.ratIds && updates.ratIds.length > 0 ? updates.ratIds[0] : null, // Update single rat_id for compatibility
+          rat_ids: updates.ratIds || [], // Update rat_ids array
         })
         .eq('id', logId);
 
@@ -238,7 +245,7 @@ export const useLogEntries = () => {
     loading,
     addLog,
     updateLog,
-    deleteLog, // Add deleteLog to the returned object
+    deleteLog,
     refreshLogs: fetchLogs,
   };
 };
