@@ -125,7 +125,7 @@ export const useLogEntries = () => {
           user_id: user.id,
           rat_id: logData.rats?.[0] || null, // For now, use first rat
           type: logData.type,
-          content
+          content: content as any // Cast to any to satisfy Json type
         })
         .select()
         .single();
@@ -172,7 +172,7 @@ export const useLogEntries = () => {
 
       const { error } = await supabase
         .from('log_entries')
-        .update({ content })
+        .update({ content: content as any }) // Cast to any to satisfy Json type
         .eq('id', logId);
 
       if (error) throw error;
