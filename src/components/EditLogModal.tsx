@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import MultiSelectRats from "@/components/MultiSelectRats";
+import LogTagSuggestions from "@/components/LogTagSuggestions";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Trash2, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import {
@@ -31,9 +32,8 @@ interface EditLogModalProps {
 
 const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }: EditLogModalProps) => {
   const [formData, setFormData] = useState<any>({});
-  const [selectedRats, setSelectedRats] = useState<string[]>([]); // Now stores multiple rat IDs
+  const [selectedRats, setSelectedRats] = useState<string[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
-  const [newHashtag, setNewHashtag] = useState("");
   const [loading, setLoading] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const { toast } = useToast();
@@ -66,10 +66,13 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     setSelectedRats(ratIds);
   };
   
-  const addHashtag = () => {
-    if (newHashtag.trim() && !hashtags.includes(newHashtag.trim())) {
-      setHashtags([...hashtags, newHashtag.trim()]);
-      setNewHashtag("");
+  const handleTagSelection = (tagName: string) => {
+    if (hashtags.includes(tagName)) {
+      // Remove tag if already selected
+      setHashtags(prev => prev.filter(tag => tag !== tagName));
+    } else {
+      // Add tag if not selected
+      setHashtags(prev => [...prev, tagName]);
     }
   };
 
@@ -84,10 +87,9 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     const updatedLogData = {
       ...logToEdit,
       ...formData,
-      ratIds: selectedRats, // Use ratIds array instead of single rat_id
+      ratIds: selectedRats,
       hashtags: hashtags,
-      // Ensure timestamp is preserved or updated as needed
-      timestamp: logToEdit.timestamp, // Or new Date().toISOString() if you want to update it
+      timestamp: logToEdit.timestamp,
     };
     
     // Simulate API call
@@ -99,22 +101,19 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
       description: t("Log entry updated successfully!"),
     });
     setLoading(false);
-    onClose(); // Close modal after successful update
+    onClose();
   };
 
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await onLogDeleted(logToEdit.id); // Call the callback passed from LogsPage
-      // Toast notifications are handled by the useLogEntries hook or LogsPage
-      onClose(); // Close edit modal
+      await onLogDeleted(logToEdit.id);
+      onClose();
     } catch (error) {
-      // Error is caught and handled by the caller (LogsPage -> useLogEntries)
-      // Toast for error is also handled there.
       console.error("Error during onDelete in EditLogModal, should be handled by caller:", error);
     } finally {
       setLoading(false);
-      setShowConfirmDelete(false); // Close confirmation dialog
+      setShowConfirmDelete(false);
     }
   };
 
@@ -147,7 +146,6 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
                 onChange={handleInputChange}
               />
             </div>
-            {/* Add other health-specific fields like symptoms if needed */}
           </>
         );
       case "environment":
@@ -225,24 +223,19 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
           </div>
 
           <div className="space-y-2">
-            <Label>{t("Hashtags")}</Label>
+            <Label>{t("Tags")}</Label>
             <div className="flex flex-wrap gap-1 mb-2">
               {hashtags.map(tag => (
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                   {tag}
-                  <Trash2 className="h-3 w-3 cursor-pointer" onClick={() => removeHashtag(tag)} />
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeHashtag(tag)} />
                 </Badge>
               ))}
             </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder={t("New hashtag")}
-                value={newHashtag}
-                onChange={(e) => setNewHashtag(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addHashtag();}}}
-              />
-              <Button type="button" onClick={addHashtag} variant="outline">{t("Add Tag")}</Button>
-            </div>
+            <LogTagSuggestions 
+              onSelect={handleTagSelection}
+              selectedTags={hashtags}
+            />
           </div>
           
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2">
