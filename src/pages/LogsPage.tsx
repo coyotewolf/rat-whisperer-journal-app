@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 const LogsPage = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { logs, loading, updateLog } = useLogEntries();
+  const { logs, loading, updateLog, deleteLog } = useLogEntries();
   
   const [filteredLogs, setFilteredLogs] = useState(logs);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,7 +39,7 @@ const LogsPage = () => {
     if (searchQuery) {
       filtered = filtered.filter(log =>
         log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.rats?.some(rat => rat.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        log.ratName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.behavior?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -108,6 +108,17 @@ const LogsPage = () => {
     }
   };
 
+  const handleDeleteLog = async (deletedLogId: string) => {
+    try {
+      await deleteLog(deletedLogId);
+      setIsEditModalOpen(false);
+      setEditingLog(null);
+      console.log("Log deleted from Supabase:", deletedLogId);
+    } catch (error) {
+      console.error("Failed to delete log:", error);
+    }
+  };
+
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
     
@@ -138,13 +149,11 @@ const LogsPage = () => {
             </div>
           </div>
           
-          {log.rats && (
+          {log.ratName && (
             <div className="flex flex-wrap gap-1 mb-2">
-              {log.rats.map((rat: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs border-white/20 text-white backdrop-blur-sm">
-                  {rat}
-                </Badge>
-              ))}
+              <Badge variant="outline" className="text-xs border-white/20 text-white backdrop-blur-sm">
+                {log.ratName}
+              </Badge>
             </div>
           )}
           
@@ -283,6 +292,7 @@ const LogsPage = () => {
           }}
           logToEdit={editingLog}
           onLogUpdated={handleUpdateLog}
+          onLogDeleted={handleDeleteLog}
         />
       )}
 

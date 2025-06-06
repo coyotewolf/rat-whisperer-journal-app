@@ -6,23 +6,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface EditLogModalProps {
   isOpen: boolean;
   onClose: () => void;
   logToEdit: any;
   onLogUpdated: (updatedLog: any) => void;
+  onLogDeleted: (deletedLogId: string) => void;
 }
 
-const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModalProps) => {
+const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }: EditLogModalProps) => {
   const [formData, setFormData] = useState<any>({});
   const [selectedRats, setSelectedRats] = useState<string[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [newHashtag, setNewHashtag] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -94,6 +106,22 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
     onClose(); // Close modal after successful update
   };
 
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await onLogDeleted(logToEdit.id); // Call the callback passed from LogsPage
+      // Toast notifications are handled by the useLogEntries hook or LogsPage
+      onClose(); // Close edit modal
+    } catch (error) {
+      // Error is caught and handled by the caller (LogsPage -> useLogEntries)
+      // Toast for error is also handled there.
+      console.error("Error during onDelete in EditLogModal, should be handled by caller:", error);
+    } finally {
+      setLoading(false);
+      setShowConfirmDelete(false); // Close confirmation dialog
+    }
+  };
+
   if (!logToEdit) return null;
 
   const renderSpecificFields = () => {
@@ -158,17 +186,25 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 mr-2" // Added margin to the right
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">{t("Edit Log Entry")} - {t(logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1))}</DialogTitle>
-            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            <DialogTitle className="text-center">{t("Edit Log Entry")} - {t(logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1))}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConfirmDelete(true)}
+              disabled={loading}
+              className="text-red-500 hover:text-red-700 ml-auto" // Use ml-auto to push to the right
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
           </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -226,13 +262,37 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated }: EditLogModal
             </div>
           </div>
           
-          <DialogFooter>
-            <Button type="submit" disabled={loading}>
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="w-full sm:w-auto mb-2 sm:mb-0">
+                {t("Cancel")}
+              </Button>
+            </DialogClose>
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading ? t("Saving...") : t("Save Changes")}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <AlertDialog open={showConfirmDelete} onOpenChange={setShowConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <AlertTriangle className="mr-2 h-5 w-5 text-red-500" /> {t("Confirm Deletion")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("Are you sure you want to permanently delete this log entry? This action cannot be undone.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={loading} className="bg-red-500 hover:bg-red-600 text-white">
+              {loading ? t("Deleting...") : t("Confirm Delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };

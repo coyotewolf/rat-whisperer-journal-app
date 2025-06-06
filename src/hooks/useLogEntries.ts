@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 export interface LogEntry {
   id: string;
   type: string;
-  rats?: string[];
+  ratId?: string; // Changed from rats?: string[]
+  ratName?: string; // Added for display purposes
   behavior?: string;
   weight?: number;
   temperature?: number;
@@ -57,7 +58,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .select(`
           *,
-          rats!inner(name)
+          rats!inner(id, name)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -72,7 +73,8 @@ export const useLogEntries = () => {
         return {
           id: entry.id,
           type: entry.type,
-          rats: entry.rats ? [entry.rats.name] : [],
+          ratId: entry.rats?.id, // Map rat ID
+          ratName: entry.rats?.name, // Map rat name for display
           behavior: content.behavior,
           weight: content.weight,
           temperature: content.temperature,
@@ -123,7 +125,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .insert({
           user_id: user.id,
-          rat_id: logData.rats?.[0] || null, // For now, use first rat
+          rat_id: logData.ratId || null, // Use ratId directly
           type: logData.type,
           content: content as any // Cast to any to satisfy Json type
         })
@@ -172,7 +174,10 @@ export const useLogEntries = () => {
 
       const { error } = await supabase
         .from('log_entries')
-        .update({ content: content as any }) // Cast to any to satisfy Json type
+        .update({
+          content: content as any, // Cast to any to satisfy Json type
+          rat_id: updates.ratId || null, // Update ratId as well
+        })
         .eq('id', logId);
 
       if (error) throw error;
@@ -195,15 +200,45 @@ export const useLogEntries = () => {
     }
   };
 
+  const deleteLog = async (logId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('log_entries')
+        .delete()
+        .eq('id', logId);
+
+      if (error) throw error;
+
+      // Refresh logs after deleting
+      await fetchLogs();
+
+      toast({
+        title: t("Success"),
+        description: t("Activity log deleted successfully"),
+      });
+    } catch (error) {
+      console.error('Error deleting log:', error);
+      toast({
+        title: t("Error"),
+        description: t("Failed to delete activity log"),
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+ 
   useEffect(() => {
     fetchLogs();
   }, [user]);
-
+ 
   return {
     logs,
     loading,
     addLog,
     updateLog,
+    deleteLog, // Add deleteLog to the returned object
     refreshLogs: fetchLogs,
   };
 };
