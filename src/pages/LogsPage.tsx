@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +40,7 @@ const LogsPage = () => {
     if (searchQuery) {
       filtered = filtered.filter(log =>
         log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.ratNames?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (log.ratNames && log.ratNames.some(name => name.toLowerCase().includes(searchQuery.toLowerCase()))) ||
         log.behavior?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }

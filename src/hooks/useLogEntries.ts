@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -128,6 +129,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .insert({
           user_id: user.id,
+          rat_id: logData.ratIds?.[0] || '', // Use first rat ID as primary (required field)
           rat_ids: logData.ratIds || [], // Use ratIds array
           type: logData.type,
           content: content as any // Cast to any to satisfy Json type
@@ -179,6 +181,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .update({
           content: content as any, // Cast to any to satisfy Json type
+          rat_id: updates.ratIds?.[0] || '', // Use first rat ID as primary (required field)
           rat_ids: updates.ratIds || [], // Update rat_ids array
         })
         .eq('id', logId);

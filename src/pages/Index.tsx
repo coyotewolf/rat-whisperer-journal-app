@@ -21,7 +21,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { tasks, loading, createTask, updateTask } = useTasks();
-  const { logs, addLog, updateLog } = useLogEntries();
+  const { logs, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -52,11 +52,11 @@ const Index = () => {
       return {
         id: log.id,
         type: log.behavior || log.type,
-        rat: log.rats ? log.rats.join(', ') : t('Unknown'),
+        rat: log.ratNames ? log.ratNames.join(', ') : t('Unknown'),
         time: timeAgo,
         status: log.type === 'health' ? 'good' : log.type === 'environment' ? 'completed' : 'completed',
         notes: log.notes,
-        rats: log.rats || [],
+        ratNames: log.ratNames || [],
         hashtags: log.hashtags || [],
         weight: log.weight,
         originalLog: log
@@ -68,7 +68,7 @@ const Index = () => {
     try {
       await addLog({
         type: newLog.type,
-        rats: newLog.rats || [],
+        ratIds: newLog.ratIds || [],
         behavior: newLog.behavior,
         weight: newLog.weight,
         temperature: newLog.temperature,
@@ -126,6 +126,17 @@ const Index = () => {
       console.log(t("Activity updated in Supabase:"), updatedActivity);
     } catch (error) {
       console.error(t("Failed to update activity:"), error);
+    }
+  };
+
+  const handleDeleteActivity = async (deletedActivityId: string) => {
+    try {
+      await deleteLog(deletedActivityId);
+      setIsEditModalOpen(false);
+      setEditingActivity(null);
+      console.log(t("Activity deleted from Supabase:"), deletedActivityId);
+    } catch (error) {
+      console.error(t("Failed to delete activity:"), error);
     }
   };
 
@@ -382,6 +393,7 @@ const Index = () => {
           }}
           logToEdit={editingActivity}
           onLogUpdated={handleUpdateActivity}
+          onLogDeleted={handleDeleteActivity}
         />
       )}
     </div>
