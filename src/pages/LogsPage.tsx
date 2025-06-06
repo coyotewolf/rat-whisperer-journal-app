@@ -39,7 +39,11 @@ const LogsPage = () => {
     if (searchQuery) {
       filtered = filtered.filter(log =>
         log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+<<<<<<< HEAD
         log.ratNames?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+=======
+        (log.ratNames && log.ratNames.some(name => name.toLowerCase().includes(searchQuery.toLowerCase()))) ||
+>>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
         log.behavior?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
