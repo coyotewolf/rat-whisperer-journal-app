@@ -124,10 +124,14 @@ export const useLogEntries = () => {
         amount: logData.amount,
       };
 
+      // Get the first rat ID for the required rat_id field, or use empty string if none
+      const primaryRatId = logData.ratIds && logData.ratIds.length > 0 ? logData.ratIds[0] : '';
+
       const { data, error } = await supabase
         .from('log_entries')
         .insert({
           user_id: user.id,
+          rat_id: primaryRatId, // Required field - use first rat or empty string
           rat_ids: logData.ratIds || [], // Use ratIds array
           type: logData.type,
           content: content as any // Cast to any to satisfy Json type
@@ -175,12 +179,22 @@ export const useLogEntries = () => {
         amount: updates.amount,
       };
 
+      // Get the first rat ID for the required rat_id field, or keep existing
+      const primaryRatId = updates.ratIds && updates.ratIds.length > 0 ? updates.ratIds[0] : undefined;
+
+      const updateData: any = {
+        content: content as any, // Cast to any to satisfy Json type
+        rat_ids: updates.ratIds || [], // Update rat_ids array
+      };
+
+      // Only update rat_id if we have a primary rat
+      if (primaryRatId !== undefined) {
+        updateData.rat_id = primaryRatId;
+      }
+
       const { error } = await supabase
         .from('log_entries')
-        .update({
-          content: content as any, // Cast to any to satisfy Json type
-          rat_ids: updates.ratIds || [], // Update rat_ids array
-        })
+        .update(updateData)
         .eq('id', logId);
 
       if (error) throw error;
