@@ -36,6 +36,7 @@ export type Database = {
           created_at: string
           id: string
           rat_id: string
+          rat_ids: string[]
           type: string
           user_id: string
         }
@@ -44,6 +45,7 @@ export type Database = {
           created_at?: string
           id?: string
           rat_id: string
+          rat_ids?: string[]
           type: string
           user_id: string
         }
@@ -52,6 +54,7 @@ export type Database = {
           created_at?: string
           id?: string
           rat_id?: string
+          rat_ids?: string[]
           type?: string
           user_id?: string
         }

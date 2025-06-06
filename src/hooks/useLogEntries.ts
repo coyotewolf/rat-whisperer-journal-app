@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,8 +7,8 @@ import { useTranslation } from 'react-i18next';
 export interface LogEntry {
   id: string;
   type: string;
-  ratId?: string; // Changed from rats?: string[]
-  ratName?: string; // Added for display purposes
+  ratIds?: string[]; // Changed from ratId to ratIds for multiple rats
+  ratNames?: string[]; // Added for display purposes (multiple names)
   behavior?: string;
   weight?: number;
   temperature?: number;
@@ -70,11 +69,15 @@ export const useLogEntries = () => {
         // Safely cast content to our expected type
         const content = (entry.content as LogEntryContent) || {};
         
+        // Handle both rat_ids array and single rat relationship
+        const ratIds = entry.rat_ids && entry.rat_ids.length > 0 ? entry.rat_ids : (entry.rats?.id ? [entry.rats.id] : []);
+        const ratNames = entry.rats ? [entry.rats.name] : [];
+        
         return {
           id: entry.id,
           type: entry.type,
-          ratId: entry.rats?.id, // Map rat ID
-          ratName: entry.rats?.name, // Map rat name for display
+          ratIds: ratIds, // Use rat_ids array
+          ratNames: ratNames, // Array of rat names for display
           behavior: content.behavior,
           weight: content.weight,
           temperature: content.temperature,
@@ -125,7 +128,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .insert({
           user_id: user.id,
-          rat_id: logData.ratId || null, // Use ratId directly
+          rat_ids: logData.ratIds || [], // Use ratIds array
           type: logData.type,
           content: content as any // Cast to any to satisfy Json type
         })
@@ -176,7 +179,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .update({
           content: content as any, // Cast to any to satisfy Json type
-          rat_id: updates.ratId || null, // Update ratId as well
+          rat_ids: updates.ratIds || [], // Update rat_ids array
         })
         .eq('id', logId);
 
@@ -238,7 +241,7 @@ export const useLogEntries = () => {
     loading,
     addLog,
     updateLog,
-    deleteLog, // Add deleteLog to the returned object
+    deleteLog,
     refreshLogs: fetchLogs,
   };
 };

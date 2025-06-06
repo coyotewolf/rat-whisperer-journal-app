@@ -39,7 +39,7 @@ const LogsPage = () => {
     if (searchQuery) {
       filtered = filtered.filter(log =>
         log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.ratName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.ratNames?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.behavior?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -149,11 +149,13 @@ const LogsPage = () => {
             </div>
           </div>
           
-          {log.ratName && (
+          {log.ratNames && log.ratNames.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
-              <Badge variant="outline" className="text-xs border-white/20 text-white backdrop-blur-sm">
-                {log.ratName}
-              </Badge>
+              {log.ratNames.map((ratName: string, index: number) => (
+                <Badge key={index} variant="outline" className="text-xs border-white/20 text-white backdrop-blur-sm">
+                  {ratName}
+                </Badge>
+              ))}
             </div>
           )}
           

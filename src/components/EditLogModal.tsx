@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import MultiSelectRats from "@/components/MultiSelectRats"; // Added
+import MultiSelectRats from "@/components/MultiSelectRats";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -30,7 +31,7 @@ interface EditLogModalProps {
 
 const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }: EditLogModalProps) => {
   const [formData, setFormData] = useState<any>({});
-  const [selectedRats, setSelectedRats] = useState<string[]>([]); // This will now store rat IDs
+  const [selectedRats, setSelectedRats] = useState<string[]>([]); // Now stores multiple rat IDs
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [newHashtag, setNewHashtag] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,8 +50,8 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
         humidity: logToEdit.humidity || "",
         // Add other fields as necessary based on log structure
       });
-      // Assuming logToEdit.ratId contains a single rat ID
-      setSelectedRats(logToEdit.ratId ? [logToEdit.ratId] : []); 
+      // Use ratIds array if available, otherwise fall back to single ratId
+      setSelectedRats(logToEdit.ratIds || (logToEdit.ratId ? [logToEdit.ratId] : [])); 
       setHashtags(logToEdit.hashtags || []);
     }
   }, [logToEdit]);
@@ -83,7 +84,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     const updatedLogData = {
       ...logToEdit,
       ...formData,
-      rat_id: selectedRats[0] || null, // Use the first selected rat ID, or null if none
+      ratIds: selectedRats, // Use ratIds array instead of single rat_id
       hashtags: hashtags,
       // Ensure timestamp is preserved or updated as needed
       timestamp: logToEdit.timestamp, // Or new Date().toISOString() if you want to update it
@@ -186,7 +187,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 mr-2" // Added margin to the right
+              className="text-gray-500 hover:text-gray-700 mr-2"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -196,7 +197,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
               size="sm"
               onClick={() => setShowConfirmDelete(true)}
               disabled={loading}
-              className="text-red-500 hover:text-red-700 ml-auto" // Use ml-auto to push to the right
+              className="text-red-500 hover:text-red-700 ml-auto"
             >
               <Trash2 className="h-5 w-5" />
             </Button>
