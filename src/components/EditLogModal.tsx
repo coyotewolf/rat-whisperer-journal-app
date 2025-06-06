@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
-import { LogEntry } from "@/hooks/useLogEntries"; // Import LogEntry type
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,18 +21,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Import specific log form components
-import BehaviorLogForm from "@/components/log-forms/BehaviorLogForm";
-import HealthWeightLogForm from "@/components/log-forms/HealthWeightLogForm";
-import EnvironmentLogForm from "@/components/log-forms/EnvironmentLogForm";
-import MedicationLogForm from "@/components/log-forms/MedicationLogForm";
-import FeedingLogForm from "@/components/log-forms/FeedingLogForm";
-
 interface EditLogModalProps {
   isOpen: boolean;
   onClose: () => void;
-  logToEdit: LogEntry | null; // Use LogEntry type
-  onLogUpdated: (updatedLog: LogEntry) => void; // Use LogEntry type
+  logToEdit: any;
+  onLogUpdated: (updatedLog: any) => void;
   onLogDeleted: (deletedLogId: string) => void;
 }
 
@@ -56,18 +48,10 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
         weight: logToEdit.weight || "",
         temperature: logToEdit.temperature || "",
         humidity: logToEdit.humidity || "",
-        symptoms: logToEdit.symptoms || [], // Added
-        medication: logToEdit.medication || "", // Added
-        dose: logToEdit.dose || "", // Added
-        food: logToEdit.food || "", // Added
-        amount: logToEdit.amount || "", // Added
+        // Add other fields as necessary based on log structure
       });
-<<<<<<< HEAD
-      setSelectedRats(logToEdit.ratIds || []);
-=======
       // Use ratIds array if available, otherwise fall back to single ratId
       setSelectedRats(logToEdit.ratIds || (logToEdit.ratId ? [logToEdit.ratId] : [])); 
->>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
       setHashtags(logToEdit.hashtags || []);
     }
   }, [logToEdit]);
@@ -100,11 +84,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     const updatedLogData = {
       ...logToEdit,
       ...formData,
-<<<<<<< HEAD
-      rat_ids: selectedRats, // Now correctly passing the array of rat IDs
-=======
       ratIds: selectedRats, // Use ratIds array instead of single rat_id
->>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
       hashtags: hashtags,
       // Ensure timestamp is preserved or updated as needed
       timestamp: logToEdit.timestamp, // Or new Date().toISOString() if you want to update it
@@ -141,20 +121,58 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
   if (!logToEdit) return null;
 
   const renderSpecificFields = () => {
-    const commonProps = { formData, handleInputChange };
-
     switch (logToEdit.type) {
       case "behavior":
-        return <BehaviorLogForm {...commonProps} />;
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="behavior">{t("Behavior")}</Label>
+              <Input
+                id="behavior"
+                value={formData.behavior || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+          </>
+        );
       case "health":
-      case "weight":
-        return <HealthWeightLogForm {...commonProps} setFormData={setFormData} logType={logToEdit.type} />;
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="weight">{t("Weight (g)")}</Label>
+              <Input
+                id="weight"
+                type="number"
+                value={formData.weight || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            {/* Add other health-specific fields like symptoms if needed */}
+          </>
+        );
       case "environment":
-        return <EnvironmentLogForm {...commonProps} />;
-      case "medication":
-        return <MedicationLogForm {...commonProps} />;
-      case "feeding":
-        return <FeedingLogForm {...commonProps} />;
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="temperature">{t("Temperature (°C)")}</Label>
+              <Input
+                id="temperature"
+                type="number"
+                value={formData.temperature || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="humidity">{t("Humidity (%)")}</Label>
+              <Input
+                id="humidity"
+                type="number"
+                value={formData.humidity || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+          </>
+        );
       default:
         return null;
     }

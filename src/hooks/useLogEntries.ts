@@ -57,8 +57,7 @@ export const useLogEntries = () => {
         .from('log_entries')
         .select(`
           *,
-          rat_ids,
-          rats(id, name)
+          rats!inner(id, name)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -70,25 +69,14 @@ export const useLogEntries = () => {
         // Safely cast content to our expected type
         const content = (entry.content as LogEntryContent) || {};
         
-<<<<<<< HEAD
-        // Ensure rat_ids is an array, even if null or undefined
-        const ratIds = entry.rat_ids || [];
-        // Map rat names from the joined 'rats' data if available, otherwise empty array
-        const ratNames = entry.rats ? (Array.isArray(entry.rats) ? entry.rats.map((r: any) => r.name) : [entry.rats.name]) : [];
-=======
         // Handle both rat_ids array and single rat relationship
         const ratIds = entry.rat_ids && entry.rat_ids.length > 0 ? entry.rat_ids : (entry.rats?.id ? [entry.rats.id] : []);
         const ratNames = entry.rats ? [entry.rats.name] : [];
->>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
         
         return {
           id: entry.id,
           type: entry.type,
-<<<<<<< HEAD
-          ratIds: ratIds, // Directly use the rat_ids array
-=======
           ratIds: ratIds, // Use rat_ids array
->>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
           ratNames: ratNames, // Array of rat names for display
           behavior: content.behavior,
           weight: content.weight,
@@ -136,18 +124,10 @@ export const useLogEntries = () => {
         amount: logData.amount,
       };
 
-      // Get the first rat ID for the required rat_id field, or use empty string if none
-      const primaryRatId = logData.ratIds && logData.ratIds.length > 0 ? logData.ratIds[0] : '';
-
       const { data, error } = await supabase
         .from('log_entries')
         .insert({
           user_id: user.id,
-<<<<<<< HEAD
-          rat_id: logData.ratIds && logData.ratIds.length > 0 ? logData.ratIds[0] : null, // Provide a single rat_id for compatibility
-=======
-          rat_id: primaryRatId, // Required field - use first rat or empty string
->>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
           rat_ids: logData.ratIds || [], // Use ratIds array
           type: logData.type,
           content: content as any // Cast to any to satisfy Json type
@@ -195,30 +175,12 @@ export const useLogEntries = () => {
         amount: updates.amount,
       };
 
-      // Get the first rat ID for the required rat_id field, or keep existing
-      const primaryRatId = updates.ratIds && updates.ratIds.length > 0 ? updates.ratIds[0] : undefined;
-
-      const updateData: any = {
-        content: content as any, // Cast to any to satisfy Json type
-        rat_ids: updates.ratIds || [], // Update rat_ids array
-      };
-
-      // Only update rat_id if we have a primary rat
-      if (primaryRatId !== undefined) {
-        updateData.rat_id = primaryRatId;
-      }
-
       const { error } = await supabase
         .from('log_entries')
-<<<<<<< HEAD
         .update({
           content: content as any, // Cast to any to satisfy Json type
-          rat_id: updates.ratIds && updates.ratIds.length > 0 ? updates.ratIds[0] : null, // Update single rat_id for compatibility
           rat_ids: updates.ratIds || [], // Update rat_ids array
         })
-=======
-        .update(updateData)
->>>>>>> 32d5d8a06bf9125d34511349937335c6b9453539
         .eq('id', logId);
 
       if (error) throw error;
