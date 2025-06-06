@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MultiSelectRats from "@/components/MultiSelectRats"; // Added
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -30,16 +30,13 @@ interface EditLogModalProps {
 
 const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }: EditLogModalProps) => {
   const [formData, setFormData] = useState<any>({});
-  const [selectedRats, setSelectedRats] = useState<string[]>([]);
+  const [selectedRats, setSelectedRats] = useState<string[]>([]); // This will now store rat IDs
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [newHashtag, setNewHashtag] = useState("");
   const [loading, setLoading] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
-
-  // Hardcoded rats for now, similar to LogsPage
-  const availableRats = ["Pepper", "Salt", "Sugar", "Spice"]; // Example, adjust as needed
 
   useEffect(() => {
     if (logToEdit) {
@@ -52,7 +49,8 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
         humidity: logToEdit.humidity || "",
         // Add other fields as necessary based on log structure
       });
-      setSelectedRats(logToEdit.rats || []);
+      // Assuming logToEdit.ratId contains a single rat ID
+      setSelectedRats(logToEdit.ratId ? [logToEdit.ratId] : []); 
       setHashtags(logToEdit.hashtags || []);
     }
   }, [logToEdit]);
@@ -62,12 +60,9 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     setFormData((prev: any) => ({ ...prev, [id]: value }));
   };
 
-  const handleSelectChange = (field: string, value: string | string[]) => {
-    if (field === "rats") {
-      setSelectedRats(Array.isArray(value) ? value : [value]); // Assuming single rat selection for now, adjust if multi-select
-    } else {
-      setFormData((prev: any) => ({ ...prev, [field]: value }));
-    }
+  // This function will be called by the MultiSelectRats component
+  const handleRatSelectionChange = (ratIds: string[]) => {
+    setSelectedRats(ratIds);
   };
   
   const addHashtag = () => {
@@ -88,7 +83,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     const updatedLogData = {
       ...logToEdit,
       ...formData,
-      rats: selectedRats,
+      rat_id: selectedRats[0] || null, // Use the first selected rat ID, or null if none
       hashtags: hashtags,
       // Ensure timestamp is preserved or updated as needed
       timestamp: logToEdit.timestamp, // Or new Date().toISOString() if you want to update it
@@ -210,24 +205,11 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="rats">{t("Rats")}</Label>
-            {/* This is a simplified single select. If multiple rats can be associated, this needs to be a multi-select component */}
-            <Select
-              value={selectedRats[0] || ""} // Assuming one rat for simplicity, adjust if multiple
-              onValueChange={(value) => handleSelectChange("rats", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("Select a rat")} />
-              </SelectTrigger>
-              <SelectContent>
-                {availableRats.map(rat => (
-                  <SelectItem key={rat} value={rat}>{rat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* Display selected rats if multi-select is implemented */}
-            {/* <div className="flex flex-wrap gap-1 mt-1">
-              {selectedRats.map(rat => <Badge key={rat}>{rat}</Badge>)}
-            </div> */}
+            <MultiSelectRats
+              selectedRatIds={selectedRats}
+              onSelectionChange={handleRatSelectionChange}
+              placeholder={t("Select rats")}
+            />
           </div>
 
           {renderSpecificFields()}

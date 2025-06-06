@@ -95,7 +95,7 @@ const MultiSelectRats = ({ selectedRatIds, onSelectionChange, placeholder = "Sel
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-2">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2" align="start" sideOffset={5}>
         <div className="space-y-2">
           {rats.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("No active rats found")}</p>
