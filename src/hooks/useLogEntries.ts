@@ -23,6 +23,21 @@ export interface LogEntry {
   amount?: string;
 }
 
+// Type for the content field from Supabase
+interface LogEntryContent {
+  behavior?: string;
+  weight?: number;
+  temperature?: number;
+  humidity?: number;
+  notes?: string;
+  tags?: string[];
+  symptoms?: string[];
+  medication?: string;
+  dose?: string;
+  food?: string;
+  amount?: string;
+}
+
 export const useLogEntries = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,23 +65,28 @@ export const useLogEntries = () => {
       if (error) throw error;
 
       // Transform the data to match the expected format
-      const transformedLogs: LogEntry[] = data?.map(entry => ({
-        id: entry.id,
-        type: entry.type,
-        rats: entry.rats ? [entry.rats.name] : [],
-        behavior: entry.content?.behavior,
-        weight: entry.content?.weight,
-        temperature: entry.content?.temperature,
-        humidity: entry.content?.humidity,
-        timestamp: entry.created_at,
-        notes: entry.content?.notes || '',
-        hashtags: entry.content?.tags || [],
-        symptoms: entry.content?.symptoms || [],
-        medication: entry.content?.medication,
-        dose: entry.content?.dose,
-        food: entry.content?.food,
-        amount: entry.content?.amount,
-      })) || [];
+      const transformedLogs: LogEntry[] = data?.map(entry => {
+        // Safely cast content to our expected type
+        const content = (entry.content as LogEntryContent) || {};
+        
+        return {
+          id: entry.id,
+          type: entry.type,
+          rats: entry.rats ? [entry.rats.name] : [],
+          behavior: content.behavior,
+          weight: content.weight,
+          temperature: content.temperature,
+          humidity: content.humidity,
+          timestamp: entry.created_at,
+          notes: content.notes || '',
+          hashtags: content.tags || [],
+          symptoms: content.symptoms || [],
+          medication: content.medication,
+          dose: content.dose,
+          food: content.food,
+          amount: content.amount,
+        };
+      }) || [];
 
       setLogs(transformedLogs);
     } catch (error) {
@@ -85,7 +105,7 @@ export const useLogEntries = () => {
     if (!user) return;
 
     try {
-      const content = {
+      const content: LogEntryContent = {
         behavior: logData.behavior,
         weight: logData.weight,
         temperature: logData.temperature,
@@ -136,7 +156,7 @@ export const useLogEntries = () => {
     if (!user) return;
 
     try {
-      const content = {
+      const content: LogEntryContent = {
         behavior: updates.behavior,
         weight: updates.weight,
         temperature: updates.temperature,
