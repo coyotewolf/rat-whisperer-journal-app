@@ -1,33 +1,35 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
+import MultiSelectRats from "@/components/MultiSelectRats"; // Import MultiSelectRats
+
+// Import new log form components
+import BehaviorLogForm from "./log-forms/BehaviorLogForm";
+import HealthLogForm from "./log-forms/HealthLogForm";
+import WeightLogForm from "./log-forms/WeightLogForm";
+import EnvironmentLogForm from "./log-forms/EnvironmentLogForm";
+import MedicationLogForm from "./log-forms/MedicationLogForm";
+import FeedingLogForm from "./log-forms/FeedingLogForm";
 
 interface LogEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBack: () => void;
   logType: string;
-  onLogAdded: (newLog: any) => void; // Modified to accept newLog parameter
+  onLogAdded: (newLog: any) => void;
 }
 
 const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntryModalProps) => {
   const [rats, setRats] = useState<any[]>([]);
-  const [selectedRat, setSelectedRat] = useState("");
-  const [behaviorTags, setBehaviorTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedRats, setSelectedRats] = useState<string[]>([]); // Changed to array for MultiSelectRats
   const [formData, setFormData] = useState<any>({});
+  const [selectedTags, setSelectedTags] = useState<string[]>([]); // Specifically for behavior logs
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,11 +38,15 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
   useEffect(() => {
     if (user && isOpen) {
       fetchRats();
-      if (logType === 'behavior') {
-        fetchBehaviorTags();
-      }
+      // Reset form data when modal opens or logType changes
+      resetForm(); 
     }
   }, [user, isOpen, logType]);
+
+  // Add a useEffect to log selectedRats whenever it changes
+  useEffect(() => {
+    console.log("LogEntryModal: selectedRats changed to", selectedRats);
+  }, [selectedRats]);
 
   const fetchRats = async () => {
     if (!user) return;
@@ -51,322 +57,137 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
       .eq('user_id', user.id)
       .eq('status', 'active');
     
-    if (!error) setRats(data || []);
-  };
-
-  const fetchBehaviorTags = async () => {
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from('behavior_tags')
-      .select('name')
-      .eq('user_id', user.id);
-    
-    if (!error) setBehaviorTags(data?.map(tag => tag.name) || []);
-  };
-
-  const addNewTag = async () => {
-    if (!newTag.trim() || !user) return;
-    
-    try {
-      const { error } = await supabase
-        .from('behavior_tags')
-        .insert({ user_id: user.id, name: newTag.trim() });
-      
-      if (!error) {
-        setBehaviorTags([...behaviorTags, newTag.trim()]);
-        setSelectedTags([...selectedTags, newTag.trim()]);
-        setNewTag("");
+    if (!error) {
+      setRats(data || []);
+      if (data && data.length > 0) {
+        setSelectedRats([data[0].id]); // Set as array
+      } else {
+        setSelectedRats([]); // Set as empty array
       }
-    } catch (error) {
-      console.error(t('Error adding tag:'), error);
     }
   };
 
+  const handleDataChange = useCallback((data: any) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  }, []); // No dependencies, as setFormData is stable
+
+  const handleTagsChange = useCallback((tags: string[]) => {
+    setSelectedTags(tags);
+  }, []); // No dependencies, as setSelectedTags is stable
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !selectedRat) return;
+    if (!user) {
+      toast({ title: t("Error"), description: t("User not authenticated."), variant: "destructive" });
+      return;
+    }
+    if (selectedRats.length === 0) { // Check if any rat is selected
+      toast({ title: t("Error"), description: t("Please select at least one rat."), variant: "destructive" });
+      return;
+    }
 
     setLoading(true);
     try {
-      let content = { ...formData };
-      
+      let contentPayload = { ...formData };
       if (logType === 'behavior') {
-        content.tags = selectedTags;
+        contentPayload.tags = selectedTags;
       }
 
-      const { data, error } = await supabase
+      const { data: newLogData, error } = await supabase
         .from('log_entries')
         .insert({
           user_id: user.id,
-          rat_id: selectedRat,
+          rat_ids: selectedRats, // Only use rat_ids
           type: logType,
-          content
-        }).select(); // Select the inserted data to pass to onLogAdded
+          content: contentPayload
+        })
+        .select()
+        .single(); // Assuming we expect a single record back
 
       if (error) throw error;
 
-      toast({
-        title: t("Success"),
-        description: t("Log entry added successfully!"),
-      });
+      toast({ title: t("Success"), description: t("Log entry added successfully!") });
       
-      if (data && data.length > 0) {
-        onLogAdded(data[0]); // Pass the newly created log entry
+      if (newLogData) {
+        onLogAdded(newLogData);
       }
-      // After successful submission, call onClose (which should trigger full close and navigate)
-      onClose();
-      resetForm();
-    } catch (error) {
-      toast({
-        title: t("Error"),
-        description: t("Failed to add log entry"),
-        variant: "destructive",
-      });
+      onClose(); // This should trigger the full close and navigation via QuickLogModal
+      // resetForm(); // Resetting form is now handled by useEffect on isOpen/logType change
+    } catch (error: any) {
+      console.error('Error adding log entry:', error);
+      toast({ title: t("Error"), description: error.message || t("Failed to add log entry"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const resetForm = () => {
-    setSelectedRat("");
-    setSelectedTags([]);
+    // Keep selectedRats as is, or reset if needed based on UX decision
+    // setSelectedRats([]); // Uncomment if rat selection should reset too
     setFormData({});
-    setNewTag("");
+    setSelectedTags([]);
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
-  };
+  const renderLogTypeFields = useMemo(() => {
+    const formProps = {
+      initialData: {}, // For "Add New", initialData is empty
+      onDataChange: handleDataChange,
+    };
 
-  const renderLogTypeFields = () => {
     switch (logType) {
       case 'behavior':
-        return (
-          <>
-            <div className="space-y-2">
-              <Label>{t("Behavior Tags")}</Label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {selectedTags.map(tag => (
-                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <Trash2 className="h-3 w-3 cursor-pointer" onClick={() => removeTag(tag)} />
-                  </Badge>
-                ))}
-              </div>
-              <Select onValueChange={(value) => {
-                if (!selectedTags.includes(value)) {
-                  setSelectedTags([...selectedTags, value]);
-                }
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("Add existing tag")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {behaviorTags.filter(tag => !selectedTags.includes(tag)).map(tag => (
-                    <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Input
-                  placeholder={t("New tag")}
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                />
-                <Button type="button" onClick={addNewTag}>{t("Add")}</Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t("Notes")}</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              />
-            </div>
-          </>
-        );
+        return <BehaviorLogForm {...formProps} selectedTags={selectedTags} onTagsChange={handleTagsChange} />;
       case 'health':
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="status">{t("Health Status")}</Label>
-              <Select onValueChange={(value) => setFormData({...formData, status: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("Select status")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">{t("Excellent")}</SelectItem>
-                  <SelectItem value="good">{t("Good")}</SelectItem>
-                  <SelectItem value="fair">{t("Fair")}</SelectItem>
-                  <SelectItem value="poor">{t("Poor")}</SelectItem>
-                  <SelectItem value="sick">{t("Sick")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t("Notes")}</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              />
-            </div>
-          </>
-        );
+        return <HealthLogForm {...formProps} />;
       case 'weight':
-        return (
-          <div className="space-y-2">
-            <Label htmlFor="weight">{t("Weight (grams)")}</Label>
-            <Input
-              id="weight"
-              type="number"
-              value={formData.weight || ""}
-              onChange={(e) => setFormData({...formData, weight: e.target.value})}
-              required
-            />
-          </div>
-        );
-      case 'medication':
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="medication">{t("Medication")}</Label>
-              <Input
-                id="medication"
-                value={formData.medication || ""}
-                onChange={(e) => setFormData({...formData, medication: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dose">{t("Dose")}</Label>
-              <Input
-                id="dose"
-                value={formData.dose || ""}
-                onChange={(e) => setFormData({...formData, dose: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t("Notes")}</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              />
-            </div>
-          </>
-        );
-      case 'feeding':
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="food">{t("Food")}</Label>
-              <Input
-                id="food"
-                value={formData.food || ""}
-                onChange={(e) => setFormData({...formData, food: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="amount">{t("Amount")}</Label>
-              <Input
-                id="amount"
-                value={formData.amount || ""}
-                onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t("Notes")}</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              />
-            </div>
-          </>
-        );
+        return <WeightLogForm {...formProps} />;
       case 'environment':
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="temperature">{t("Temperature (°C)")}</Label>
-              <Input
-                id="temperature"
-                type="number"
-                value={formData.temperature || ""}
-                onChange={(e) => setFormData({...formData, temperature: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="humidity">{t("Humidity (%)")}</Label>
-              <Input
-                id="humidity"
-                type="number"
-                value={formData.humidity || ""}
-                onChange={(e) => setFormData({...formData, humidity: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t("Notes")}</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              />
-            </div>
-          </>
-        );
+        return <EnvironmentLogForm {...formProps} />;
+      case 'medication':
+        return <MedicationLogForm {...formProps} />;
+      case 'feeding':
+        return <FeedingLogForm {...formProps} />;
       default:
-        return null;
+        return <p>{t("Unknown log type")}</p>;
     }
-  };
+  }, [logType, selectedTags, handleDataChange, handleTagsChange, t]); // Dependencies for useMemo
 
   return (
     <Dialog open={isOpen} onOpenChange={(openState) => {
       if (!openState) {
-        onClose(); // Overlay click or Esc on LogEntryModal triggers the full close logic via props.onClose
+        onClose(); 
       }
     }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack} // Use onBack for the internal back button
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <Button variant="ghost" size="sm" onClick={onBack} className="text-gray-500 hover:text-gray-700">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">{t("Add {{logType}} Log", { logType: logType.charAt(0).toUpperCase() + logType.slice(1) })}</DialogTitle>
-            <div className="w-10"></div> {/* Placeholder to balance the back button */}
+            <DialogTitle className="flex-1 text-center">{t("Add {{logType}} Log", { logType: t(logType.charAt(0).toUpperCase() + logType.slice(1)) })}</DialogTitle>
+            <div className="w-10"></div> {/* Spacer */}
           </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="rat">{t("Select Rat")}</Label>
-            <Select value={selectedRat} onValueChange={setSelectedRat} required>
-              <SelectTrigger>
-                <SelectValue placeholder={t("Choose a rat")} />
-              </SelectTrigger>
-              <SelectContent>
-                {rats.map(rat => (
-                  <SelectItem key={rat.id} value={rat.id}>{rat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="rats">{t("Select Rats")}</Label>
+            <MultiSelectRats
+              selectedRatIds={selectedRats}
+              onSelectionChange={setSelectedRats}
+              placeholder={t("Select rats")}
+            />
           </div>
-          {renderLogTypeFields()}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t("Adding...") : t("Add Log Entry")}
-          </Button>
+          
+          {renderLogTypeFields} {/* Call useMemo result directly */}
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              {t("Cancel")}
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? t("Adding...") : t("Add Log Entry")}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react"; // Import useEffect
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Activity, Heart, Scale, Thermometer, Pill, Utensils, ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
+import { Activity, Heart, Scale, Thermometer, Pill, Utensils, ArrowLeft } from "lucide-react";
 import LogEntryModal from "@/components/LogEntryModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,14 +40,6 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
     setSelectedLogType(logType);
     setLogEntryModalOpen(true);
     setIsQuickLogVisible(false); // Hide QuickLogModal content
-  };
-
-  // Wrapper function that matches LogEntryModal's expected signature
-  const handleLogAdded = () => {
-    // Since LogEntryModal doesn't pass the log data in its callback,
-    // we can't access the actual log data here. The parent component
-    // will need to handle log updates through other means.
-    console.log(t("Log added successfully"));
   };
 
   // Called when LogEntryModal's overlay/Esc is triggered, or after successful log addition

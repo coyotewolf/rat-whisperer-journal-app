@@ -37,7 +37,7 @@ export const useLogEntries = () => {
     }
   };
 
-  const addLog = async (logData: Omit<LogEntry, 'id' | 'timestamp'>) => {
+  const addLog = async (logData: Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>) => {
     if (!user) return;
 
     try {
@@ -50,18 +50,21 @@ export const useLogEntries = () => {
       });
 
       return data;
-    } catch (error) {
+    } catch (error: any) { // Explicitly type error as any for broader checking
       console.error('Error adding log:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to add activity log"),
-        variant: "destructive",
-      });
-      throw error;
+      // Only show toast if there's a meaningful error message or it's an actual Error instance
+      if (error instanceof Error || (error && error.message)) {
+        toast({
+          title: t("Error"),
+          description: error.message || t("Failed to add activity log"),
+          variant: "destructive",
+        });
+      }
+      throw error; // Re-throw the error for upstream handling
     }
   };
 
-  const updateLog = async (logId: string, updates: Partial<LogEntry>) => {
+  const updateLog = async (logId: string, updates: Partial<Omit<LogEntry, 'rat_id'>>) => {
     if (!user) return;
 
     try {

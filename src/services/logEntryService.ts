@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { LogEntry, LogEntryContent } from '@/types/logEntry';
 
@@ -8,8 +7,8 @@ export class LogEntryService {
       .from('log_entries')
       .select(`
         *,
-        rats!inner(id, name)
-      `)
+        rats!left(id, name)
+      `) // Changed to left join as rat_id is removed, and rat_ids might be empty
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -17,8 +16,28 @@ export class LogEntryService {
 
     return data?.map(entry => {
       const content = (entry.content as LogEntryContent) || {};
-      const ratIds = entry.rat_ids && entry.rat_ids.length > 0 ? entry.rat_ids : (entry.rats?.id ? [entry.rats.id] : []);
-      const ratNames = entry.rats ? [entry.rats.name] : [];
+      // Since rat_id is removed, we only rely on rat_ids
+      const ratIds = entry.rat_ids || [];
+      const ratNames: string[] = [];
+      const ratsDataFromEntry: any = entry.rats; // Use 'any' for easier handling of Supabase response
+
+      // Supabase might return a single object or an array of objects for a join
+      // If log_entries.rat_ids is used to join with rats table, and rat_ids can have multiple entries,
+      // then entry.rats could be an array of rat objects.
+      // If the join is based on a (now removed) single rat_id, it might be a single object or null.
+      // Given rat_id is removed, the join `rats!left(id, name)` might behave differently
+      // depending on how Supabase handles joins with array columns (rat_ids).
+      // For simplicity and robustness, let's assume entry.rats could be an array or a single object.
+
+      if (ratsDataFromEntry) {
+        const ratsArray = Array.isArray(ratsDataFromEntry) ? ratsDataFromEntry : [ratsDataFromEntry];
+        for (const r of ratsArray) {
+          // Ensure 'r' is an object and has a 'name' property before trying to access it.
+          if (r && typeof r === 'object' && r.name && typeof r.name === 'string') {
+            ratNames.push(r.name);
+          }
+        }
+      }
       
       return {
         id: entry.id,
@@ -41,7 +60,7 @@ export class LogEntryService {
     }) || [];
   }
 
-  static async addLog(userId: string, logData: Omit<LogEntry, 'id' | 'timestamp'>) {
+  static async addLog(userId: string, logData: Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>) { // Removed rat_id from Omit
     const content: LogEntryContent = {
       behavior: logData.behavior,
       weight: logData.weight,
@@ -60,19 +79,20 @@ export class LogEntryService {
       .from('log_entries')
       .insert({
         user_id: userId,
-        rat_id: logData.ratIds?.[0] || '',
-        rat_ids: logData.ratIds || [],
+        rat_ids: logData.ratIds || [], // Only use rat_ids
         type: logData.type,
         content: content as any
       })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      throw error; // Let upstream handle the error
+    }
     return data;
   }
 
-  static async updateLog(logId: string, updates: Partial<LogEntry>) {
+  static async updateLog(logId: string, updates: Partial<Omit<LogEntry, 'rat_id'>>) { // Removed rat_id from Partial Omit
     const content: LogEntryContent = {
       behavior: updates.behavior,
       weight: updates.weight,
@@ -91,8 +111,7 @@ export class LogEntryService {
       .from('log_entries')
       .update({
         content: content as any,
-        rat_id: updates.ratIds?.[0] || '',
-        rat_ids: updates.ratIds || [],
+        rat_ids: updates.ratIds || [], // Only use rat_ids
       })
       .eq('id', logId);
 

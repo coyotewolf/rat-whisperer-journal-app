@@ -50,8 +50,8 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
         humidity: logToEdit.humidity || "",
         // Add other fields as necessary based on log structure
       });
-      // Use ratIds array if available, otherwise fall back to single ratId
-      setSelectedRats(logToEdit.ratIds || (logToEdit.ratId ? [logToEdit.ratId] : [])); 
+      // Use ratIds array if available, rat_id is no longer used
+      setSelectedRats(logToEdit.ratIds || []);
       setHashtags(logToEdit.hashtags || []);
     }
   }, [logToEdit]);
