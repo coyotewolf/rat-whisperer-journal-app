@@ -23,6 +23,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Import log form components
+import BehaviorLogForm from "./log-forms/BehaviorLogForm";
+import HealthLogForm from "./log-forms/HealthLogForm";
+import WeightLogForm from "./log-forms/WeightLogForm";
+import EnvironmentLogForm from "./log-forms/EnvironmentLogForm";
+import MedicationLogForm from "./log-forms/MedicationLogForm";
+import FeedingLogForm from "./log-forms/FeedingLogForm";
+
 interface EditLogModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,23 +51,23 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
   useEffect(() => {
     if (logToEdit) {
       // Pre-fill form data based on the log being edited
+      // For specific log types, initialData will be passed to the sub-forms
       setFormData({
         notes: logToEdit.notes || "",
-        behavior: logToEdit.behavior || "",
-        weight: logToEdit.weight || "",
-        temperature: logToEdit.temperature || "",
-        humidity: logToEdit.humidity || "",
-        // Add other fields as necessary based on log structure
+        // The specific fields (behavior, weight, temp, humidity) will be handled by sub-forms
       });
-      // Use ratIds array if available, rat_id is no longer used
       setSelectedRats(logToEdit.ratIds || []);
-      setHashtags(logToEdit.hashtags || []);
+      // 只有行為日誌才使用 hashtag，其他類型清空
+      setHashtags(logToEdit.type === 'behavior' ? logToEdit.hashtags || [] : []);
     }
   }, [logToEdit]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [id]: value }));
+  const handleDataChange = (data: any) => {
+    setFormData((prev: any) => ({ ...prev, ...data }));
+  };
+
+  const handleTagsChange = (tags: string[]) => {
+    setHashtags(tags);
   };
 
   // This function will be called by the MultiSelectRats component
@@ -87,7 +95,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
  
     const updatedLogData = {
       ...logToEdit,
-      ...formData,
+      ...formData, // formData now contains data from sub-forms
       ratIds: selectedRats,
       hashtags: hashtags,
       timestamp: logToEdit.timestamp,
@@ -120,60 +128,27 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
 
   if (!logToEdit) return null;
 
-  const renderSpecificFields = () => {
+  const renderLogTypeFields = () => {
+    const formProps = {
+      initialData: logToEdit, // Pass the entire logToEdit as initialData
+      onDataChange: handleDataChange,
+    };
+
     switch (logToEdit.type) {
-      case "behavior":
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="behavior">{t("Behavior")}</Label>
-              <Input
-                id="behavior"
-                value={formData.behavior || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-          </>
-        );
-      case "health":
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="weight">{t("Weight (g)")}</Label>
-              <Input
-                id="weight"
-                type="number"
-                value={formData.weight || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-          </>
-        );
-      case "environment":
-        return (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="temperature">{t("Temperature (°C)")}</Label>
-              <Input
-                id="temperature"
-                type="number"
-                value={formData.temperature || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="humidity">{t("Humidity (%)")}</Label>
-              <Input
-                id="humidity"
-                type="number"
-                value={formData.humidity || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-          </>
-        );
+      case 'behavior':
+        return <BehaviorLogForm {...formProps} selectedTags={hashtags} onTagsChange={handleTagsChange} />;
+      case 'health':
+        return <HealthLogForm {...formProps} />;
+      case 'weight':
+        return <WeightLogForm {...formProps} />;
+      case 'environment':
+        return <EnvironmentLogForm {...formProps} />;
+      case 'medication':
+        return <MedicationLogForm {...formProps} />;
+      case 'feeding':
+        return <FeedingLogForm {...formProps} />;
       default:
-        return null;
+        return <p>{t("Unknown log type")}</p>;
     }
   };
 
@@ -212,33 +187,8 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
             />
           </div>
 
-          {renderSpecificFields()}
+          {renderLogTypeFields()}
 
-          <div className={cn("space-y-2")}>
-            <Label htmlFor="notes">{t("Notes")}</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes || ""}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className={cn("space-y-2")}>
-            <Label>{t("Tags")}</Label>
-            <div className={cn("flex flex-wrap gap-1 mb-2")}>
-              {hashtags.map(tag => (
-                <Badge key={tag} variant="secondary" className={cn("flex items-center gap-1")}>
-                  {tag}
-                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeHashtag(tag)} />
-                </Badge>
-              ))}
-            </div>
-            <LogTagSuggestions
-              onSelect={handleTagSelection}
-              selectedTags={hashtags}
-            />
-          </div>
-          
           <DialogFooter className={cn("flex flex-col sm:flex-row sm:justify-end sm:space-x-2")}>
             <DialogClose asChild>
               <Button type="button" variant="outline" className={cn("w-full sm:w-auto mb-2 sm:mb-0")}>

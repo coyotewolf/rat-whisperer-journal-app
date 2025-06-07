@@ -12,9 +12,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFo
 interface LogTagSuggestionsProps {
   onSelect: (tagName: string) => void;
   selectedTags: string[];
+  placeholder?: string; // Add placeholder prop
 }
 
-const LogTagSuggestions = ({ onSelect, selectedTags }: LogTagSuggestionsProps) => {
+const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSuggestionsProps) => { // Use placeholder prop
   const { t } = useTranslation();
   const { suggestions, loading, deleteSuggestion } = useLogTagSuggestions(); // Removed addSuggestion as it's now handled in settings
   const [isManageModalOpen, setIsManageModalOpen] = useState(false); // Removed isAddModalOpen
@@ -32,7 +33,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags }: LogTagSuggestionsProps) =
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center mb-2">
-        <p className="text-sm text-gray-600">{t("Quick tag suggestions:")}</p>
+        <p className="text-sm text-gray-600">{placeholder || t("Quick tag suggestions:")}</p> {/* Use placeholder or default */}
         <div className="flex items-center space-x-2">
           {/* Removed Add button as adding is now inline in settings */}
           <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage tag suggestions")}>
@@ -42,7 +43,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags }: LogTagSuggestionsProps) =
       </div>
 
       {suggestions.length === 0 ? (
-         <p className="text-xs text-gray-500 py-2">{t("No quick tag suggestions yet. Click 'Manage' to add one.")}</p>
+         <p className="text-xs text-gray-500 py-2">{placeholder ? t("No {{placeholder}} yet. Click 'Manage' to add one.", { placeholder: placeholder.toLowerCase() }) : t("No quick tag suggestions yet. Click 'Manage' to add one.")}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {suggestions.map((suggestion) => {
@@ -81,7 +82,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags }: LogTagSuggestionsProps) =
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center">{t("Manage Tag Suggestions")}</DialogTitle>
+              <DialogTitle className="flex-1 text-center">{t("Manage Behavior Suggestions")}</DialogTitle>
               <div className="w-10"></div> {/* Spacer to balance the back button */}
             </div>
           </DialogHeader>

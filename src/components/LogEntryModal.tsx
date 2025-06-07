@@ -59,11 +59,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
     
     if (!error) {
       setRats(data || []);
-      if (data && data.length > 0) {
-        setSelectedRats([data[0].id]); // Set as array
-      } else {
-        setSelectedRats([]); // Set as empty array
-      }
+      setSelectedRats([]); // 確保在獲取老鼠列表後，rat 欄位是空的
     }
   };
 
@@ -123,7 +119,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
 
   const resetForm = () => {
     // Keep selectedRats as is, or reset if needed based on UX decision
-    // setSelectedRats([]); // Uncomment if rat selection should reset too
+    setSelectedRats([]); // Uncomment if rat selection should reset too
     setFormData({});
     setSelectedTags([]);
   };

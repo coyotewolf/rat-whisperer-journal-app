@@ -21,6 +21,7 @@ const BehaviorLogForm = ({ initialData, onDataChange, onTagsChange, selectedTags
   const { t } = useTranslation();
   const { user } = useAuth();
   const [behaviorTags, setBehaviorTags] = useState<string[]>([]);
+  const [behavior, setBehavior] = useState(initialData?.behavior || ""); // Add behavior state
   const [notes, setNotes] = useState(initialData?.notes || ""); // Internal state for notes
   const [currentSelectedTags, setCurrentSelectedTags] = useState<string[]>(propSelectedTags); // Internal state for selected tags
 
@@ -31,6 +32,7 @@ const BehaviorLogForm = ({ initialData, onDataChange, onTagsChange, selectedTags
   }, [user]);
 
   useEffect(() => {
+    setBehavior(initialData?.behavior || ""); // Update behavior state
     setNotes(initialData?.notes || "");
     setCurrentSelectedTags(propSelectedTags);
   }, [initialData, propSelectedTags]); // Update internal state when props change
@@ -66,13 +68,14 @@ const BehaviorLogForm = ({ initialData, onDataChange, onTagsChange, selectedTags
 
   const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
-    onDataChange({ notes: e.target.value }); // Notify parent of change
-  }, [onDataChange]);
+    onDataChange({ notes: e.target.value }); // Notify parent of change, remove behavior
+  }, [onDataChange]); // Remove behavior from dependencies
+
 
   return (
     <>
       <div className="space-y-2">
-        <Label>{t("Tags")}</Label>
+        <Label htmlFor="behavior">{t("Behavior")}</Label> {/* Keep label as "Behavior" */}
         <div className="flex flex-wrap gap-1 mb-2">
           {currentSelectedTags.map(tag => (
             <Badge key={tag} variant="secondary" className="flex items-center gap-1">
@@ -84,6 +87,7 @@ const BehaviorLogForm = ({ initialData, onDataChange, onTagsChange, selectedTags
         <LogTagSuggestions
           onSelect={handleTagSelection}
           selectedTags={currentSelectedTags}
+          placeholder={t("Quick behavior suggestions")} // Rename placeholder
         />
       </div>
       <div className="space-y-2">

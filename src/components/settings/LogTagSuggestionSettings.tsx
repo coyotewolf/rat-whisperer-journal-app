@@ -115,7 +115,7 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
 
       <div className="flex gap-2 items-center">
         <Input
-          placeholder={t("Add new tag suggestion")}
+          placeholder={t("Add new behavior suggestion here")}
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           onKeyPress={(e) => { if (e.key === 'Enter') handleAddSuggestion(); }}
@@ -134,7 +134,7 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
       </div>
 
       {suggestions.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-8">{t("No quick tag suggestions yet. Add one above.")}</p>
+        <p className="text-sm text-gray-500 text-center py-8">{t("No quick behavior suggestions yet. Add one above.")}</p>
       ) : (
         <ul className="space-y-3 mt-4">
           {suggestions.map(suggestion => (
@@ -160,11 +160,11 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
               )}
               <div className="space-x-2 flex-shrink-0">
                 {editingId !== suggestion.id && (
-                  <Button variant="ghost" size="icon" onClick={() => handleEditClick(suggestion)} title={t("Edit tag suggestion")}>
+                  <Button variant="ghost" size="icon" onClick={() => handleEditClick(suggestion)} title={t("Edit behavior suggestion")}>
                     <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
                   </Button>
                 )}
-                <Button variant="ghost" size="icon" onClick={() => handleDeleteSuggestion(suggestion.id)} title={t("Delete tag suggestion")}>
+                <Button variant="ghost" size="icon" onClick={() => handleDeleteSuggestion(suggestion.id)} title={t("Delete behavior suggestion")}>
                   <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
                 </Button>
               </div>
