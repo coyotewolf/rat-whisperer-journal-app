@@ -109,8 +109,10 @@ export const useLogEntries = () => {
   };
  
   useEffect(() => {
-    fetchLogs();
-  }, [user]);
+    if (user && user.id) {
+      fetchLogs();
+    }
+  }, [user?.id]);
  
   return {
     logs,
