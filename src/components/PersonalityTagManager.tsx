@@ -1,4 +1,6 @@
 
+import { cn } from "@/lib/utils"; // Import cn utility
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -101,22 +103,46 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
     }
   };
 
-  const getTagColor = (tagName: string) => {
+  // Helper to get themed classes for a given color string (e.g., "primary", "red")
+  const getThemedColorClasses = (colorName: string) => {
+    switch (colorName) {
+      case "primary": return "bg-primary/10 text-primary border-primary/30";
+      case "secondary": return "bg-secondary/10 text-secondary-foreground border-secondary/30";
+      case "accent": return "bg-accent/10 text-accent-foreground border-accent/30";
+      case "destructive": return "bg-destructive/10 text-destructive-foreground border-destructive/30";
+      case "muted": return "bg-muted/50 text-muted-foreground border-border";
+      // For specific colors, ensure they are defined in your Tailwind config and CSS variables
+      case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30";
+      case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30";
+      case "red": return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30";
+      case "green": return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30";
+      case "orange": return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30";
+      case "yellow": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30";
+      case "pink": return "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30";
+      case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30";
+      case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30";
+      default: return "bg-muted/50 text-muted-foreground border-border";
+    }
+  };
+
+  const getTagColorClasses = (tagName: string) => { // Renamed and themed
     const tag = availableTags.find(t => t.name === tagName);
-    return tag?.color || "bg-gray-100 text-gray-700";
+    return getThemedColorClasses(tag?.color || "muted"); // Use themed helper
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+    <div className={cn("space-y-3")}>
+      <div className={cn("flex flex-wrap gap-2")}>
         {availableTags.map((tag) => (
-          <div key={tag.id} className="flex items-center gap-1">
+          <div key={tag.id} className={cn("flex items-center gap-1")}>
             <Badge
-              className={`cursor-pointer border-2 transition-all ${getTagColor(tag.name)} ${
+              className={cn(
+                `cursor-pointer border-2 transition-all`,
+                getTagColorClasses(tag.name), // Use themed classes
                 selectedTags.includes(tag.name)
-                  ? "ring-2 ring-orange-300"
-                  : "border-transparent hover:border-gray-300"
-              }`}
+                  ? "ring-2 ring-primary" // Themed ring color
+                  : "border-transparent hover:border-border" // Themed hover border
+              )}
               onClick={() => handleTagToggle(tag.name)}
             >
               {tag.name}
@@ -124,7 +150,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 w-6 p-0"
+              className={cn("h-6 w-6 p-0")}
               onClick={() => handleEditTag(tag)}
             >
               <Edit2 className="h-3 w-3" />
@@ -135,7 +161,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
           size="sm"
           variant="outline"
           onClick={() => setIsAddingTag(true)}
-          className="h-7"
+          className={cn("h-7")}
         >
           <Plus className="h-3 w-3 mr-1" />
           {t("Add Tag")}
@@ -144,26 +170,28 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
 
       {/* Add Tag Dialog */}
       <Dialog open={isAddingTag} onOpenChange={setIsAddingTag}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}> {/* Themed dialog */}
           <DialogHeader>
             <DialogTitle>{t("Add New Personality Tag")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className={cn("space-y-4")}>
             <Input
               placeholder={t("Tag name")}
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
             />
-            <div className="space-y-2">
-              <p className="text-sm font-medium">{t("Choose color:")}</p>
-              <div className="flex flex-wrap gap-2">
+            <div className={cn("space-y-2")}>
+              <p className={cn("text-sm font-medium")}>{t("Choose color:")}</p>
+              <div className={cn("flex flex-wrap gap-2")}>
                 {colorOptions.map((color) => (
                   <Badge
                     key={color}
-                    className={`cursor-pointer border-2 ${color} ${
-                      selectedColor === color ? "ring-2 ring-orange-300" : "border-transparent"
-                    }`}
+                    className={cn(
+                      `cursor-pointer border-2`,
+                      getThemedColorClasses(color), // Use themed helper
+                      selectedColor === color ? "ring-2 ring-primary" : "border-transparent" // Themed ring color
+                    )}
                     onClick={() => setSelectedColor(color)}
                   >
                     {t("Sample")}
@@ -171,7 +199,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 ))}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className={cn("flex gap-2")}>
               <Button onClick={handleAddTag} disabled={!newTagName.trim()}>
                 {t("Add Tag")}
               </Button>
@@ -185,26 +213,28 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
 
       {/* Edit Tag Dialog */}
       <Dialog open={!!editingTag} onOpenChange={() => setEditingTag(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}> {/* Themed dialog */}
           <DialogHeader>
             <DialogTitle>{t("Edit Personality Tag")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className={cn("space-y-4")}>
             <Input
               placeholder={t("Tag name")}
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleUpdateTag()}
             />
-            <div className="space-y-2">
-              <p className="text-sm font-medium">{t("Choose color:")}</p>
-              <div className="flex flex-wrap gap-2">
+            <div className={cn("space-y-2")}>
+              <p className={cn("text-sm font-medium")}>{t("Choose color:")}</p>
+              <div className={cn("flex flex-wrap gap-2")}>
                 {colorOptions.map((color) => (
                   <Badge
                     key={color}
-                    className={`cursor-pointer border-2 ${color} ${
-                      selectedColor === color ? "ring-2 ring-orange-300" : "border-transparent"
-                    }`}
+                    className={cn(
+                      `cursor-pointer border-2`,
+                      getThemedColorClasses(color), // Use themed helper
+                      selectedColor === color ? "ring-2 ring-primary" : "border-transparent" // Themed ring color
+                    )}
                     onClick={() => setSelectedColor(color)}
                   >
                     {t("Sample")}
@@ -212,7 +242,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 ))}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className={cn("flex gap-2")}>
               <Button onClick={handleUpdateTag} disabled={!newTagName.trim()}>
                 {t("Update Tag")}
               </Button>

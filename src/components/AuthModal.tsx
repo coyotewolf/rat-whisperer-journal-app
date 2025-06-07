@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -80,25 +81,25 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-background/80 border-none shadow-none">
-        <div className="relative p-4 text-center py-12 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800">
+        <div className={cn("relative p-4 text-center py-12 bg-card text-card-foreground")}> {/* Themed background and text */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="absolute top-4 left-4 text-white hover:text-gray-200"
+            className={cn("absolute top-4 left-4 text-muted-foreground hover:text-foreground")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
-            <Sparkles className="h-12 w-12 text-white" />
+          <div className={cn("w-24 h-24 mx-auto mb-4 rounded-full bg-primary flex items-center justify-center")}> {/* Themed icon background */}
+            <Sparkles className="h-12 w-12 text-primary-foreground" /> {/* Themed icon color */}
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">{isSignUp ? t("Create Account") : t("Sign In")}</h3>
-          <p className="text-purple-100 mb-4">
+          <h3 className={cn("text-xl font-semibold text-primary mb-2")}>{isSignUp ? t("Create Account") : t("Sign In")}</h3> {/* Themed title */}
+          <p className={cn("text-muted-foreground mb-4")}> {/* Themed subtitle */}
             {isSignUp ? t("Join us to track your furry friends!") : t("Sign in to manage your rats")}
           </p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className={cn("space-y-4 p-6")}>
+          <div className={cn("space-y-2")}>
             <Label htmlFor="email">{t("Email")}</Label>
             <Input
               id="email"
@@ -108,10 +109,10 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               placeholder={t("Enter your email")}
               required
               disabled={loading}
-              className="bg-white/50 border-gray-300 text-gray-800 placeholder:text-gray-500"
+              className={cn("")} // Removed hardcoded classes, Input component is already themed
             />
           </div>
-          <div className="space-y-2">
+          <div className={cn("space-y-2")}>
             <Label htmlFor="password">{t("Password")}</Label>
             <Input
               id="password"
@@ -122,17 +123,18 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               required
               disabled={loading}
               minLength={6}
-              className="bg-white/50 border-gray-300 text-gray-800 placeholder:text-gray-500"
+              className={cn("")} // Removed hardcoded classes, Input component is already themed
             />
           </div>
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white"
+            className={cn("w-full")} // Removed hardcoded classes, Button component is already themed
+            variant="default" // Use default variant for primary action
             disabled={loading || !email || !password}
           >
             {loading ? t("Loading...") : (isSignUp ? t("Create Account") : t("Sign In"))}
           </Button>
-          <div className="text-center text-sm text-gray-600">
+          <div className={cn("text-center text-sm text-muted-foreground")}> {/* Themed text */}
             {isSignUp ? (
               <>
                 {t("Already have an account?")}{" "}
@@ -140,7 +142,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   type="button"
                   onClick={handleToggleMode}
                   disabled={loading}
-                  className="font-medium text-blue-600 hover:text-blue-800 underline"
+                  className={cn("font-medium text-primary hover:text-primary/80 underline")}
                 >
                   {t("Sign in")}
                 </button>
@@ -152,7 +154,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   type="button"
                   onClick={handleToggleMode}
                   disabled={loading}
-                  className="font-medium text-blue-600 hover:text-blue-800 underline"
+                  className={cn("font-medium text-primary hover:text-primary/80 underline")}
                 >
                   {t("Sign up to sync your data across devices.")}
                 </button>

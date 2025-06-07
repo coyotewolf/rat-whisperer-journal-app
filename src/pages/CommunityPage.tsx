@@ -109,28 +109,29 @@ const CommunityPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
-      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
+    <div className="min-h-screen bg-background text-foreground pb-20 relative"> {/* Themed background */}
+      {/* Animated Background - Consider removing or theming if kept */}
+      {/* <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div> */}
+      {/* SVG background - color needs to be themed if kept */}
+      {/* <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
+      }}></div> */}
 
       {/* Header */}
-      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
+      <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg"> {/* Themed Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-pink-400 to-rose-500 shadow-lg">
-              <MessageSquare className="h-6 w-6 text-white" />
+            <div className="p-2 rounded-xl bg-primary shadow-lg"> {/* Themed icon bg */}
+              <MessageSquare className="h-6 w-6 text-primary-foreground" /> {/* Themed icon color */}
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-pink-100 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary"> {/* Themed title */}
                 {t("Community")}
               </h1>
-              <p className="text-sm text-pink-100/80">{t("Connect with fellow rat parents")}</p>
+              <p className="text-sm text-muted-foreground">{t("Connect with fellow rat parents")}</p> {/* Themed subtitle */}
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300">
+          <Button variant="default"> {/* Standard themed button */}
             <Plus className="h-4 w-4 mr-2" />
             {t("New Post")}
           </Button>
@@ -260,8 +261,8 @@ const CommunityPage = () => {
         {/* Load More */}
         <div className="text-center py-8">
           <Button
-            variant="outline"
-            className="backdrop-blur-md bg-white/10 border-white/20 text-white hover:bg-white/20 transform hover:scale-105 transition-all duration-300"
+            variant="outline" // Standard outline button
+            // className="backdrop-blur-md bg-white/10 border-white/20 text-white hover:bg-white/20 transform hover:scale-105 transition-all duration-300"
           >
             {t("Load More Posts")}
           </Button>

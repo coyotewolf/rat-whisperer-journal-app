@@ -147,53 +147,75 @@ const Index = () => {
     return format(date, "MMM d");
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityClasses = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/20 text-red-100 border-red-300';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-100 border-yellow-300';
-      case 'low': return 'bg-green-500/20 text-green-100 border-green-300';
-      default: return 'bg-gray-500/20 text-gray-100 border-gray-300';
+      // Using destructive for high, a common pattern.
+      // Foreground for destructive is usually light, so text-destructive-foreground.
+      // Background can be a lighter shade of destructive or just destructive.
+      case 'high': return 'bg-destructive/20 text-destructive-foreground border-destructive'; // Adjusted for theming
+      // Using a secondary or accent color for medium.
+      case 'medium': return 'bg-secondary/20 text-secondary-foreground border-secondary'; // Adjusted for theming
+      // Using a success-like color for low, or a more neutral accent.
+      // For now, let's use accent.
+      case 'low': return 'bg-accent/20 text-accent-foreground border-accent'; // Adjusted for theming
+      default: return 'bg-muted/20 text-muted-foreground border-border'; // Default to muted
     }
   };
 
-  const getTitleColor = (priority: string) => {
+  // Title color can often be the primary text color of the card or a slightly emphasized one.
+  // Or, it can be tied to priority. For simplicity, let's use card-foreground or primary.
+  // This function might not be strictly needed if titles just use default card text color.
+  // For now, let's make priority titles use a more prominent color from the theme.
+const getTitlePriorityClasses = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-200';
-      case 'medium': return 'text-yellow-200';
-      case 'low': return 'text-green-200';
-      default: return 'text-white';
+      case 'high': return 'text-destructive'; // Destructive color for high priority titles
+      case 'medium': return 'text-primary';    // Primary color for medium
+      case 'low': return 'text-accent-foreground'; // Accent for low
+      default: return 'text-card-foreground'; // Default card text color
+    }
+  };
+
+  const getActivityStatusClasses = (status: string) => {
+    switch (status) {
+      case 'good':
+        return 'bg-accent text-accent-foreground border-accent'; // Example: Using accent for 'good'
+      case 'completed':
+        return 'bg-primary text-primary-foreground border-primary'; // Example: Using primary for 'completed'
+      default: // Assuming other statuses might be like 'warning' or 'neutral'
+        return 'bg-secondary text-secondary-foreground border-secondary'; // Example: Using secondary for others
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
-      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
+    <div className="min-h-screen bg-background text-foreground pb-20 relative overflow-hidden">
+      {/* Animated Background - Consider removing or theming if kept */}
+      {/* <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div> */}
+      {/* SVG background - color needs to be themed if kept */}
+      {/* <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
+      }}></div> */}
 
       {/* Header */}
-      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
+      <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-orange-400 to-pink-500 shadow-lg">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="p-2 rounded-xl bg-primary shadow-lg">
+              <Sparkles className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary">
                 {t("RatTracker")}
               </h1>
-              <p className="text-sm text-orange-100/80">{t("Your pet care companion")}</p>
+              <p className="text-sm text-muted-foreground">{t("Your pet care companion")}</p>
             </div>
           </div>
           <Button
             variant="outline"
             size="icon"
             onClick={() => setIsSettingsOpen(true)}
-            className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
+            // className="backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20" // Replaced by standard outline button
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-4 w-4" /> {/* Icon color will inherit from button's text color */}
           </Button>
         </div>
       </div>
@@ -203,7 +225,7 @@ const Index = () => {
         <div className="grid grid-cols-3 gap-3 mb-6">
           <Button
             onClick={() => setIsQuickLogOpen(true)}
-            className="h-20 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl transform hover:scale-105 transition-all duration-300"
+            className="h-20 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl transform hover:scale-105 transition-all duration-300"
           >
             <div className="text-center">
               <Plus className="h-6 w-6 mx-auto mb-1" />
@@ -213,7 +235,7 @@ const Index = () => {
           
           <Button
             onClick={() => setIsNewTaskOpen(true)}
-            className="h-20 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl transform hover:scale-105 transition-all duration-300"
+            className="h-20 bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xl transform hover:scale-105 transition-all duration-300"
           >
             <div className="text-center">
               <Calendar className="h-6 w-6 mx-auto mb-1" />
@@ -221,7 +243,7 @@ const Index = () => {
             </div>
           </Button>
           
-          <Button className="h-20 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl transform hover:scale-105 transition-all duration-300">
+          <Button className="h-20 bg-accent text-accent-foreground hover:bg-accent/80 shadow-xl transform hover:scale-105 transition-all duration-300"> {/* Assuming accent color for Reports */}
             <div className="text-center">
               <Activity className="h-6 w-6 mx-auto mb-1" />
               <div className="text-xs font-medium">{t("Reports")}</div>
@@ -235,34 +257,34 @@ const Index = () => {
         </div>
 
         {/* Upcoming Tasks */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl mb-6">
+        <Card className="bg-card text-card-foreground border-border shadow-xl mb-6"> {/* Themed Card */}
           <CardHeader
-            className="cursor-pointer hover:bg-white/5 transition-colors"
+            className="cursor-pointer hover:bg-accent/50 transition-colors" // Use themed hover
             onClick={() => navigate('/tasks')}
           >
-            <CardTitle className="text-white flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-cyan-300" />
+            <CardTitle className="text-card-foreground flex items-center gap-2"> {/* Themed Title */}
+              <Calendar className="h-5 w-5 text-primary" /> {/* Themed Icon */}
               {t("Upcoming Tasks")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading ? (
               <div className="text-center py-4">
-                <p className="text-purple-100">{t("Loading tasks...")}</p>
+                <p className="text-muted-foreground">{t("Loading tasks...")}</p> {/* Themed text */}
               </div>
             ) : upcomingTasks.length > 0 ? (
               upcomingTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border cursor-pointer hover:bg-accent/50 transition-colors" // Themed item
                   onClick={() => handleTaskCardClick(task)}
                 >
                   <div className="flex-1">
-                    <p className={`font-medium ${getTitleColor(task.priority)}`}>{task.title}</p>
-                    <p className="text-sm text-purple-100">{t("Due")}: {getDateLabel(new Date(task.due_date))}</p>
+                    <p className={`font-medium ${getTitlePriorityClasses(task.priority)}`}>{task.title}</p> {/* Themed title based on priority */}
+                    <p className="text-sm text-muted-foreground">{t("Due")}: {getDateLabel(new Date(task.due_date))}</p> {/* Themed text */}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm`}>
+                    <Badge className={`${getPriorityClasses(task.priority)} border`}> {/* Themed Badge */}
                       {t(task.priority)}
                     </Badge>
                     <Button
@@ -272,7 +294,7 @@ const Index = () => {
                         e.stopPropagation();
                         handleEditFromDetail(task);
                       }}
-                      className="text-white/60 hover:text-cyan-300 h-7 w-7"
+                      className="text-muted-foreground hover:text-primary h-7 w-7" // Themed icon button
                       aria-label={t("Edit task {{taskTitle}}", { taskTitle: task.title })}
                     >
                       <Pencil className="h-4 w-4" />
@@ -282,12 +304,12 @@ const Index = () => {
               ))
             ) : (
               <div className="text-center py-4">
-                <p className="text-purple-100">{t("No upcoming tasks")}</p>
+                <p className="text-muted-foreground">{t("No upcoming tasks")}</p> {/* Themed text */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsNewTaskOpen(true)}
-                  className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  className="mt-2" // Standard outline button will be themed
                 >
                   {t("Create Task")}
                 </Button>
@@ -297,13 +319,13 @@ const Index = () => {
         </Card>
 
         {/* Recent Activities */}
-        <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl">
+        <Card className="bg-card text-card-foreground border-border shadow-xl"> {/* Themed Card */}
           <CardHeader
-            className="cursor-pointer hover:bg-white/5 transition-colors"
+            className="cursor-pointer hover:bg-accent/50 transition-colors" // Themed hover
             onClick={() => navigate('/logs')}
           >
-            <CardTitle className="text-white flex items-center gap-2">
-              <Heart className="h-5 w-5 text-pink-300" />
+            <CardTitle className="text-card-foreground flex items-center gap-2"> {/* Themed Title */}
+              <Heart className="h-5 w-5 text-destructive" /> {/* Themed Icon (using destructive for heart as an example) */}
               {t("Recent Activities")}
             </CardTitle>
           </CardHeader>
@@ -312,29 +334,25 @@ const Index = () => {
               recentActivities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center justify-between p-3 rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 group"
+                  className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border group" // Themed item
                 >
                   <div className="flex-1">
-                    <p className="text-white font-medium">{t(activity.type)}</p>
-                    <p className="text-sm text-purple-100">{activity.rat} • {activity.time}</p>
+                    <p className="text-card-foreground font-medium">{t(activity.type)}</p> {/* Themed text */}
+                    <p className="text-sm text-muted-foreground">{activity.rat} • {activity.time}</p> {/* Themed text */}
                     {activity.weight && (
-                      <p className="text-xs text-purple-200/80">{t("Weight")}: {activity.weight}g</p>
+                      <p className="text-xs text-muted-foreground/80">{t("Weight")}: {activity.weight}g</p> /* Themed text */
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
-                      className={`${
-                        activity.status === 'good' ? 'bg-green-500/20 text-green-100' :
-                        activity.status === 'completed' ? 'bg-blue-500/20 text-blue-100' :
-                        'bg-yellow-500/20 text-yellow-100'
-                      } border-0 backdrop-blur-sm`}
+                      className={`${getActivityStatusClasses(activity.status)} border-0`}
                     >
                       {t(activity.status)}
                     </Badge>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-white/60 hover:text-cyan-300 h-7 w-7 group-hover:text-white transition-colors"
+                      className="text-muted-foreground hover:text-primary h-7 w-7 group-hover:text-primary transition-colors" // Themed icon button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditActivity(activity);
@@ -347,12 +365,12 @@ const Index = () => {
               ))
             ) : (
               <div className="text-center py-4">
-                <p className="text-purple-100">{t("No recent activities")}</p>
+                <p className="text-muted-foreground">{t("No recent activities")}</p> {/* Themed text */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsQuickLogOpen(true)}
-                  className="mt-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  className="mt-2" // Standard outline button will be themed
                 >
                   {t("Add Activity")}
                 </Button>

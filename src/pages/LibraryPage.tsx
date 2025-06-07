@@ -74,37 +74,38 @@ const LibraryPage = () => {
     : filteredArticles.filter(article => article.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
-      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
+    <div className="min-h-screen bg-background text-foreground pb-20 relative"> {/* Themed background */}
+      {/* Animated Background - Consider removing or theming if kept */}
+      {/* <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div> */}
+      {/* SVG background - color needs to be themed if kept */}
+      {/* <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
+      }}></div> */}
 
       {/* Header */}
-      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
+      <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg"> {/* Themed Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 shadow-lg">
-              <BookOpen className="h-6 w-6 text-white" />
+            <div className="p-2 rounded-xl bg-primary shadow-lg"> {/* Themed icon bg */}
+              <BookOpen className="h-6 w-6 text-primary-foreground" /> {/* Themed icon color */}
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary"> {/* Themed title */}
                 RatTales Library
               </h1>
-              <p className="text-sm text-emerald-100/80">Knowledge base for rat care</p>
+              <p className="text-sm text-muted-foreground">Knowledge base for rat care</p> {/* Themed subtitle */}
             </div>
           </div>
         </div>
         
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/70" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" /> {/* Themed icon */}
           <Input
             placeholder="Search articles, tags, or topics..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 backdrop-blur-md bg-white/10 border-white/20 text-white placeholder-white/50 focus:bg-white/20"
+            className="pl-10" // Standard Input component will be themed
           />
         </div>
       </div>
@@ -115,12 +116,8 @@ const LibraryPage = () => {
           {categories.map((category) => (
             <Badge
               key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              className={`cursor-pointer whitespace-nowrap transition-all duration-300 transform hover:scale-105 ${
-                selectedCategory === category 
-                  ? "bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white border-0" 
-                  : "backdrop-blur-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
-              }`}
+              variant={selectedCategory === category ? "default" : "outline"} // Standard variants
+              className={`cursor-pointer whitespace-nowrap transition-all duration-300 transform hover:scale-105`}
               onClick={() => setSelectedCategory(category)}
             >
               {category}
@@ -131,30 +128,30 @@ const LibraryPage = () => {
         {/* Articles */}
         <div className="space-y-4">
           {categoryFilteredArticles.map((article) => (
-            <Card key={article.id} className="backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer">
+            <Card key={article.id} className="bg-card text-card-foreground border-border shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer"> {/* Themed Card */}
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg text-white leading-tight">
+                  <CardTitle className="text-lg text-card-foreground leading-tight"> {/* Themed Title */}
                     {article.title}
                   </CardTitle>
-                  <Badge variant="secondary" className="ml-2 shrink-0 backdrop-blur-sm bg-white/20 text-white border-0">
+                  <Badge variant="secondary" className="ml-2 shrink-0"> {/* Standard secondary badge */}
                     {article.category}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-purple-100/90 text-sm mb-3">{article.summary}</p>
+                <p className="text-muted-foreground text-sm mb-3">{article.summary}</p> {/* Themed summary */}
                 
                 <div className="flex items-center justify-between">
                   <div className="flex flex-wrap gap-1">
                     {article.tags.slice(0, 3).map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs backdrop-blur-sm bg-white/5 border-white/20 text-white/80">
+                      <Badge key={index} variant="outline" className="text-xs"> {/* Standard outline badge */}
                         {tag}
                       </Badge>
                     ))}
                   </div>
                   
-                  <div className="flex items-center gap-1 text-purple-100/70 text-xs">
+                  <div className="flex items-center gap-1 text-muted-foreground text-xs"> {/* Themed text */}
                     <Clock className="h-3 w-3" />
                     {article.readTime}
                   </div>
@@ -166,11 +163,11 @@ const LibraryPage = () => {
 
         {categoryFilteredArticles.length === 0 && (
           <div className="text-center py-8">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-500 flex items-center justify-center">
-              <BookOpen className="h-12 w-12 text-white" />
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary flex items-center justify-center"> {/* Themed icon bg */}
+              <BookOpen className="h-12 w-12 text-primary-foreground" /> {/* Themed icon color */}
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No articles found</h3>
-            <p className="text-purple-100/80">Try adjusting your search terms.</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No articles found</h3> {/* Themed text */}
+            <p className="text-muted-foreground">Try adjusting your search terms.</p> {/* Themed text */}
           </div>
         )}
       </div>

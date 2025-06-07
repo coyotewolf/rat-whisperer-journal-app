@@ -76,16 +76,20 @@ const LogsPage = () => {
     }
   };
 
-  const getLogColor = (type: string) => {
+  const getLogColorClasses = (type: string) => { // Renamed and themed
     switch (type) {
       case "behavior":
-        return "border-blue-300/30 bg-blue-500/10";
+        // Use a distinct color for behavior, e.g., primary or a specific accent if defined
+        return "border-primary/30 bg-primary/10 text-primary-foreground";
       case "health":
-        return "border-red-300/30 bg-red-500/10";
+        // Use destructive for health logs if it implies negative, or another distinct color
+        return "border-destructive/30 bg-destructive/10 text-destructive-foreground";
       case "environment":
-        return "border-green-300/30 bg-green-500/10";
+        // Use accent or secondary for environment
+        return "border-accent/30 bg-accent/10 text-accent-foreground";
       default:
-        return "border-gray-300/30 bg-gray-500/10";
+        // Fallback to a general card styling or muted
+        return "border-border bg-card text-card-foreground";
     }
   };
 
@@ -124,22 +128,22 @@ const LogsPage = () => {
     const { date, time } = formatDateTime(log.timestamp);
     
     return (
-      <Card className={`${getLogColor(log.type)} backdrop-blur-md bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}>
+      <Card className={`${getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}> {/* Use themed classes */}
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2 text-white">
+            <div className="flex items-center gap-2 text-card-foreground"> {/* Themed text */}
               {getLogIcon(log.type)}
               <span className="font-medium capitalize">{t(log.type)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-right text-sm text-purple-100/80">
+              <div className="text-right text-sm text-muted-foreground"> {/* Themed text */}
                 <div>{date}</div>
                 <div>{time}</div>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-cyan-300 h-7 w-7"
+                className="text-muted-foreground hover:text-primary h-7 w-7" // Themed button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleEditLog(log);
@@ -153,7 +157,7 @@ const LogsPage = () => {
           {log.ratNames && log.ratNames.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {log.ratNames.map((ratName: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs border-white/20 text-white backdrop-blur-sm">
+                <Badge key={index} variant="outline" className="text-xs"> {/* Standard outline badge */}
                   {ratName}
                 </Badge>
               ))}
@@ -161,31 +165,31 @@ const LogsPage = () => {
           )}
           
           {log.behavior && (
-            <p className="text-sm font-medium text-white mb-1">
+            <p className="text-sm font-medium text-card-foreground mb-1"> {/* Themed text */}
               {t("Behavior")}: {t(log.behavior)}
             </p>
           )}
           
           {log.weight && (
-            <p className="text-sm font-medium text-white mb-1">
+            <p className="text-sm font-medium text-card-foreground mb-1"> {/* Themed text */}
               {t("Weight")}: {log.weight}g
             </p>
           )}
           
           {log.temperature && (
-            <p className="text-sm font-medium text-white mb-1">
+            <p className="text-sm font-medium text-card-foreground mb-1"> {/* Themed text */}
               {t("Temperature")}: {log.temperature}°C
             </p>
           )}
           
           {log.notes && (
-            <p className="text-sm text-purple-100/90 mt-2">{t(log.notes)}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t(log.notes)}</p> /* Themed text */
           )}
 
           {log.hashtags && log.hashtags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {log.hashtags.map((hashtag: string, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs bg-orange-500/20 text-orange-100">
+                <Badge key={index} variant="secondary" className="text-xs"> {/* Standard secondary badge */}
                   #{t(hashtag)}
                 </Badge>
               ))}
@@ -197,28 +201,22 @@ const LogsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      {/* ... keep existing code (animated background and header) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
-      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
-
+    <div className="min-h-screen bg-background text-foreground pb-20 relative">
       {/* Header */}
-      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
+      <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg">
-              <Activity className="h-6 w-6 text-white" />
+            <div className="p-2 rounded-xl bg-primary shadow-lg">
+              <Activity className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary">
                 {t("Activity Logs")}
               </h1>
-              <p className="text-sm text-cyan-100/80">{t("Track your rats' daily activities")}</p>
+              <p className="text-sm text-muted-foreground">{t("Track your rats' daily activities")}</p>
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg transform hover:scale-105 transition-all duration-300">
+          <Button variant="default">
             <Plus className="h-4 w-4 mr-2" />
             {t("New Log")}
           </Button>
@@ -233,26 +231,26 @@ const LogsPage = () => {
         />
 
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 backdrop-blur-md bg-white/10 border-white/20">
-            <TabsTrigger value="all" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-card border border-border rounded-md">
+            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground">
               {t("All")} ({filteredLogs.length})
             </TabsTrigger>
-            <TabsTrigger value="behavior" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+            <TabsTrigger value="behavior" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground">
               {t("Behavior")} ({behaviorLogs.length})
             </TabsTrigger>
-            <TabsTrigger value="health" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+            <TabsTrigger value="health" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground">
               {t("Health")} ({healthLogs.length})
             </TabsTrigger>
-            <TabsTrigger value="environment" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70">
+            <TabsTrigger value="environment" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground">
               {t("Environment")} ({environmentLogs.length})
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="all" className="space-y-3">
             {loading ? (
-              <div className="text-center py-8 text-white">{t("Loading logs...")}</div>
+              <div className="text-center py-8 text-muted-foreground">{t("Loading logs...")}</div>
             ) : filteredLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">
+              <div className="text-center py-8 text-muted-foreground">
                 {searchQuery || selectedHashtags.length > 0 ? t("No logs match your filters") : t("No logs found")}
               </div>
             ) : (
@@ -262,7 +260,7 @@ const LogsPage = () => {
           
           <TabsContent value="behavior" className="space-y-3">
             {behaviorLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">{t("No behavior logs found")}</div>
+              <div className="text-center py-8 text-muted-foreground">{t("No behavior logs found")}</div>
             ) : (
               behaviorLogs.map((log) => <LogCard key={log.id} log={log} />)
             )}
@@ -270,7 +268,7 @@ const LogsPage = () => {
           
           <TabsContent value="health" className="space-y-3">
             {healthLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">{t("No health logs found")}</div>
+              <div className="text-center py-8 text-muted-foreground">{t("No health logs found")}</div>
             ) : (
               healthLogs.map((log) => <LogCard key={log.id} log={log} />)
             )}
@@ -278,7 +276,7 @@ const LogsPage = () => {
           
           <TabsContent value="environment" className="space-y-3">
             {environmentLogs.length === 0 ? (
-              <div className="text-center py-8 text-white">{t("No environment logs found")}</div>
+              <div className="text-center py-8 text-muted-foreground">{t("No environment logs found")}</div>
             ) : (
               environmentLogs.map((log) => <LogCard key={log.id} log={log} />)
             )}

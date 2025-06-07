@@ -45,18 +45,18 @@ const AlertCards = () => {
     }
   }, []);
 
-  const getAlertStyles = (type: string) => {
+  const getAlertStyleClasses = (type: string) => { // Renamed and themed
     switch (type) {
       case 'warning':
-        return 'bg-yellow-500/20 border-yellow-300 text-yellow-100';
+        return 'bg-yellow-500/20 border-yellow-500/30 text-yellow-700 dark:text-yellow-400';
       case 'error':
-        return 'bg-red-500/20 border-red-300 text-red-100';
+        return 'bg-destructive/20 border-destructive/30 text-destructive-foreground';
       case 'success':
-        return 'bg-green-500/20 border-green-300 text-green-100';
+        return 'bg-green-500/20 border-green-500/30 text-green-700 dark:text-green-400';
       case 'info':
-        return 'bg-blue-500/20 border-blue-300 text-blue-100';
+        return 'bg-primary/20 border-primary/30 text-primary-foreground';
       default:
-        return 'bg-gray-500/20 border-gray-300 text-gray-100';
+        return 'bg-muted/20 border-border text-muted-foreground';
     }
   };
 
@@ -67,11 +67,11 @@ const AlertCards = () => {
       {alerts.map((alert) => {
         const Icon = alert.icon;
         return (
-          <Card key={alert.id} className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl ${getAlertStyles(alert.type)} border-2`}>
+          <Card key={alert.id} className={`bg-card border-border shadow-xl ${getAlertStyleClasses(alert.type)} border-2`}> {/* Themed Card */}
             <CardContent className="p-3">
               <div className="flex items-center gap-3">
-                <Icon className="h-5 w-5 flex-shrink-0" />
-                <p className="text-sm font-medium">{alert.message}</p>
+                <Icon className="h-5 w-5 flex-shrink-0" /> {/* Icon color will inherit from text color */}
+                <p className="text-sm font-medium">{alert.message}</p> {/* Text color will inherit from text color */}
               </div>
             </CardContent>
           </Card>

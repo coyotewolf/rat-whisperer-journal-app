@@ -94,7 +94,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center text-white">{t("Quick Log Entry")}</DialogTitle>
+              <DialogTitle className="flex-1 text-center text-foreground">{t("Quick Log Entry")}</DialogTitle>
               <div className="w-10"></div> {/* Placeholder to balance the back button */}
             </div>
           </DialogHeader>

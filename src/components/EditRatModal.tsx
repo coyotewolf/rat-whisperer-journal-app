@@ -1,4 +1,6 @@
 
+import { cn } from "@/lib/utils"; // Import cn utility
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,19 +122,19 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto backdrop-blur-md bg-white/80">
+        <DialogContent className={cn("sm:max-w-md max-h-[80vh] overflow-y-auto bg-card text-card-foreground")}> {/* Themed background and text */}
           <DialogHeader>
-            <div className="flex items-center justify-between">
+            <div className={cn("flex items-center justify-between")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700"
+                className={cn("text-muted-foreground hover:text-foreground")}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center">{t("Edit Rat")}</DialogTitle>
-              <div className="w-10"></div> {/* Placeholder to balance the back button */}
+              <DialogTitle className={cn("flex-1 text-center")}>{t("Edit Rat")}</DialogTitle>
+              <div className={cn("w-10")}></div> {/* Placeholder to balance the back button */}
             </div>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
