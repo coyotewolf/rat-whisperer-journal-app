@@ -65,7 +65,8 @@
   "No pre-filled title": "無預填標題",
   ", Priority: {{priority}}": "，優先順序：{{priority}}",
   "Home": "首頁",
-  "Rats": "我的老鼠",
+  "Rats": "鼠寶",
+  "My Rats": "我的鼠寶們",
   "Logs": "日誌",
   "Library": "圖書館",
   "Community": "社群",
@@ -127,7 +128,7 @@
   "Unknown": "未知",
   "New log entry added:": "新增日誌條目：",
   "Activity updated (simulated):": "活動已更新（模擬）：",
-  "RatTracker": "RatTracker",
+  "RatTracker": "鼠條",
   "Your pet care companion": "您的寵物照護夥伴",
   "Quick Log": "快速日誌",
   "Reports": "報告",
@@ -329,6 +330,6 @@
   "Manage Task Suggestions": "管理任務建議",
   "completed": "已完成",
   "good": "良好",
-  "My rats": "我的老鼠",
+  "My rats": "我的鼠寶們",
   "Category": "類別"
 }

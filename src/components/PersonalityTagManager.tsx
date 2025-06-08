@@ -21,28 +21,28 @@ interface PersonalityTagManagerProps {
 }
 
 const defaultTags: PersonalityTag[] = [
-  { id: "1", name: "Curious", color: "bg-blue-100 text-blue-700" },
-  { id: "2", name: "Shy", color: "bg-purple-100 text-purple-700" },
-  { id: "3", name: "Aggressive", color: "bg-red-100 text-red-700" },
-  { id: "4", name: "Calm", color: "bg-green-100 text-green-700" },
-  { id: "5", name: "Adventurous", color: "bg-orange-100 text-orange-700" },
-  { id: "6", name: "Vocal", color: "bg-yellow-100 text-yellow-700" },
-  { id: "7", name: "Friendly", color: "bg-pink-100 text-pink-700" },
-  { id: "8", name: "Dominant", color: "bg-gray-100 text-gray-700" },
-  { id: "9", name: "Anxious", color: "bg-indigo-100 text-indigo-700" },
+  { id: "1", name: "Curious", color: "blue" },
+  { id: "2", name: "Shy", color: "purple" },
+  { id: "3", name: "Aggressive", color: "red" },
+  { id: "4", name: "Calm", color: "green" },
+  { id: "5", name: "Adventurous", color: "orange" },
+  { id: "6", name: "Vocal", color: "yellow" },
+  { id: "7", name: "Friendly", color: "pink" },
+  { id: "8", name: "Dominant", color: "gray" },
+  { id: "9", name: "Anxious", color: "indigo" },
 ];
 
 const colorOptions = [
-  "bg-blue-100 text-blue-700",
-  "bg-purple-100 text-purple-700",
-  "bg-red-100 text-red-700",
-  "bg-green-100 text-green-700",
-  "bg-orange-100 text-orange-700",
-  "bg-yellow-100 text-yellow-700",
-  "bg-pink-100 text-pink-700",
-  "bg-gray-100 text-gray-700",
-  "bg-indigo-100 text-indigo-700",
-  "bg-cyan-100 text-cyan-700",
+  "blue",
+  "purple",
+  "red",
+  "green",
+  "orange",
+  "yellow",
+  "pink",
+  "gray",
+  "indigo",
+  "cyan",
 ];
 
 const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagManagerProps) => {
@@ -106,28 +106,29 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
   // Helper to get themed classes for a given color string (e.g., "primary", "red")
   const getThemedColorClasses = (colorName: string) => {
     switch (colorName) {
-      case "primary": return "bg-primary/10 text-primary border-primary/30";
-      case "secondary": return "bg-secondary/10 text-secondary-foreground border-secondary/30";
-      case "accent": return "bg-accent/10 text-accent-foreground border-accent/30";
-      case "destructive": return "bg-destructive/10 text-destructive-foreground border-destructive/30";
-      case "muted": return "bg-muted/50 text-muted-foreground border-border";
+      case "primary": return "bg-primary/10 text-primary";
+      case "secondary": return "bg-secondary/10 text-secondary-foreground";
+      case "accent": return "bg-accent/10 text-accent-foreground";
+      case "destructive": return "bg-destructive/10 text-destructive-foreground";
+      case "muted": return "bg-muted/50 text-muted-foreground";
       // For specific colors, ensure they are defined in your Tailwind config and CSS variables
-      case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30";
-      case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30";
-      case "red": return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30";
-      case "green": return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30";
-      case "orange": return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30";
-      case "yellow": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30";
-      case "pink": return "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30";
-      case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30";
-      case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30";
-      default: return "bg-muted/50 text-muted-foreground border-border";
+      case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+      case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case "red": return "bg-red-500/10 text-red-600 dark:text-red-400";
+      case "green": return "bg-green-500/10 text-green-600 dark:text-green-400";
+      case "orange": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
+      case "yellow": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400";
+      case "pink": return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
+      case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400";
+      case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400";
+      case "gray": return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
+      default: return "bg-muted/50 text-muted-foreground";
     }
   };
 
-  const getTagColorClasses = (tagName: string) => { // Renamed and themed
+  const getTagColorClasses = (tagName: string) => {
     const tag = availableTags.find(t => t.name === tagName);
-    return getThemedColorClasses(tag?.color || "muted"); // Use themed helper
+    return getThemedColorClasses(tag?.color || "muted");
   };
 
   return (
@@ -136,12 +137,13 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
         {availableTags.map((tag) => (
           <div key={tag.id} className={cn("flex items-center gap-1")}>
             <Badge
+              variant="outline"
               className={cn(
-                `cursor-pointer border-2 transition-all`,
-                getTagColorClasses(tag.name), // Use themed classes
+                `cursor-pointer transition-all`,
+                getTagColorClasses(tag.name),
                 selectedTags.includes(tag.name)
-                  ? "ring-2 ring-primary" // Themed ring color
-                  : "border-transparent hover:border-border" // Themed hover border
+                  ? "ring-2 ring-primary"
+                  : ""
               )}
               onClick={() => handleTagToggle(tag.name)}
             >
@@ -158,6 +160,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
           </div>
         ))}
         <Button
+          type="button"
           size="sm"
           variant="outline"
           onClick={() => setIsAddingTag(true)}
@@ -170,7 +173,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
 
       {/* Add Tag Dialog */}
       <Dialog open={isAddingTag} onOpenChange={setIsAddingTag}>
-        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}> {/* Themed dialog */}
+        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
           <DialogHeader>
             <DialogTitle>{t("Add New Personality Tag")}</DialogTitle>
           </DialogHeader>
@@ -187,10 +190,11 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 {colorOptions.map((color) => (
                   <Badge
                     key={color}
+                    variant="outline"
                     className={cn(
-                      `cursor-pointer border-2`,
-                      getThemedColorClasses(color), // Use themed helper
-                      selectedColor === color ? "ring-2 ring-primary" : "border-transparent" // Themed ring color
+                      `cursor-pointer`,
+                      getThemedColorClasses(color),
+                      selectedColor === color ? "ring-2 ring-primary" : ""
                     )}
                     onClick={() => setSelectedColor(color)}
                   >
@@ -200,10 +204,10 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
               </div>
             </div>
             <div className={cn("flex gap-2")}>
-              <Button onClick={handleAddTag} disabled={!newTagName.trim()}>
+              <Button type="button" onClick={handleAddTag} disabled={!newTagName.trim()}>
                 {t("Add Tag")}
               </Button>
-              <Button variant="outline" onClick={() => setIsAddingTag(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsAddingTag(false)}>
                 {t("Cancel")}
               </Button>
             </div>
@@ -213,7 +217,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
 
       {/* Edit Tag Dialog */}
       <Dialog open={!!editingTag} onOpenChange={() => setEditingTag(null)}>
-        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}> {/* Themed dialog */}
+        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
           <DialogHeader>
             <DialogTitle>{t("Edit Personality Tag")}</DialogTitle>
           </DialogHeader>
@@ -230,10 +234,11 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 {colorOptions.map((color) => (
                   <Badge
                     key={color}
+                    variant="outline"
                     className={cn(
-                      `cursor-pointer border-2`,
-                      getThemedColorClasses(color), // Use themed helper
-                      selectedColor === color ? "ring-2 ring-primary" : "border-transparent" // Themed ring color
+                      `cursor-pointer`,
+                      getThemedColorClasses(color),
+                      selectedColor === color ? "ring-2 ring-primary" : ""
                     )}
                     onClick={() => setSelectedColor(color)}
                   >
@@ -243,10 +248,10 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
               </div>
             </div>
             <div className={cn("flex gap-2")}>
-              <Button onClick={handleUpdateTag} disabled={!newTagName.trim()}>
+              <Button type="button" onClick={handleUpdateTag} disabled={!newTagName.trim()}>
                 {t("Update Tag")}
               </Button>
-              <Button variant="outline" onClick={() => setEditingTag(null)}>
+              <Button type="button" variant="outline" onClick={() => setEditingTag(null)}>
                 {t("Cancel")}
               </Button>
             </div>
