@@ -11,7 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import PersonalityTagManager from "@/components/PersonalityTagManager";
+import PersonalityTagManager, { PersonalityTag } from "@/components/PersonalityTagManager";
 import { useTranslation } from 'react-i18next';
 
 interface Rat {
@@ -20,7 +20,7 @@ interface Rat {
   sex: string;
   birthday: string;
   status: string;
-  personality?: string[];
+  personality?: PersonalityTag[];
 }
 
 interface EditRatModalProps {
@@ -35,7 +35,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
   const [sex, setSex] = useState("");
   const [birthday, setBirthday] = useState("");
   const [status, setStatus] = useState("");
-  const [personality, setPersonality] = useState<string[]>([]);
+  const [personality, setPersonality] = useState<PersonalityTag[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { toast } = useToast();

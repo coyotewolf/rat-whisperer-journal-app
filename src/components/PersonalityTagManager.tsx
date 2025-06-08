@@ -8,29 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Edit2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth hook
+import { useToast } from "@/hooks/use-toast"; // Import useToast hook
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"; // Import ConfirmationDialog
 
-interface PersonalityTag {
+export interface PersonalityTag {
   id: string;
   name: string;
   color: string;
 }
 
 interface PersonalityTagManagerProps {
-  selectedTags: string[];
-  onTagsChange: (tags: string[]) => void;
+  selectedTags: PersonalityTag[];
+  onTagsChange: (tags: PersonalityTag[]) => void;
 }
-
-const defaultTags: PersonalityTag[] = [
-  { id: "1", name: "Curious", color: "blue" },
-  { id: "2", name: "Shy", color: "purple" },
-  { id: "3", name: "Aggressive", color: "red" },
-  { id: "4", name: "Calm", color: "green" },
-  { id: "5", name: "Adventurous", color: "orange" },
-  { id: "6", name: "Vocal", color: "yellow" },
-  { id: "7", name: "Friendly", color: "pink" },
-  { id: "8", name: "Dominant", color: "gray" },
-  { id: "9", name: "Anxious", color: "indigo" },
-];
 
 const colorOptions = [
   "blue",
@@ -47,18 +39,22 @@ const colorOptions = [
 
 const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagManagerProps) => {
   const { t } = useTranslation();
-  const [availableTags, setAvailableTags] = useState<PersonalityTag[]>(defaultTags);
+  const { user } = useAuth(); // Get user from useAuth hook
+  const { toast } = useToast(); // Get toast from useToast hook
+  const [availableTags, setAvailableTags] = useState<PersonalityTag[]>([]); // Initialize with empty array
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [editingTag, setEditingTag] = useState<PersonalityTag | null>(null);
   const [newTagName, setNewTagName] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // State for delete confirmation
+  const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null); // State to store tag to delete
 
-  const handleTagToggle = (tagName: string) => {
-    const isSelected = selectedTags.includes(tagName);
+  const handleTagToggle = (tagToToggle: PersonalityTag) => {
+    const isSelected = selectedTags.some(tag => tag.id === tagToToggle.id);
     if (isSelected) {
-      onTagsChange(selectedTags.filter(tag => tag !== tagName));
+      onTagsChange(selectedTags.filter(tag => tag.id !== tagToToggle.id));
     } else {
-      onTagsChange([...selectedTags, tagName]);
+      onTagsChange([...selectedTags, tagToToggle]);
     }
   };
 
@@ -90,16 +86,48 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       );
       setAvailableTags(updatedTags);
       
-      // Update selected tags if the tag name changed
-      if (editingTag.name !== newTagName.trim()) {
-        const updatedSelectedTags = selectedTags.map(tagName =>
-          tagName === editingTag.name ? newTagName.trim() : tagName
-        );
-        onTagsChange(updatedSelectedTags);
-      }
+      // Update selected tags if the tag name or color changed
+      const updatedSelectedTags = selectedTags.map(tag =>
+        tag.id === editingTag.id
+          ? { ...tag, name: newTagName.trim(), color: selectedColor }
+          : tag
+      );
+      onTagsChange(updatedSelectedTags);
       
       setEditingTag(null);
       setNewTagName("");
+    }
+  };
+
+  const handleDeleteTag = () => {
+    if (tagToDelete) {
+      // Remove from availableTags
+      const updatedAvailableTags = availableTags.filter(tag => tag.id !== tagToDelete.id);
+      setAvailableTags(updatedAvailableTags);
+
+      // Remove from selectedTags if it was selected
+      const updatedSelectedTags = selectedTags.filter(tag => tag.id !== tagToDelete.id);
+      onTagsChange(updatedSelectedTags);
+
+      // TODO: Add Supabase deletion logic here for persistence
+      // Example:
+      // if (user) {
+      //   const { error } = await supabase.from('personality_tags').delete().eq('id', tagToDelete.id);
+      //   if (error) {
+      //     toast({
+      //       title: t("Error deleting tag"),
+      //       description: error.message,
+      //       variant: "destructive",
+      //     });
+      //   } else {
+      //     toast({
+      //       title: t("Tag deleted successfully"),
+      //     });
+      //   }
+      // }
+
+      setTagToDelete(null);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -132,133 +160,158 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
   };
 
   return (
-    <div className={cn("space-y-3")}>
-      <div className={cn("flex flex-wrap gap-2")}>
-        {availableTags.map((tag) => (
-          <div key={tag.id} className={cn("flex items-center gap-1")}>
-            <Badge
-              variant="outline"
-              className={cn(
-                `cursor-pointer transition-all`,
-                getTagColorClasses(tag.name),
-                selectedTags.includes(tag.name)
-                  ? "ring-2 ring-primary"
-                  : ""
-              )}
-              onClick={() => handleTagToggle(tag.name)}
-            >
-              {tag.name}
-            </Badge>
-            <Button
-              size="sm"
-              variant="ghost"
-              className={cn("h-6 w-6 p-0")}
-              onClick={() => handleEditTag(tag)}
-            >
-              <Edit2 className="h-3 w-3" />
-            </Button>
-          </div>
-        ))}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => setIsAddingTag(true)}
-          className={cn("h-7")}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          {t("Add Tag")}
-        </Button>
+    <>
+      <div className={cn("space-y-3")}>
+        <div className={cn("flex flex-wrap gap-2")}>
+          {availableTags.map((tag) => (
+            <div key={tag.id} className={cn("flex items-center gap-1")}>
+              <Badge
+                variant="outline"
+                className={cn(
+                  `cursor-pointer transition-all`,
+                  getTagColorClasses(tag.name),
+                  selectedTags.some(selectedTag => selectedTag.id === tag.id)
+                    ? "ring-2 ring-primary"
+                    : ""
+                )}
+                onClick={() => handleTagToggle(tag)}
+              >
+                {tag.name}
+              </Badge>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className={cn("h-6 w-6 p-0")}
+                onClick={() => handleEditTag(tag)}
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className={cn("h-6 w-6 p-0 text-destructive hover:text-destructive")}
+                onClick={() => {
+                  setTagToDelete(tag);
+                  setShowDeleteConfirm(true);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setIsAddingTag(true)}
+            className={cn("h-7")}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            {t("Add Tag")}
+          </Button>
+        </div>
+
+        {/* Add Tag Dialog */}
+        <Dialog open={isAddingTag} onOpenChange={setIsAddingTag}>
+          <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
+            <DialogHeader>
+              <DialogTitle>{t("Add New Personality Tag")}</DialogTitle>
+            </DialogHeader>
+            <div className={cn("space-y-4")}>
+              <Input
+                placeholder={t("Tag name")}
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+              />
+              <div className={cn("space-y-2")}>
+                <p className={cn("text-sm font-medium")}>{t("Choose color:")}</p>
+                <div className={cn("flex flex-wrap gap-2")}>
+                  {colorOptions.map((color) => (
+                    <Badge
+                      key={color}
+                      variant="outline"
+                      className={cn(
+                        `cursor-pointer`,
+                        getThemedColorClasses(color),
+                        selectedColor === color ? "ring-2 ring-primary" : ""
+                      )}
+                      onClick={() => setSelectedColor(color)}
+                    >
+                      {t("Sample")}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className={cn("flex gap-2")}>
+                <Button type="button" onClick={handleAddTag} disabled={!newTagName.trim()}>
+                  {t("Add Tag")}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setIsAddingTag(false)}>
+                  {t("Cancel")}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Tag Dialog */}
+        <Dialog open={!!editingTag} onOpenChange={() => setEditingTag(null)}>
+          <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
+            <DialogHeader>
+              <DialogTitle>{t("Edit Personality Tag")}</DialogTitle>
+            </DialogHeader>
+            <div className={cn("space-y-4")}>
+              <Input
+                placeholder={t("Tag name")}
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleUpdateTag()}
+              />
+              <div className={cn("space-y-2")}>
+                <p className={cn("text-sm font-medium")}>{t("Choose color:")}</p>
+                <div className={cn("flex flex-wrap gap-2")}>
+                  {colorOptions.map((color) => (
+                    <Badge
+                      key={color}
+                      variant="outline"
+                      className={cn(
+                        `cursor-pointer`,
+                        getThemedColorClasses(color),
+                        selectedColor === color ? "ring-2 ring-primary" : ""
+                      )}
+                      onClick={() => setSelectedColor(color)}
+                    >
+                      {t("Sample")}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className={cn("flex gap-2")}>
+                <Button type="button" onClick={handleUpdateTag} disabled={!newTagName.trim()}>
+                  {t("Update Tag")}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setEditingTag(null)}>
+                  {t("Cancel")}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Add Tag Dialog */}
-      <Dialog open={isAddingTag} onOpenChange={setIsAddingTag}>
-        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
-          <DialogHeader>
-            <DialogTitle>{t("Add New Personality Tag")}</DialogTitle>
-          </DialogHeader>
-          <div className={cn("space-y-4")}>
-            <Input
-              placeholder={t("Tag name")}
-              value={newTagName}
-              onChange={(e) => setNewTagName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-            />
-            <div className={cn("space-y-2")}>
-              <p className={cn("text-sm font-medium")}>{t("Choose color:")}</p>
-              <div className={cn("flex flex-wrap gap-2")}>
-                {colorOptions.map((color) => (
-                  <Badge
-                    key={color}
-                    variant="outline"
-                    className={cn(
-                      `cursor-pointer`,
-                      getThemedColorClasses(color),
-                      selectedColor === color ? "ring-2 ring-primary" : ""
-                    )}
-                    onClick={() => setSelectedColor(color)}
-                  >
-                    {t("Sample")}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className={cn("flex gap-2")}>
-              <Button type="button" onClick={handleAddTag} disabled={!newTagName.trim()}>
-                {t("Add Tag")}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setIsAddingTag(false)}>
-                {t("Cancel")}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Tag Dialog */}
-      <Dialog open={!!editingTag} onOpenChange={() => setEditingTag(null)}>
-        <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
-          <DialogHeader>
-            <DialogTitle>{t("Edit Personality Tag")}</DialogTitle>
-          </DialogHeader>
-          <div className={cn("space-y-4")}>
-            <Input
-              placeholder={t("Tag name")}
-              value={newTagName}
-              onChange={(e) => setNewTagName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleUpdateTag()}
-            />
-            <div className={cn("space-y-2")}>
-              <p className={cn("text-sm font-medium")}>{t("Choose color:")}</p>
-              <div className={cn("flex flex-wrap gap-2")}>
-                {colorOptions.map((color) => (
-                  <Badge
-                    key={color}
-                    variant="outline"
-                    className={cn(
-                      `cursor-pointer`,
-                      getThemedColorClasses(color),
-                      selectedColor === color ? "ring-2 ring-primary" : ""
-                    )}
-                    onClick={() => setSelectedColor(color)}
-                  >
-                    {t("Sample")}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className={cn("flex gap-2")}>
-              <Button type="button" onClick={handleUpdateTag} disabled={!newTagName.trim()}>
-                {t("Update Tag")}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setEditingTag(null)}>
-                {t("Cancel")}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteTag}
+        title={t("Delete Personality Tag")}
+        description={t("Are you sure you want to delete the tag '{{tagName}}'? This action cannot be undone.", { tagName: tagToDelete?.name })}
+        confirmText={t("Delete")}
+        cancelText={t("Cancel")}
+        variant="destructive"
+      />
+    </>
   );
 };
 
