@@ -64,7 +64,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
           sex,
           birthday,
           status,
-          personality
+          personality: personality.map(({ id, name, color }) => ({ id, name, color }))
         })
         .eq('id', rat.id);
 
@@ -185,7 +185,14 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
               <Label>{t("Personality Tags")}</Label>
               <PersonalityTagManager
                 selectedTags={personality}
-                onTagsChange={setPersonality}
+                onSelect={(tagToToggle) => {
+                  const isSelected = personality.some(tag => tag.id === tagToToggle.id);
+                  if (isSelected) {
+                    setPersonality(personality.filter(tag => tag.id !== tagToToggle.id));
+                  } else {
+                    setPersonality([...personality, tagToToggle]);
+                  }
+                }}
               />
             </div>
             <div className="flex gap-2">
