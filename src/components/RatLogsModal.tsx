@@ -36,11 +36,14 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Split the query to avoid complex type inference
+      const query = supabase
         .from('log_entries')
-        .select('*')
+        .select('id, type, content, created_at')
         .eq('user_id', user.id)
-        .eq('rat_id', ratId)
+        .eq('rat_id', ratId);
+      
+      const { data, error } = await query
         .in('type', logTypes)
         .order('created_at', { ascending: false });
 
@@ -63,10 +66,10 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
   };
 
   useEffect(() => {
-    if (ratId && user && isOpen) {
+    if (ratId && user?.id && isOpen) {
       fetchLogs();
     }
-  }, [ratId, user?.id, isOpen]); // Simplified dependencies
+  }, [ratId, user?.id, isOpen]);
 
   const formatLogContent = (log: RatLogEntry) => {
     const content = log.content || {};
