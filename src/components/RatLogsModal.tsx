@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,11 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-// Simple interface to avoid type recursion issues
-interface SimpleLogEntry {
+// Simplified log entry interface to avoid type recursion
+interface LogEntry {
   id: string;
   type: string;
-  content: any; // Using any to avoid Json type complications
+  content: any;
   created_at: string;
 }
 
@@ -26,7 +27,7 @@ interface RatLogsModalProps {
 
 const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModalProps) => {
   const { t } = useTranslation();
-  const [logs, setLogs] = useState<SimpleLogEntry[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -51,8 +52,8 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
 
       if (error) throw error;
       
-      // Transform the data to our simple interface
-      const transformedLogs: SimpleLogEntry[] = (data || []).map(log => ({
+      // Directly cast the data to avoid type inference issues
+      const transformedLogs = (data || []).map((log): LogEntry => ({
         id: log.id,
         type: log.type,
         content: log.content,
@@ -67,58 +68,60 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
     }
   };
 
-  const formatLogContent = (log: SimpleLogEntry) => {
+  const formatLogContent = (log: LogEntry) => {
+    const content = log.content || {};
+    
     switch (log.type) {
       case 'behavior':
         return (
           <div>
-            {log.content.tags && (
+            {content.tags && Array.isArray(content.tags) && (
               <div className="flex flex-wrap gap-1 mb-2">
-                {log.content.tags.map((tag: string, index: number) => (
+                {content.tags.map((tag: string, index: number) => (
                   <Badge key={index} variant="secondary" className="text-xs">
                     {tag}
                   </Badge>
                 ))}
               </div>
             )}
-            {log.content.notes && <p className="text-sm">{log.content.notes}</p>}
+            {content.notes && <p className="text-sm">{content.notes}</p>}
           </div>
         );
       case 'weight':
-        return <p className="text-sm">{t("Weight")}: {log.content.weight}g</p>;
+        return <p className="text-sm">{t("Weight")}: {content.weight}g</p>;
       case 'health':
         return (
           <div>
-            <p className="text-sm font-medium">{t("Status")}: {t(log.content.status)}</p>
-            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{t("Status")}: {t(content.status || '')}</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
           </div>
         );
       case 'medication':
         return (
           <div>
-            <p className="text-sm font-medium">{log.content.medication}</p>
-            <p className="text-sm">{t("Dose")}: {log.content.dose}</p>
-            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{content.medication}</p>
+            <p className="text-sm">{t("Dose")}: {content.dose}</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
           </div>
         );
       case 'feeding':
         return (
           <div>
-            <p className="text-sm font-medium">{log.content.food}</p>
-            <p className="text-sm">{t("Amount")}: {log.content.amount}</p>
-            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{content.food}</p>
+            <p className="text-sm">{t("Amount")}: {content.amount}</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
           </div>
         );
       case 'environment':
         return (
           <div>
-            <p className="text-sm font-medium">{t("Temperature")}: {log.content.temperature}°C</p>
-            <p className="text-sm">{t("Humidity")}: {log.content.humidity}%</p>
-            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{t("Temperature")}: {content.temperature}°C</p>
+            <p className="text-sm">{t("Humidity")}: {content.humidity}%</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
           </div>
         );
       default:
-        return <p className="text-sm">{JSON.stringify(log.content)}</p>;
+        return <p className="text-sm">{JSON.stringify(content)}</p>;
     }
   };
 
