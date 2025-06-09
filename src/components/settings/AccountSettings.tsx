@@ -7,6 +7,18 @@ import { ArrowLeft, User, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import AuthModal from "@/components/AuthModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 
 interface AccountSettingsProps {
   onBack: () => void;
@@ -16,7 +28,9 @@ const AccountSettings = ({ onBack }: AccountSettingsProps) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const { user, signOut, deleteAccount, reauthenticate } = useAuth();
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -45,6 +59,49 @@ const AccountSettings = ({ onBack }: AccountSettingsProps) => {
       setLoading(false);
     }
   };
+
+  const handleDeleteAccount = async () => {
+    setLoading(true);
+    try {
+      // Reauthenticate user
+      const { error: reauthError } = await reauthenticate(password);
+      if (reauthError) {
+        toast({
+          title: t("Error"),
+          description: t("Incorrect password. Please try again."),
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Proceed with account deletion
+      const { error: deleteError } = await deleteAccount();
+      if (deleteError) {
+        toast({
+          title: t("Error"),
+          description: deleteError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: t("Success"),
+          description: t("Account deleted successfully!"),
+        });
+        setDeleteAccountDialogOpen(false);
+        setPassword("");
+      }
+    } catch (error) {
+      toast({
+        title: t("Error"),
+        description: t("An unexpected error occurred during account deletion."),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
@@ -96,6 +153,44 @@ const AccountSettings = ({ onBack }: AccountSettingsProps) => {
               >
                 {loading ? t("Signing Out...") : t("Sign Out")}
               </Button>
+              <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    {t("Delete Account")}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t("Are you absolutely sure?")}</AlertDialogTitle>
+                    <AlertDialogDescription asChild>
+                      <div>
+                        <p>{t("This action cannot be undone. This will permanently delete your account and remove your data from our servers.")}</p>
+                        <div className="mt-4">
+                          <Input
+                            type="password"
+                            placeholder={t("Enter your password to confirm")}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={loading || password.length === 0}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {loading ? t("Deleting Account...") : t("Delete Account")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>

@@ -331,5 +331,13 @@
   "completed": "已完成",
   "good": "良好",
   "My rats": "我的鼠寶們",
-  "Category": "類別"
+  "Category": "類別",
+  "Delete Account": "刪除帳號",
+  "Are you absolutely sure?": "您確定嗎？",
+  "This action cannot be undone. This will permanently delete your account and remove your data from our servers.": "此操作無法復原。這將永久刪除您的帳號並從我們的伺服器中移除您的資料。",
+  "Enter your password to confirm": "輸入您的密碼以確認",
+  "Deleting Account...": "正在刪除帳號...",
+  "Incorrect password. Please try again.": "密碼不正確。請再試一次。",
+  "Account deleted successfully!": "帳號刪除成功！",
+  "An unexpected error occurred during account deletion.": "帳號刪除時發生未預期的錯誤。"
 }
