@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -31,12 +30,7 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (ratId && user && isOpen) {
-      fetchLogs();
-    }
-  }, [ratId, user, isOpen]);
-
+  // Separate the fetchLogs function to avoid dependency issues
   const fetchLogs = async () => {
     if (!ratId || !user) return;
 
@@ -67,6 +61,12 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (ratId && user && isOpen) {
+      fetchLogs();
+    }
+  }, [ratId, user?.id, isOpen]); // Simplified dependencies
 
   const formatLogContent = (log: RatLogEntry) => {
     const content = log.content || {};
