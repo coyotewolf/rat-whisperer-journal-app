@@ -83,6 +83,7 @@ export type Database = {
       }
       log_tag_suggestions: {
         Row: {
+          color: string
           created_at: string
           id: string
           name: string
@@ -90,6 +91,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          color?: string
           created_at?: string
           id?: string
           name: string
@@ -97,6 +99,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          color?: string
           created_at?: string
           id?: string
           name?: string
@@ -170,6 +173,7 @@ export type Database = {
       }
       task_suggestions: {
         Row: {
+          color: string
           created_at: string
           description: string | null
           id: string
@@ -183,6 +187,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          color?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -196,6 +201,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          color?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -297,7 +303,7 @@ export type Database = {
     }
     Functions: {
       delete_user_by_id: {
-        Args: { user_id_to_delete: string }
+        Args: { user_id: number } | { user_id_to_delete: string }
         Returns: undefined
       }
     }

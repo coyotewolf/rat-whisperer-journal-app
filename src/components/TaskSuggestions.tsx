@@ -55,13 +55,23 @@ const TaskSuggestions = ({ onSelect, selectedSuggestionId }: TaskSuggestionsProp
             <Badge
               key={suggestion.id}
               variant={selectedSuggestionId === suggestion.id ? "default" : "outline"}
-              className={`cursor-pointer transition-colors ${
+              className={`cursor-pointer transition-colors border-2 ${
                 selectedSuggestionId === suggestion.id
                   ? "bg-orange-500 text-white"
                   : "hover:bg-orange-100"
               }`}
+              style={{ 
+                borderColor: suggestion.color || '#6B7280',
+                ...(selectedSuggestionId !== suggestion.id && {
+                  backgroundColor: `${suggestion.color || '#6B7280'}10`
+                })
+              }}
               onClick={() => onSelect(suggestion)}
             >
+              <div 
+                className="w-2 h-2 rounded-full mr-2 flex-shrink-0"
+                style={{ backgroundColor: suggestion.color || '#6B7280' }}
+              />
               {suggestion.name}
             </Badge>
           ))}

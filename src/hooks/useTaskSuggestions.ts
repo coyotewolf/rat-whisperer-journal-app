@@ -12,6 +12,7 @@ export interface TaskSuggestion {
   location?: string;
   quantity?: number;
   unit?: string;
+  color?: string;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +37,6 @@ export const useTaskSuggestions = () => {
       })));
     } catch (error) {
       console.error('Error fetching task suggestions:', error);
-      // No need to create default suggestions here anymore - the database trigger handles this
       setSuggestions([]);
     } finally {
       setLoading(false);

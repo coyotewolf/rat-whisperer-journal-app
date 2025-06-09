@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Palette } from 'lucide-react';
 import { useTaskSuggestions, type TaskSuggestion } from '@/hooks/useTaskSuggestions';
 
 interface TaskSuggestionFormModalProps {
@@ -16,6 +16,11 @@ interface TaskSuggestionFormModalProps {
   editingSuggestion: TaskSuggestion | null;
   onSave: (suggestion: TaskSuggestion) => void;
 }
+
+const defaultColors = [
+  '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', 
+  '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'
+];
 
 const TaskSuggestionFormModal = ({
   isOpen,
@@ -32,6 +37,7 @@ const TaskSuggestionFormModal = ({
   const [location, setLocation] = useState('');
   const [quantity, setQuantity] = useState<number | undefined>();
   const [unit, setUnit] = useState('');
+  const [color, setColor] = useState('#6B7280');
 
   useEffect(() => {
     if (isOpen) {
@@ -43,6 +49,7 @@ const TaskSuggestionFormModal = ({
         setLocation(editingSuggestion.location || '');
         setQuantity(editingSuggestion.quantity);
         setUnit(editingSuggestion.unit || '');
+        setColor(editingSuggestion.color || '#6B7280');
       } else {
         resetForm();
       }
@@ -57,6 +64,7 @@ const TaskSuggestionFormModal = ({
     setLocation('');
     setQuantity(undefined);
     setUnit('');
+    setColor('#6B7280');
   };
 
   const handleSave = async () => {
@@ -70,6 +78,7 @@ const TaskSuggestionFormModal = ({
       location: location || undefined,
       quantity: quantity || undefined,
       unit: unit || undefined,
+      color,
     };
 
     try {
@@ -118,6 +127,35 @@ const TaskSuggestionFormModal = ({
               onChange={(e) => setName(e.target.value)}
               placeholder={t("Display name for the suggestion")}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("Color")}</Label>
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer flex items-center justify-center"
+                style={{ backgroundColor: color }}
+              >
+                <Palette className="h-4 w-4 text-white opacity-75" />
+              </div>
+              <Input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-16 h-8 p-0 border-0"
+              />
+              <div className="flex flex-wrap gap-1 flex-1">
+                {defaultColors.map((defaultColor) => (
+                  <button
+                    key={defaultColor}
+                    type="button"
+                    className={`w-6 h-6 rounded border-2 ${color === defaultColor ? 'border-gray-800' : 'border-gray-300'}`}
+                    style={{ backgroundColor: defaultColor }}
+                    onClick={() => setColor(defaultColor)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">

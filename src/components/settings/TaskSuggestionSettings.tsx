@@ -59,12 +59,18 @@ const TaskSuggestionSettings = ({ onBack }: TaskSuggestionSettingsProps) => {
         <ul className="space-y-3 mt-12">
           {suggestions.map(suggestion => (
             <li key={suggestion.id} className="p-3 border rounded-lg flex justify-between items-center bg-white shadow-sm">
-              <div>
-                <p className="font-semibold text-gray-800">{suggestion.name}</p>
-                <p className="text-xs text-gray-500">
-                  {suggestion.title ? t("Title: {{title}}", { title: suggestion.title }) : t('No pre-filled title')}
-                  {suggestion.priority && t(", Priority: {{priority}}", { priority: suggestion.priority.charAt(0).toUpperCase() + suggestion.priority.slice(1) })}
-                </p>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                  style={{ backgroundColor: suggestion.color || '#6B7280' }}
+                />
+                <div>
+                  <p className="font-semibold text-gray-800">{suggestion.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {suggestion.title ? t("Title: {{title}}", { title: suggestion.title }) : t('No pre-filled title')}
+                    {suggestion.priority && t(", Priority: {{priority}}", { priority: suggestion.priority.charAt(0).toUpperCase() + suggestion.priority.slice(1) })}
+                  </p>
+                </div>
               </div>
               <div className="space-x-2">
                 <Button variant="ghost" size="icon" onClick={() => openFormModal(suggestion)} title={t("Edit suggestion")}>

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 export interface LogTagSuggestion {
   id: string;
   name: string;
+  color?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -48,7 +49,7 @@ export const useLogTagSuggestions = () => {
     }
   };
 
-  const addSuggestion = async (name: string) => {
+  const addSuggestion = async (name: string, color: string = '#6B7280') => {
     if (!user) return;
 
     try {
@@ -57,6 +58,7 @@ export const useLogTagSuggestions = () => {
         .insert({
           user_id: user.id,
           name: name.trim(),
+          color,
         })
         .select()
         .single();
@@ -81,13 +83,18 @@ export const useLogTagSuggestions = () => {
     }
   };
 
-  const updateSuggestion = async (id: string, name: string) => {
+  const updateSuggestion = async (id: string, name: string, color?: string) => {
     if (!user) return;
 
     try {
+      const updateData: any = { name: name.trim() };
+      if (color !== undefined) {
+        updateData.color = color;
+      }
+
       const { data, error } = await supabase
         .from('log_tag_suggestions')
-        .update({ name: name.trim() })
+        .update(updateData)
         .eq('id', id)
         .eq('user_id', user.id)
         .select()

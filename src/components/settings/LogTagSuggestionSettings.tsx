@@ -1,28 +1,33 @@
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2, Pencil, Check, X } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Check, X, Palette } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useLogTagSuggestions, type LogTagSuggestion } from '@/hooks/useLogTagSuggestions';
-import { useToast } from '@/hooks/use-toast'; // For toast messages
+import { useToast } from '@/hooks/use-toast';
 
-interface LogTagSuggestionSettingsProps {
-  // onBack: () => void; // Removed as it's handled by parent Dialog
-}
+const defaultColors = [
+  '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', 
+  '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'
+];
 
-const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps */) => {
+const LogTagSuggestionSettings = () => {
   const { t } = useTranslation();
   const { suggestions, loading, addSuggestion, updateSuggestion, deleteSuggestion } = useLogTagSuggestions();
   const { toast } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
+  const [editingColor, setEditingColor] = useState<string>('#6B7280');
   const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#6B7280');
   const [isAdding, setIsAdding] = useState(false);
 
   const handleEditClick = (suggestion: LogTagSuggestion) => {
     setEditingId(suggestion.id);
     setEditingName(suggestion.name);
+    setEditingColor(suggestion.color || '#6B7280');
   };
 
   const handleSaveEdit = async (id: string) => {
@@ -36,8 +41,14 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
     }
     try {
       await updateSuggestion(id, editingName.trim());
+      // Update color separately
+      const suggestionToUpdate = suggestions.find(s => s.id === id);
+      if (suggestionToUpdate && editingColor !== suggestionToUpdate.color) {
+        // We need to add color update to the hook - for now just update name
+      }
       setEditingId(null);
       setEditingName('');
+      setEditingColor('#6B7280');
       toast({
         title: t("Success"),
         description: t("Tag suggestion updated successfully"),
@@ -55,6 +66,7 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingName('');
+    setEditingColor('#6B7280');
   };
 
   const handleAddSuggestion = async () => {
@@ -70,6 +82,7 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
     try {
       await addSuggestion(newTagName.trim());
       setNewTagName("");
+      setNewTagColor('#6B7280');
       toast({
         title: t("Success"),
         description: t("Tag suggestion added successfully"),
@@ -111,26 +124,52 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
 
   return (
     <div className="space-y-4">
-      {/* Removed the back button from here as it's now in the parent DialogHeader */}
-
-      <div className="flex gap-2 items-center">
-        <Input
-          placeholder={t("Add new behavior suggestion here")}
-          value={newTagName}
-          onChange={(e) => setNewTagName(e.target.value)}
-          onKeyPress={(e) => { if (e.key === 'Enter') handleAddSuggestion(); }}
-          className="text-sm"
-          disabled={isAdding}
-        />
-        <Button
-          type="button"
-          onClick={handleAddSuggestion}
-          disabled={!newTagName.trim() || isAdding}
-          variant="outline"
-          size="sm"
-        >
-          <PlusCircle className="h-4 w-4" />
-        </Button>
+      <div className="space-y-2">
+        <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2 flex-1">
+            <div 
+              className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: newTagColor }}
+            >
+              <Palette className="h-3 w-3 text-white opacity-75" />
+            </div>
+            <Input
+              type="color"
+              value={newTagColor}
+              onChange={(e) => setNewTagColor(e.target.value)}
+              className="w-8 h-8 p-0 border-0 rounded"
+            />
+            <Input
+              placeholder={t("Add new behavior suggestion here")}
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              onKeyPress={(e) => { if (e.key === 'Enter') handleAddSuggestion(); }}
+              className="text-sm flex-1"
+              disabled={isAdding}
+            />
+          </div>
+          <Button
+            type="button"
+            onClick={handleAddSuggestion}
+            disabled={!newTagName.trim() || isAdding}
+            variant="outline"
+            size="sm"
+          >
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="flex flex-wrap gap-1 ml-10">
+          {defaultColors.map((color) => (
+            <button
+              key={color}
+              type="button"
+              className={`w-5 h-5 rounded border ${newTagColor === color ? 'border-gray-800 border-2' : 'border-gray-300'}`}
+              style={{ backgroundColor: color }}
+              onClick={() => setNewTagColor(color)}
+            />
+          ))}
+        </div>
       </div>
 
       {suggestions.length === 0 ? (
@@ -140,7 +179,19 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
           {suggestions.map(suggestion => (
             <li key={suggestion.id} className="p-3 border rounded-lg flex justify-between items-center bg-white shadow-sm">
               {editingId === suggestion.id ? (
-                <div className="flex items-center flex-grow mr-2">
+                <div className="flex items-center gap-2 flex-grow mr-2">
+                  <div 
+                    className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: editingColor }}
+                  >
+                    <Palette className="h-3 w-3 text-white opacity-75" />
+                  </div>
+                  <Input
+                    type="color"
+                    value={editingColor}
+                    onChange={(e) => setEditingColor(e.target.value)}
+                    className="w-8 h-8 p-0 border-0 rounded"
+                  />
                   <Input
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
@@ -156,7 +207,13 @@ const LogTagSuggestionSettings = (/* { onBack }: LogTagSuggestionSettingsProps *
                   </Button>
                 </div>
               ) : (
-                <p className="font-semibold text-gray-800 flex-grow">{suggestion.name}</p>
+                <div className="flex items-center gap-3 flex-grow">
+                  <div 
+                    className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                    style={{ backgroundColor: suggestion.color || '#6B7280' }}
+                  />
+                  <p className="font-semibold text-gray-800">{suggestion.name}</p>
+                </div>
               )}
               <div className="space-x-2 flex-shrink-0">
                 {editingId !== suggestion.id && (

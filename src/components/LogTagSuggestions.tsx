@@ -7,20 +7,18 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLogTagSuggestions, type LogTagSuggestion } from "@/hooks/useLogTagSuggestions";
 import LogTagSuggestionSettings from "./settings/LogTagSuggestionSettings";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog"; // For Manage Modal
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
 
 interface LogTagSuggestionsProps {
   onSelect: (tagName: string) => void;
   selectedTags: string[];
-  placeholder?: string; // Add placeholder prop
+  placeholder?: string;
 }
 
-const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSuggestionsProps) => { // Use placeholder prop
+const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSuggestionsProps) => {
   const { t } = useTranslation();
-  const { suggestions, loading, deleteSuggestion } = useLogTagSuggestions(); // Removed addSuggestion as it's now handled in settings
-  const [isManageModalOpen, setIsManageModalOpen] = useState(false); // Removed isAddModalOpen
-
-  // Removed handleSaveNewSuggestion as adding is now inline in settings
+  const { suggestions, loading, deleteSuggestion } = useLogTagSuggestions();
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
   const handleManageModalClose = () => {
     setIsManageModalOpen(false);
@@ -33,9 +31,8 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSugges
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center mb-2">
-        <p className="text-sm text-gray-600">{placeholder || t("Quick tag suggestions:")}</p> {/* Use placeholder or default */}
+        <p className="text-sm text-gray-600">{placeholder || t("Quick tag suggestions:")}</p>
         <div className="flex items-center space-x-2">
-          {/* Removed Add button as adding is now inline in settings */}
           <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage tag suggestions")}>
             <ManageIcon className="h-5 w-5 text-orange-600 hover:text-orange-700" />
           </Button>
@@ -52,23 +49,34 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSugges
               <Badge
                 key={suggestion.id}
                 variant={isSelected ? "default" : "outline"}
-                className={`cursor-pointer transition-colors ${
+                className={`cursor-pointer transition-colors border-2 ${
                   isSelected
                     ? "bg-orange-500 text-white"
                     : "hover:bg-orange-100"
                 }`}
+                style={{ 
+                  borderColor: suggestion.color || '#6B7280',
+                  ...(isSelected && {
+                    backgroundColor: suggestion.color || '#6B7280',
+                    borderColor: suggestion.color || '#6B7280'
+                  }),
+                  ...(!isSelected && {
+                    backgroundColor: `${suggestion.color || '#6B7280'}10`
+                  })
+                }}
                 onClick={() => onSelect(suggestion.name)}
               >
+                <div 
+                  className="w-2 h-2 rounded-full mr-2 flex-shrink-0"
+                  style={{ backgroundColor: isSelected ? 'white' : (suggestion.color || '#6B7280') }}
+                />
                 {suggestion.name}
-                {/* Retaining X for multi-select, as discussed */}
                 {isSelected && <X className="h-3 w-3 ml-1" onClick={(e) => { e.stopPropagation(); onSelect(suggestion.name);}} />}
               </Badge>
             );
           })}
         </div>
       )}
-
-      {/* Removed LogTagSuggestionFormModal */}
 
       <Dialog open={isManageModalOpen} onOpenChange={handleManageModalClose}>
         <DialogContent className="sm:max-w-xl">
@@ -83,11 +91,11 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSugges
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <DialogTitle className="flex-1 text-center">{t("Manage Behavior Suggestions")}</DialogTitle>
-              <div className="w-10"></div> {/* Spacer to balance the back button */}
+              <div className="w-10"></div>
             </div>
           </DialogHeader>
           <div className="py-4 max-h-[70vh] overflow-y-auto">
-            <LogTagSuggestionSettings /> {/* onBack prop is no longer needed here */}
+            <LogTagSuggestionSettings />
           </div>
            <DialogFooter>
             <DialogClose asChild>
