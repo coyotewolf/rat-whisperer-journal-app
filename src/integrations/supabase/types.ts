@@ -297,7 +297,7 @@ export type Database = {
     }
     Functions: {
       delete_user_by_id: {
-        Args: { user_id_to_delete: string }
+        Args: { user_id: number } | { user_id_to_delete: string }
         Returns: undefined
       }
     }
