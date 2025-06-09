@@ -2,26 +2,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { PersonalityTag } from '@/components/PersonalityTagManager'; // Import PersonalityTag interface
-
-const defaultPersonalityTags: Omit<PersonalityTag, 'id'>[] = [
-  { name: "Curious", color: "blue" },
-  { name: "Shy", color: "purple" },
-  { name: "Aggressive", color: "red" },
-  { name: "Calm", color: "green" },
-  { name: "Adventurous", color: "orange" },
-  { name: "Vocal", color: "yellow" },
-  { name: "Friendly", color: "pink" },
-  { name: "Dominant", color: "gray" },
-  { name: "Anxious", color: "indigo" },
-  { name: "Playful", color: "cyan" },
-  { name: "Independent", color: "teal" },
-  { name: "Affectionate", color: "rose" },
-  { name: "Energetic", color: "lime" },
-  { name: "Lazy", color: "brown" },
-  { name: "Smart", color: "amber" },
-  { name: "Stubborn", color: "fuchsia" },
-];
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -68,24 +48,8 @@ export const useAuth = () => {
       return { error };
     }
 
-    // If signup is successful, insert default personality tags
-    if (data.user) {
-      const tagsToInsert = defaultPersonalityTags.map(tag => ({
-        ...tag,
-        user_id: data.user!.id,
-      }));
-
-      const { error: insertError } = await supabase
-        .from('personality_tags')
-        .insert(tagsToInsert);
-
-      if (insertError) {
-        console.error("Error inserting default personality tags:", insertError);
-        // Optionally, handle this error more gracefully, e.g., log to a monitoring service
-      }
-    }
-
-    return { error: null }; // Return null error if signup and tag insertion are successful
+    // Default personality tags are now handled automatically by the database trigger
+    return { error: null };
   };
 
   const signOut = async () => {
@@ -113,8 +77,6 @@ export const useAuth = () => {
 
     try {
       // Delete user-specific data from all relevant tables
-      // Note: Supabase RLS should ideally handle this, but explicit deletion ensures data integrity.
-      // Delete in order of dependency if any, or concurrently if independent.
       await supabase.from('rats').delete().eq('user_id', userId);
       await supabase.from('log_entries').delete().eq('user_id', userId);
       await supabase.from('personality_tags').delete().eq('user_id', userId);

@@ -1,23 +1,14 @@
 
-import { cn } from "@/lib/utils"; // Import cn utility
-
-import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Edit2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
-import { useAuth } from "@/hooks/useAuth"; // Import useAuth hook
-import { useToast } from "@/hooks/use-toast"; // Import useToast hook
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"; // Import ConfirmationDialog
-
-export interface PersonalityTag {
-  id: string;
-  name: string;
-  color: string;
-}
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { usePersonalityTags, PersonalityTag } from "@/hooks/usePersonalityTags";
 
 interface PersonalityTagManagerProps {
   selectedTags: PersonalityTag[];
@@ -26,7 +17,7 @@ interface PersonalityTagManagerProps {
 
 const colorOptions = [
   "blue",
-  "purple",
+  "purple", 
   "red",
   "green",
   "orange",
@@ -39,15 +30,20 @@ const colorOptions = [
 
 const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagManagerProps) => {
   const { t } = useTranslation();
-  const { user } = useAuth(); // Get user from useAuth hook
-  const { toast } = useToast(); // Get toast from useToast hook
-  const [availableTags, setAvailableTags] = useState<PersonalityTag[]>([]); // Initialize with empty array
+  const { 
+    personalityTags: availableTags, 
+    loading,
+    addPersonalityTag, 
+    updatePersonalityTag, 
+    deletePersonalityTag 
+  } = usePersonalityTags();
+  
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [editingTag, setEditingTag] = useState<PersonalityTag | null>(null);
   const [newTagName, setNewTagName] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // State for delete confirmation
-  const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null); // State to store tag to delete
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null);
 
   const handleTagToggle = (tagToToggle: PersonalityTag) => {
     const isSelected = selectedTags.some(tag => tag.id === tagToToggle.id);
@@ -58,16 +54,13 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
     }
   };
 
-  const handleAddTag = () => {
+  const handleAddTag = async () => {
     if (newTagName.trim()) {
-      const newTag: PersonalityTag = {
-        id: Date.now().toString(),
-        name: newTagName.trim(),
-        color: selectedColor,
-      };
-      setAvailableTags([...availableTags, newTag]);
-      setNewTagName("");
-      setIsAddingTag(false);
+      const newTag = await addPersonalityTag(newTagName, selectedColor);
+      if (newTag) {
+        setNewTagName("");
+        setIsAddingTag(false);
+      }
     }
   };
 
@@ -77,61 +70,39 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
     setSelectedColor(tag.color);
   };
 
-  const handleUpdateTag = () => {
+  const handleUpdateTag = async () => {
     if (editingTag && newTagName.trim()) {
-      const updatedTags = availableTags.map(tag =>
-        tag.id === editingTag.id
-          ? { ...tag, name: newTagName.trim(), color: selectedColor }
-          : tag
-      );
-      setAvailableTags(updatedTags);
-      
-      // Update selected tags if the tag name or color changed
-      const updatedSelectedTags = selectedTags.map(tag =>
-        tag.id === editingTag.id
-          ? { ...tag, name: newTagName.trim(), color: selectedColor }
-          : tag
-      );
-      onTagsChange(updatedSelectedTags);
-      
-      setEditingTag(null);
-      setNewTagName("");
+      const success = await updatePersonalityTag(editingTag.id, newTagName, selectedColor);
+      if (success) {
+        // Update selected tags if the tag name or color changed
+        const updatedSelectedTags = selectedTags.map(tag =>
+          tag.id === editingTag.id
+            ? { ...tag, name: newTagName.trim(), color: selectedColor }
+            : tag
+        );
+        onTagsChange(updatedSelectedTags);
+        
+        setEditingTag(null);
+        setNewTagName("");
+      }
     }
   };
 
-  const handleDeleteTag = () => {
+  const handleDeleteTag = async () => {
     if (tagToDelete) {
-      // Remove from availableTags
-      const updatedAvailableTags = availableTags.filter(tag => tag.id !== tagToDelete.id);
-      setAvailableTags(updatedAvailableTags);
-
-      // Remove from selectedTags if it was selected
-      const updatedSelectedTags = selectedTags.filter(tag => tag.id !== tagToDelete.id);
-      onTagsChange(updatedSelectedTags);
-
-      // TODO: Add Supabase deletion logic here for persistence
-      // Example:
-      // if (user) {
-      //   const { error } = await supabase.from('personality_tags').delete().eq('id', tagToDelete.id);
-      //   if (error) {
-      //     toast({
-      //       title: t("Error deleting tag"),
-      //       description: error.message,
-      //       variant: "destructive",
-      //     });
-      //   } else {
-      //     toast({
-      //       title: t("Tag deleted successfully"),
-      //     });
-      //   }
-      // }
-
+      const success = await deletePersonalityTag(tagToDelete.id);
+      if (success) {
+        // Remove from selectedTags if it was selected
+        const updatedSelectedTags = selectedTags.filter(tag => tag.id !== tagToDelete.id);
+        onTagsChange(updatedSelectedTags);
+      }
+      
       setTagToDelete(null);
       setShowDeleteConfirm(false);
     }
   };
 
-  // Helper to get themed classes for a given color string (e.g., "primary", "red")
+  // Helper to get themed classes for a given color string
   const getThemedColorClasses = (colorName: string) => {
     switch (colorName) {
       case "primary": return "bg-primary/10 text-primary";
@@ -139,7 +110,6 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       case "accent": return "bg-accent/10 text-accent-foreground";
       case "destructive": return "bg-destructive/10 text-destructive-foreground";
       case "muted": return "bg-muted/50 text-muted-foreground";
-      // For specific colors, ensure they are defined in your Tailwind config and CSS variables
       case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
       case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
       case "red": return "bg-red-500/10 text-red-600 dark:text-red-400";
@@ -154,10 +124,13 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
     }
   };
 
-  const getTagColorClasses = (tagName: string) => {
-    const tag = availableTags.find(t => t.name === tagName);
-    return getThemedColorClasses(tag?.color || "muted");
+  const getTagColorClasses = (tag: PersonalityTag) => {
+    return getThemedColorClasses(tag.color);
   };
+
+  if (loading) {
+    return <div className={cn("text-sm text-muted-foreground")}>{t("Loading personality tags...")}</div>;
+  }
 
   return (
     <>
@@ -169,7 +142,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 variant="outline"
                 className={cn(
                   `cursor-pointer transition-all`,
-                  getTagColorClasses(tag.name),
+                  getTagColorClasses(tag),
                   selectedTags.some(selectedTag => selectedTag.id === tag.id)
                     ? "ring-2 ring-primary"
                     : ""
@@ -301,6 +274,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
           </DialogContent>
         </Dialog>
       </div>
+      
       <ConfirmationDialog
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
