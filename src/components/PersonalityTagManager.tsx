@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Edit2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth hook
+import { useToast } from "@/hooks/use-toast"; // Import useToast hook
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"; // Import ConfirmationDialog
 
 export interface PersonalityTag {
   id: string;
@@ -35,56 +35,19 @@ const colorOptions = [
   "gray",
   "indigo",
   "cyan",
-  "teal",
-  "rose",
-  "lime",
-  "brown",
-  "amber",
-  "fuchsia",
 ];
 
 const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagManagerProps) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [availableTags, setAvailableTags] = useState<PersonalityTag[]>([]);
+  const { user } = useAuth(); // Get user from useAuth hook
+  const { toast } = useToast(); // Get toast from useToast hook
+  const [availableTags, setAvailableTags] = useState<PersonalityTag[]>([]); // Initialize with empty array
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [editingTag, setEditingTag] = useState<PersonalityTag | null>(null);
   const [newTagName, setNewTagName] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Fetch personality tags from database
-  useEffect(() => {
-    if (user) {
-      fetchPersonalityTags();
-    }
-  }, [user]);
-
-  const fetchPersonalityTags = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('personality_tags')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('name');
-
-      if (error) throw error;
-
-      setAvailableTags(data || []);
-    } catch (error) {
-      console.error('Error fetching personality tags:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to load personality tags"),
-        variant: "destructive",
-      });
-    }
-  };
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // State for delete confirmation
+  const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null); // State to store tag to delete
 
   const handleTagToggle = (tagToToggle: PersonalityTag) => {
     const isSelected = selectedTags.some(tag => tag.id === tagToToggle.id);
@@ -95,40 +58,16 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
     }
   };
 
-  const handleAddTag = async () => {
-    if (!newTagName.trim() || !user) return;
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('personality_tags')
-        .insert({
-          name: newTagName.trim(),
-          color: selectedColor,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setAvailableTags([...availableTags, data]);
+  const handleAddTag = () => {
+    if (newTagName.trim()) {
+      const newTag: PersonalityTag = {
+        id: Date.now().toString(),
+        name: newTagName.trim(),
+        color: selectedColor,
+      };
+      setAvailableTags([...availableTags, newTag]);
       setNewTagName("");
       setIsAddingTag(false);
-      
-      toast({
-        title: t("Success"),
-        description: t("Personality tag added successfully"),
-      });
-    } catch (error) {
-      console.error('Error adding personality tag:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to add personality tag"),
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -138,22 +77,8 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
     setSelectedColor(tag.color);
   };
 
-  const handleUpdateTag = async () => {
-    if (!editingTag || !newTagName.trim() || !user) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('personality_tags')
-        .update({
-          name: newTagName.trim(),
-          color: selectedColor,
-        })
-        .eq('id', editingTag.id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
+  const handleUpdateTag = () => {
+    if (editingTag && newTagName.trim()) {
       const updatedTags = availableTags.map(tag =>
         tag.id === editingTag.id
           ? { ...tag, name: newTagName.trim(), color: selectedColor }
@@ -161,7 +86,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       );
       setAvailableTags(updatedTags);
       
-      // Update selected tags if the tag was selected
+      // Update selected tags if the tag name or color changed
       const updatedSelectedTags = selectedTags.map(tag =>
         tag.id === editingTag.id
           ? { ...tag, name: newTagName.trim(), color: selectedColor }
@@ -171,36 +96,11 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       
       setEditingTag(null);
       setNewTagName("");
-      
-      toast({
-        title: t("Success"),
-        description: t("Personality tag updated successfully"),
-      });
-    } catch (error) {
-      console.error('Error updating personality tag:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to update personality tag"),
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleDeleteTag = async () => {
-    if (!tagToDelete || !user) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('personality_tags')
-        .delete()
-        .eq('id', tagToDelete.id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
+  const handleDeleteTag = () => {
+    if (tagToDelete) {
       // Remove from availableTags
       const updatedAvailableTags = availableTags.filter(tag => tag.id !== tagToDelete.id);
       setAvailableTags(updatedAvailableTags);
@@ -209,26 +109,29 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       const updatedSelectedTags = selectedTags.filter(tag => tag.id !== tagToDelete.id);
       onTagsChange(updatedSelectedTags);
 
+      // TODO: Add Supabase deletion logic here for persistence
+      // Example:
+      // if (user) {
+      //   const { error } = await supabase.from('personality_tags').delete().eq('id', tagToDelete.id);
+      //   if (error) {
+      //     toast({
+      //       title: t("Error deleting tag"),
+      //       description: error.message,
+      //       variant: "destructive",
+      //     });
+      //   } else {
+      //     toast({
+      //       title: t("Tag deleted successfully"),
+      //     });
+      //   }
+      // }
+
       setTagToDelete(null);
       setShowDeleteConfirm(false);
-      
-      toast({
-        title: t("Success"),
-        description: t("Personality tag deleted successfully"),
-      });
-    } catch (error) {
-      console.error('Error deleting personality tag:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to delete personality tag"),
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Helper to get themed classes for a given color string
+  // Helper to get themed classes for a given color string (e.g., "primary", "red")
   const getThemedColorClasses = (colorName: string) => {
     switch (colorName) {
       case "primary": return "bg-primary/10 text-primary";
@@ -236,6 +139,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       case "accent": return "bg-accent/10 text-accent-foreground";
       case "destructive": return "bg-destructive/10 text-destructive-foreground";
       case "muted": return "bg-muted/50 text-muted-foreground";
+      // For specific colors, ensure they are defined in your Tailwind config and CSS variables
       case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
       case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
       case "red": return "bg-red-500/10 text-red-600 dark:text-red-400";
@@ -246,18 +150,13 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
       case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400";
       case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400";
       case "gray": return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
-      case "teal": return "bg-teal-500/10 text-teal-600 dark:text-teal-400";
-      case "rose": return "bg-rose-500/10 text-rose-600 dark:text-rose-400";
-      case "lime": return "bg-lime-500/10 text-lime-600 dark:text-lime-400";
-      case "brown": return "bg-stone-500/10 text-stone-600 dark:text-stone-400";
-      case "amber": return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-      case "fuchsia": return "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400";
       default: return "bg-muted/50 text-muted-foreground";
     }
   };
 
-  const getTagColorClasses = (tag: PersonalityTag) => {
-    return getThemedColorClasses(tag.color);
+  const getTagColorClasses = (tagName: string) => {
+    const tag = availableTags.find(t => t.name === tagName);
+    return getThemedColorClasses(tag?.color || "muted");
   };
 
   return (
@@ -270,7 +169,7 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 variant="outline"
                 className={cn(
                   `cursor-pointer transition-all`,
-                  getTagColorClasses(tag),
+                  getTagColorClasses(tag.name),
                   selectedTags.some(selectedTag => selectedTag.id === tag.id)
                     ? "ring-2 ring-primary"
                     : ""
@@ -347,8 +246,8 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 </div>
               </div>
               <div className={cn("flex gap-2")}>
-                <Button type="button" onClick={handleAddTag} disabled={!newTagName.trim() || loading}>
-                  {loading ? t("Adding...") : t("Add Tag")}
+                <Button type="button" onClick={handleAddTag} disabled={!newTagName.trim()}>
+                  {t("Add Tag")}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setIsAddingTag(false)}>
                   {t("Cancel")}
@@ -391,8 +290,8 @@ const PersonalityTagManager = ({ selectedTags, onTagsChange }: PersonalityTagMan
                 </div>
               </div>
               <div className={cn("flex gap-2")}>
-                <Button type="button" onClick={handleUpdateTag} disabled={!newTagName.trim() || loading}>
-                  {loading ? t("Updating...") : t("Update Tag")}
+                <Button type="button" onClick={handleUpdateTag} disabled={!newTagName.trim()}>
+                  {t("Update Tag")}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setEditingTag(null)}>
                   {t("Cancel")}

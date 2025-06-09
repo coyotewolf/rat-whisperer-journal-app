@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // Import Button
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react"; // Import ArrowLeft icon
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -45,7 +45,7 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
         .from('log_entries')
         .select('*')
         .eq('user_id', user.id)
-        .contains('rat_ids', [ratId])
+        .eq('rat_id', ratId)
         .in('type', logTypes)
         .order('created_at', { ascending: false });
 
@@ -63,7 +63,7 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
       case 'behavior':
         return (
           <div>
-            {log.content?.tags && Array.isArray(log.content.tags) && (
+            {log.content.tags && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {log.content.tags.map((tag: string, index: number) => (
                   <Badge key={index} variant="secondary" className="text-xs">
@@ -72,40 +72,40 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
                 ))}
               </div>
             )}
-            {log.content?.notes && <p className="text-sm">{log.content.notes}</p>}
+            {log.content.notes && <p className="text-sm">{log.content.notes}</p>}
           </div>
         );
       case 'weight':
-        return <p className="text-sm">{t("Weight")}: {log.content?.weight}g</p>;
+        return <p className="text-sm">{t("Weight")}: {log.content.weight}g</p>;
       case 'health':
         return (
           <div>
-            <p className="text-sm font-medium">{t("Status")}: {log.content?.status ? t(log.content.status) : ''}</p>
-            {log.content?.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{t("Status")}: {t(log.content.status)}</p>
+            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
       case 'medication':
         return (
           <div>
-            <p className="text-sm font-medium">{log.content?.medication || ''}</p>
-            <p className="text-sm">{t("Dose")}: {log.content?.dose || ''}</p>
-            {log.content?.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{log.content.medication}</p>
+            <p className="text-sm">{t("Dose")}: {log.content.dose}</p>
+            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
       case 'feeding':
         return (
           <div>
-            <p className="text-sm font-medium">{log.content?.food || ''}</p>
-            <p className="text-sm">{t("Amount")}: {log.content?.amount || ''}</p>
-            {log.content?.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{log.content.food}</p>
+            <p className="text-sm">{t("Amount")}: {log.content.amount}</p>
+            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
       case 'environment':
         return (
           <div>
-            <p className="text-sm font-medium">{t("Temperature")}: {log.content?.temperature || ''}°C</p>
-            <p className="text-sm">{t("Humidity")}: {log.content?.humidity || ''}%</p>
-            {log.content?.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
+            <p className="text-sm font-medium">{t("Temperature")}: {log.content.temperature}°C</p>
+            <p className="text-sm">{t("Humidity")}: {log.content.humidity}%</p>
+            {log.content.notes && <p className="text-sm mt-1">{log.content.notes}</p>}
           </div>
         );
       default:
@@ -127,7 +127,7 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <DialogTitle className="flex-1 text-center">{t("{{ratName}} - Logs", { ratName })}</DialogTitle>
-            <div className="w-10"></div>
+            <div className="w-10"></div> {/* Placeholder to balance the back button */}
           </div>
         </DialogHeader>
         <div className="space-y-4">
