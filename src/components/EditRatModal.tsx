@@ -10,7 +10,8 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import PersonalityTagManager, { PersonalityTag } from "@/components/PersonalityTagManager";
+import PersonalityTagManager from "@/components/PersonalityTagManager";
+import { PersonalityTag } from "@/hooks/usePersonalityTags";
 import { useTranslation } from 'react-i18next';
 
 interface Rat {
