@@ -9,11 +9,11 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-// Use a completely different name to avoid any type conflicts
+// Simplified interface to avoid type complexity
 interface RatLogEntry {
   id: string;
   type: string;
-  content: Record<string, any>;
+  content: any;
   created_at: string;
 }
 
@@ -53,15 +53,12 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
       if (error) throw error;
       
       // Simple transformation without complex type inference
-      const transformedLogs: RatLogEntry[] = (data || []).map(log => {
-        const entry: RatLogEntry = {
-          id: log.id,
-          type: log.type,
-          content: (log.content as Record<string, any>) || {},
-          created_at: log.created_at
-        };
-        return entry;
-      });
+      const transformedLogs: RatLogEntry[] = (data || []).map(log => ({
+        id: log.id,
+        type: log.type,
+        content: log.content || {},
+        created_at: log.created_at
+      }));
       
       setLogs(transformedLogs);
     } catch (error) {
