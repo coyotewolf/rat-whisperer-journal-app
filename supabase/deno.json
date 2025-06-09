@@ -1,10 +1,9 @@
 {
   "imports": {
-    "https://deno.land/std@0.168.0/http/server.ts": "https://deno.land/std@0.168.0/http/server.ts",
-    "https://esm.sh/@supabase/supabase-js@2.47.1": "https://esm.sh/@supabase/supabase-js@2.47.1"
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.47.1"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "deno.unstable"],
-    "types": ["https://deno.land/std@0.168.0/http/server.ts", "https://esm.sh/@supabase/supabase-js@2.47.1"]
+    "lib": ["deno.window", "deno.unstable", "deno.ns"],
+    "types": ["https://deno.land/x/deno/cli/types/dts/index.d.ts"]
   }
 }

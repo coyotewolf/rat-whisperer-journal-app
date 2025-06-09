@@ -1,7 +1,12 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.1';
+import { createClient } from '@supabase/supabase-js';
 
-serve(async (req) => {
+// Helper function to validate UUID
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  return uuidRegex.test(uuid);
+}
+
+Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
@@ -12,12 +17,31 @@ serve(async (req) => {
     return new Response('Missing user_id_to_delete', { status: 400 });
   }
 
-  const supabaseAdmin = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required.');
+    return new Response(
+      JSON.stringify({ error: 'Server configuration error. Please contact support.' }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
   try {
+    // Validate user_id_to_delete format (UUID)
+    if (!isValidUUID(user_id_to_delete)) {
+      return new Response(JSON.stringify({ error: 'Invalid user_id_to_delete format. Must be a valid UUID.' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
     // Delete user from auth.users table
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(user_id_to_delete);
 
