@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -36,16 +37,15 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
 
     setLoading(true);
     try {
-      // Split the query to avoid complex type inference
-      const query = supabase
-        .from('log_entries')
-        .select('id, type, content, created_at')
-        .eq('user_id', user.id)
-        .eq('rat_id', ratId);
+      // Use contains for array field and split query completely
+      const baseQuery = supabase.from('log_entries');
+      const selectQuery = baseQuery.select('id, type, content, created_at');
+      const userQuery = selectQuery.eq('user_id', user.id);
+      const ratQuery = userQuery.contains('rat_ids', [ratId]);
+      const typeQuery = ratQuery.in('type', logTypes);
+      const finalQuery = typeQuery.order('created_at', { ascending: false });
       
-      const { data, error } = await query
-        .in('type', logTypes)
-        .order('created_at', { ascending: false });
+      const { data, error } = await finalQuery;
 
       if (error) throw error;
       
