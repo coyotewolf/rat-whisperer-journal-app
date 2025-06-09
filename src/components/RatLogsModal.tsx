@@ -9,10 +9,11 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-interface LogEntry {
+// Simple interface to avoid type recursion issues
+interface SimpleLogEntry {
   id: string;
   type: string;
-  content: Record<string, any>;
+  content: any; // Using any to avoid Json type complications
   created_at: string;
 }
 
@@ -26,7 +27,7 @@ interface RatLogsModalProps {
 
 const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModalProps) => {
   const { t } = useTranslation();
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logs, setLogs] = useState<SimpleLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -50,7 +51,16 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLogs(data || []);
+      
+      // Transform the data to our simple interface
+      const transformedLogs: SimpleLogEntry[] = (data || []).map(log => ({
+        id: log.id,
+        type: log.type,
+        content: log.content,
+        created_at: log.created_at
+      }));
+      
+      setLogs(transformedLogs);
     } catch (error) {
       console.error('Error fetching logs:', error);
     } finally {
@@ -58,7 +68,7 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
     }
   };
 
-  const formatLogContent = (log: LogEntry) => {
+  const formatLogContent = (log: SimpleLogEntry) => {
     switch (log.type) {
       case 'behavior':
         return (

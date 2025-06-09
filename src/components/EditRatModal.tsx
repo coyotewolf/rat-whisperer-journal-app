@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -57,6 +56,13 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
 
     setLoading(true);
     try {
+      // Convert PersonalityTag[] to a JSON-serializable format
+      const personalityData = personality.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        color: tag.color
+      }));
+
       const { error } = await supabase
         .from('rats')
         .update({
@@ -64,7 +70,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
           sex,
           birthday,
           status,
-          personality
+          personality: personalityData
         })
         .eq('id', rat.id);
 
