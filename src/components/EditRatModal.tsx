@@ -47,7 +47,12 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
       setSex(rat.sex);
       setBirthday(rat.birthday);
       setStatus(rat.status);
-      setPersonality(rat.personality || []);
+      // Convert the personality data from JSONB format to PersonalityTag array
+      if (rat.personality && Array.isArray(rat.personality)) {
+        setPersonality(rat.personality);
+      } else {
+        setPersonality([]);
+      }
     }
   }, [rat]);
 
@@ -64,7 +69,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
           sex,
           birthday,
           status,
-          personality
+          personality: personality // Store as JSONB array
         })
         .eq('id', rat.id);
 
@@ -122,7 +127,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className={cn("sm:max-w-md max-h-[80vh] overflow-y-auto bg-card text-card-foreground")}> {/* Themed background and text */}
+        <DialogContent className={cn("sm:max-w-md max-h-[80vh] overflow-y-auto bg-card text-card-foreground")}>
           <DialogHeader>
             <div className={cn("flex items-center justify-between")}>
               <Button
@@ -134,7 +139,7 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <DialogTitle className={cn("flex-1 text-center")}>{t("Edit Rat")}</DialogTitle>
-              <div className={cn("w-10")}></div> {/* Placeholder to balance the back button */}
+              <div className={cn("w-10")}></div>
             </div>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
