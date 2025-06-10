@@ -5,6 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { LogEntryService } from '@/services/logEntryService';
 import type { LogEntry } from '@/types/logEntry';
+import {
+  cacheLogs,
+  getCachedLogs,
+  enqueueLog,
+  getOutboxLogs,
+  clearOutboxLogs,
+} from '@/lib/offlineDB';
 
 export { type LogEntry } from '@/types/logEntry';
 
@@ -15,16 +22,37 @@ export const useLogEntries = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
 
+  const syncOutbox = async () => {
+    if (!navigator.onLine || !user) return;
+    const queued = await getOutboxLogs();
+    for (const item of queued) {
+      try {
+        await LogEntryService.addLog(user.id, item);
+      } catch (err) {
+        console.error('Failed to sync log', err);
+      }
+    }
+    if (queued.length) await clearOutboxLogs();
+  };
+
   const fetchLogs = async () => {
+    const cached = await getCachedLogs();
+    if (cached.length) setLogs(cached);
     if (!user) {
-      setLogs([]);
+      setLoading(false);
+      return;
+    }
+
+    if (!navigator.onLine) {
       setLoading(false);
       return;
     }
 
     try {
+      await syncOutbox();
       const transformedLogs = await LogEntryService.fetchLogs(user.id);
       setLogs(transformedLogs);
+      await cacheLogs(transformedLogs);
     } catch (error) {
       console.error('Error fetching logs:', error);
       toast({
@@ -40,6 +68,14 @@ export const useLogEntries = () => {
   const addLog = async (logData: Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>) => {
     if (!user) return;
 
+    if (!navigator.onLine) {
+      const offlineLog = { ...logData, timestamp: new Date().toISOString() };
+      await enqueueLog(offlineLog);
+      setLogs(prev => [{ ...offlineLog, id: `local-${Date.now()}` }, ...prev]);
+      toast({ title: t('Success'), description: t('Activity log queued offline') });
+      return;
+    }
+
     try {
       const data = await LogEntryService.addLog(user.id, logData);
       await fetchLogs();
@@ -50,9 +86,8 @@ export const useLogEntries = () => {
       });
 
       return data;
-    } catch (error: any) { // Explicitly type error as any for broader checking
+    } catch (error: any) {
       console.error('Error adding log:', error);
-      // Only show toast if there's a meaningful error message or it's an actual Error instance
       if (error instanceof Error || (error && error.message)) {
         toast({
           title: t("Error"),
@@ -60,7 +95,7 @@ export const useLogEntries = () => {
           variant: "destructive",
         });
       }
-      throw error; // Re-throw the error for upstream handling
+      throw error;
     }
   };
 
@@ -112,6 +147,13 @@ export const useLogEntries = () => {
     if (user && user.id) {
       fetchLogs();
     }
+    const onOnline = () => {
+      fetchLogs();
+    };
+    window.addEventListener('online', onOnline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+    };
   }, [user?.id]);
  
   return {
