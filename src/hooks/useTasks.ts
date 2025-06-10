@@ -2,6 +2,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import {
+  cacheTasks,
+  getCachedTasks,
+  enqueueTask,
+  getOutboxTasks,
+  clearOutboxTasks,
+} from '@/lib/offlineDB';
 
 export interface Task {
   id: string;
@@ -24,19 +31,45 @@ export const useTasks = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const syncOutbox = async () => {
+    if (!navigator.onLine) return;
+    const queued = await getOutboxTasks();
+    if (!queued.length) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    for (const q of queued) {
+      try {
+        await supabase.from('tasks').insert([{ ...q, user_id: user.id }]);
+      } catch (err) {
+        console.error('Failed to sync task', err);
+      }
+    }
+    await clearOutboxTasks();
+  };
+
   const fetchTasks = async () => {
+    const cached = await getCachedTasks();
+    if (cached.length) setTasks(cached);
+
+    if (!navigator.onLine) {
+      setLoading(false);
+      return;
+    }
+
     try {
+      await syncOutbox();
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
         .order('due_date', { ascending: true });
 
       if (error) throw error;
-      // Type cast the data to match our interface
-      setTasks((data || []).map(task => ({
+      const typed = (data || []).map(task => ({
         ...task,
         priority: task.priority as 'low' | 'medium' | 'high'
-      })));
+      }));
+      setTasks(typed);
+      await cacheTasks(typed);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -50,33 +83,45 @@ export const useTasks = () => {
   };
 
   const createTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    if (!navigator.onLine) {
+      const now = new Date().toISOString();
+      await enqueueTask({ ...taskData, created_at: now, updated_at: now });
+      const localTask: Task = {
+        ...(taskData as Task),
+        created_at: now,
+        updated_at: now,
+        id: `local-${Date.now()}`,
+        priority: taskData.priority,
+        completed: false,
+      };
+      setTasks(prev => [...prev, localTask]);
+      toast({ title: 'Success', description: 'Task queued offline' });
+      return localTask;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('tasks')
-        .insert([{
-          ...taskData,
-          user_id: user.id
-        }])
+        .insert([{ ...taskData, user_id: user.id }])
         .select()
         .single();
 
       if (error) throw error;
-      
-      // Type cast the data to match our interface
+
       const typedTask = {
         ...data,
         priority: data.priority as 'low' | 'medium' | 'high'
       };
-      
+
       setTasks(prev => [...prev, typedTask]);
       toast({
         title: "Success",
         description: "Task created successfully!"
       });
-      
+
       return typedTask;
     } catch (error) {
       console.error('Error creating task:', error);
@@ -158,6 +203,11 @@ export const useTasks = () => {
 
   useEffect(() => {
     fetchTasks();
+    const onOnline = () => {
+      fetchTasks();
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
   }, []);
 
   return {
