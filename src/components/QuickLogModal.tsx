@@ -24,12 +24,12 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
   const { t } = useTranslation();
 
   const logTypes = [
-    { type: "behavior", label: t("Behavior"), icon: Activity, color: "from-blue-500 to-cyan-500" },
-    { type: "health", label: t("Health Check"), icon: Heart, color: "from-red-500 to-pink-500" },
-    { type: "weight", label: t("Weight"), icon: Scale, color: "from-green-500 to-emerald-500" },
-    { type: "environment", label: t("Environment"), icon: Thermometer, color: "from-orange-500 to-amber-500" },
-    { type: "medication", label: t("Medication"), icon: Pill, color: "from-purple-500 to-violet-500" },
-    { type: "feeding", label: t("Feeding"), icon: Utensils, color: "from-yellow-500 to-orange-500" },
+    { type: "behavior", label: t("Behavior"), icon: Activity, bgColor: "bg-[hsl(217,70%,75%)]", textColor: "text-slate-800" },
+    { type: "health", label: t("Health Check"), icon: Heart, bgColor: "bg-[hsl(262,60%,82%)]", textColor: "text-slate-800" },
+    { type: "weight", label: t("Weight"), icon: Scale, bgColor: "bg-[hsl(145,50%,75%)]", textColor: "text-slate-800" },
+    { type: "environment", label: t("Environment"), icon: Thermometer, bgColor: "bg-[hsl(30,70%,80%)]", textColor: "text-slate-800" },
+    { type: "medication", label: t("Medication"), icon: Pill, bgColor: "bg-[hsl(0,70%,80%)]", textColor: "text-slate-800" },
+    { type: "feeding", label: t("Feeding"), icon: Utensils, bgColor: "bg-[hsl(45,75%,80%)]", textColor: "text-slate-800" },
   ];
 
   const handleLogTypeClick = (logType: string) => {
@@ -105,11 +105,11 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
                 <Button
                   key={logType.type}
                   onClick={() => handleLogTypeClick(logType.type)}
-                  className={`h-20 bg-gradient-to-r ${logType.color} hover:scale-105 transition-all duration-200 shadow-lg`}
+                  className={`h-20 ${logType.bgColor} ${logType.textColor} hover:brightness-95 transition-all duration-200 shadow-lg`}
                 >
                   <div className="text-center">
                     <Icon className="h-6 w-6 mx-auto mb-2" />
-                    <div className="text-sm font-medium">{logType.label}</div>
+                    <div className="text-sm font-medium ">{logType.label}</div>
                   </div>
                 </Button>
               );

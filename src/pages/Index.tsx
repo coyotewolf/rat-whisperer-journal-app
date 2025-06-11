@@ -169,6 +169,26 @@ const Index = () => {
     }
   };
 
+  const getRecentActivityCardColorClasses = (type: string | undefined) => {
+    switch (type?.toLowerCase()) {
+      case "behavior":
+        return "border-[hsl(217,70%,65%)] bg-[hsl(217,70%,75%)] text-slate-800";
+      case "health":
+      case "health check": // QuickLogModal uses "Health Check"
+        return "border-[hsl(262,60%,72%)] bg-[hsl(262,60%,82%)] text-slate-800"; // Medication's original color
+      case "weight":
+        return "border-[hsl(145,50%,65%)] bg-[hsl(145,50%,75%)] text-slate-800";
+      case "environment":
+        return "border-[hsl(30,70%,70%)] bg-[hsl(30,70%,80%)] text-slate-800";
+      case "medication":
+        return "border-[hsl(0,70%,70%)] bg-[hsl(0,70%,80%)] text-slate-800"; // Health's original color
+      case "feeding":
+        return "border-[hsl(45,75%,70%)] bg-[hsl(45,75%,80%)] text-slate-800";
+      default:
+        return "bg-background/50 border-border text-card-foreground"; // Fallback
+    }
+  };
+
   const getActivityStatusClasses = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'excellent':
@@ -328,26 +348,26 @@ const Index = () => {
               recentActivities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border group cursor-pointer hover:bg-accent/50 transition-colors"
+                  className={`flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all ${getRecentActivityCardColorClasses(activity.type)}`}
                   onClick={() => handleLogCardClick(activity)}
                 >
                   <div className="flex-1">
-                    <p className="text-card-foreground font-medium">{t(activity.type)}</p>
-                    <p className="text-sm text-muted-foreground">{activity.rat} • {activity.time}</p>
+                    <p className="font-medium">{t(activity.type)}</p> {/* Text color will be inherited or can be set by getRecentActivityCardColorClasses if needed */}
+                    <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
                     {activity.weight && (
-                      <p className="text-xs text-muted-foreground/80">{t("Weight")}: {activity.weight}g</p>
+                      <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
-                      className={`${getActivityStatusClasses(activity.status)} border-0`}
+                      className={`${getActivityStatusClasses(activity.status)} border-0`} // Status badge remains as is
                     >
                       {t(activity.status)}
                     </Badge>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-muted-foreground hover:text-primary h-7 w-7 group-hover:text-primary transition-colors"
+                      className="opacity-70 hover:opacity-100 hover:text-primary h-7 w-7" // Adjusted for new background
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditActivity(activity);

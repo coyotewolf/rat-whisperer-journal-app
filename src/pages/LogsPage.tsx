@@ -8,6 +8,7 @@ import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil } from "
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
+import LogDetailModal from "@/components/LogDetailModal"; // Import LogDetailModal
 import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,8 @@ const LogsPage = () => {
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<any | null>(null);
+  const [selectedLogEntry, setSelectedLogEntry] = useState<any | null>(null); // State for LogDetailModal
+  const [isLogDetailOpen, setIsLogDetailOpen] = useState(false); // State for LogDetailModal
 
   // Update filtered logs when logs change
   useEffect(() => {
@@ -76,20 +79,23 @@ const LogsPage = () => {
     }
   };
 
-  const getLogColorClasses = (type: string) => { // Renamed and themed
-    switch (type) {
+  const getLogColorClasses = (type: string) => {
+    switch (type?.toLowerCase()) {
       case "behavior":
-        // Use a distinct color for behavior, e.g., primary or a specific accent if defined
-        return "border-primary/30 bg-primary/10 text-primary-foreground";
+        return "border-[hsl(217,70%,65%)] bg-[hsl(217,70%,75%)] text-slate-800";
       case "health":
-        // Use destructive for health logs if it implies negative, or another distinct color
-        return "border-destructive/30 bg-destructive/10 text-destructive-foreground";
+      case "health check":
+        return "border-[hsl(262,60%,72%)] bg-[hsl(262,60%,82%)] text-slate-800"; // Medication's original color
+      case "weight":
+        return "border-[hsl(145,50%,65%)] bg-[hsl(145,50%,75%)] text-slate-800";
       case "environment":
-        // Use accent or secondary for environment
-        return "border-accent/30 bg-accent/10 text-accent-foreground";
+        return "border-[hsl(30,70%,70%)] bg-[hsl(30,70%,80%)] text-slate-800";
+      case "medication":
+        return "border-[hsl(0,70%,70%)] bg-[hsl(0,70%,80%)] text-slate-800"; // Health's original color
+      case "feeding":
+        return "border-[hsl(45,75%,70%)] bg-[hsl(45,75%,80%)] text-slate-800";
       default:
-        // Fallback to a general card styling or muted
-        return "border-border bg-card text-card-foreground";
+        return "bg-background/50 border-border text-card-foreground";
     }
   };
 
@@ -124,26 +130,39 @@ const LogsPage = () => {
     }
   };
 
+  const handleLogCardClick = (log: any) => {
+    setSelectedLogEntry(log);
+    setIsLogDetailOpen(true);
+  };
+
+  const handleEditFromLogDetail = (log: any) => {
+    setIsLogDetailOpen(false);
+    handleEditLog(log);
+  };
+
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
     
     return (
-      <Card className={`${getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}> {/* Use themed classes */}
+      <Card
+        className={`${getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}
+        onClick={() => handleLogCardClick(log)}
+      >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2 text-card-foreground"> {/* Themed text */}
+            <div className="flex items-center gap-2 text-card-foreground">
               {getLogIcon(log.type)}
               <span className="font-medium capitalize">{t(log.type)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-right text-sm text-muted-foreground"> {/* Themed text */}
+              <div className="text-right text-sm text-muted-foreground">
                 <div>{date}</div>
                 <div>{time}</div>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-muted-foreground hover:text-primary h-7 w-7" // Themed button
+                className="text-muted-foreground hover:text-primary h-7 w-7"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleEditLog(log);
@@ -157,7 +176,7 @@ const LogsPage = () => {
           {log.ratNames && log.ratNames.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {log.ratNames.map((ratName: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs"> {/* Standard outline badge */}
+                <Badge key={index} variant="outline" className="text-xs">
                   {ratName}
                 </Badge>
               ))}
@@ -165,31 +184,31 @@ const LogsPage = () => {
           )}
           
           {log.behavior && (
-            <p className="text-sm font-medium text-card-foreground mb-1"> {/* Themed text */}
+            <p className="text-sm font-medium text-card-foreground mb-1">
               {t("Behavior")}: {t(log.behavior)}
             </p>
           )}
           
           {log.weight && (
-            <p className="text-sm font-medium text-card-foreground mb-1"> {/* Themed text */}
+            <p className="text-sm font-medium text-card-foreground mb-1">
               {t("Weight")}: {log.weight}g
             </p>
           )}
           
           {log.temperature && (
-            <p className="text-sm font-medium text-card-foreground mb-1"> {/* Themed text */}
+            <p className="text-sm font-medium text-card-foreground mb-1">
               {t("Temperature")}: {log.temperature}°C
             </p>
           )}
           
           {log.notes && (
-            <p className="text-sm text-muted-foreground mt-2">{t(log.notes)}</p> /* Themed text */
+            <p className="text-sm text-muted-foreground mt-2">{t(log.notes)}</p>
           )}
 
           {log.hashtags && log.hashtags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {log.hashtags.map((hashtag: string, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs"> {/* Standard secondary badge */}
+                <Badge key={index} variant="secondary" className="text-xs">
                   #{t(hashtag)}
                 </Badge>
               ))}
@@ -296,6 +315,13 @@ const LogsPage = () => {
           onLogDeleted={handleDeleteLog}
         />
       )}
+
+      <LogDetailModal
+        isOpen={isLogDetailOpen}
+        onClose={() => setIsLogDetailOpen(false)}
+        logEntry={selectedLogEntry}
+        onEdit={handleEditFromLogDetail}
+      />
 
       <BottomNav />
     </div>
