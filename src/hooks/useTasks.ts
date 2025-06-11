@@ -8,6 +8,9 @@ import {
   enqueueTask,
   getOutboxTasks,
   clearOutboxTasks,
+  enqueueTaskUpdate,
+  getOutboxTaskUpdates,
+  clearOutboxTaskUpdates,
 } from '@/lib/offlineDB';
 
 export interface Task {
@@ -34,7 +37,8 @@ export const useTasks = () => {
   const syncOutbox = async () => {
     if (!navigator.onLine) return;
     const queued = await getOutboxTasks();
-    if (!queued.length) return;
+    const updateQueued = await getOutboxTaskUpdates();
+    if (!queued.length && !updateQueued.length) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     for (const q of queued) {
@@ -44,7 +48,24 @@ export const useTasks = () => {
         console.error('Failed to sync task', err);
       }
     }
+    for (const up of updateQueued) {
+      try {
+        const { data: existing } = await supabase
+          .from('tasks')
+          .select('updated_at')
+          .eq('id', up.id)
+          .maybeSingle();
+        if (existing && new Date(existing.updated_at) > new Date(up.updated_at)) {
+          console.warn('Server has newer task version for', up.id);
+          continue;
+        }
+        await supabase.from('tasks').update({ ...up.updates, updated_at: up.updated_at }).eq('id', up.id);
+      } catch (err) {
+        console.error('Failed to sync task update', err);
+      }
+    }
     await clearOutboxTasks();
+    await clearOutboxTaskUpdates();
   };
 
   const fetchTasks = async () => {
@@ -103,9 +124,10 @@ export const useTasks = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('tasks')
-        .insert([{ ...taskData, user_id: user.id }])
+        .insert([{ ...taskData, user_id: user.id, updated_at: now }])
         .select()
         .single();
 
@@ -135,10 +157,19 @@ export const useTasks = () => {
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
+    if (!navigator.onLine) {
+      const updated_at = new Date().toISOString();
+      await enqueueTaskUpdate({ id, updates, updated_at });
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates, updated_at } : t));
+      toast({ title: 'Success', description: 'Task update queued offline' });
+      return { ...(tasks.find(t => t.id === id) as Task), ...updates, updated_at };
+    }
+
     try {
+      const updated_at = new Date().toISOString();
       const { data, error } = await supabase
         .from('tasks')
-        .update(updates)
+        .update({ ...updates, updated_at })
         .eq('id', id)
         .select()
         .single();
@@ -207,7 +238,16 @@ export const useTasks = () => {
       fetchTasks();
     };
     window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
+    const channel = supabase
+      .channel('tasks-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        fetchTasks();
+      })
+      .subscribe();
+    return () => {
+      window.removeEventListener('online', onOnline);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {

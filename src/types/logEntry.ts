@@ -9,6 +9,7 @@ export interface LogEntry {
   temperature?: number;
   humidity?: number;
   timestamp: string;
+  updated_at: string;
   notes: string;
   hashtags?: string[];
   symptoms?: string[];
