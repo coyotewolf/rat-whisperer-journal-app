@@ -11,6 +11,7 @@ import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
 import AlertCards from "@/components/AlertCards";
 import EditLogModal from "@/components/EditLogModal";
+import LogDetailModal from "@/components/LogDetailModal";
 import { format, isToday, isTomorrow, isBefore } from "date-fns";
 import { useTasks, type Task } from "@/hooks/useTasks";
 import { useLogEntries } from "@/hooks/useLogEntries";
@@ -31,6 +32,8 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any | null>(null);
+  const [selectedLogEntry, setSelectedLogEntry] = useState<any | null>(null);
+  const [isLogDetailOpen, setIsLogDetailOpen] = useState(false);
 
   // Get the three most recent activities, sorted by timestamp (most recent first)
   const recentActivities = logs
@@ -139,6 +142,16 @@ const Index = () => {
     }
   };
 
+  const handleLogCardClick = (activity: any) => {
+    setSelectedLogEntry(activity.originalLog || activity);
+    setIsLogDetailOpen(true);
+  };
+
+  const handleEditFromLogDetail = (log: any) => {
+    setIsLogDetailOpen(false);
+    handleEditActivity({ originalLog: log });
+  };
+
   const getDateLabel = (date: Date) => {
     if (isToday(date)) return t("Today");
     if (isTomorrow(date)) return t("Tomorrow");
@@ -203,7 +216,7 @@ const getTitlePriorityClasses = (priority: string) => {
       {/* SVG background - color needs to be themed if kept */}
       {/* <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div> */}
+      }}></div> */
 
       {/* Header */}
       <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg">
@@ -344,7 +357,8 @@ const getTitlePriorityClasses = (priority: string) => {
               recentActivities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border group" // Themed item
+                  className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border group cursor-pointer hover:bg-accent/50 transition-colors" // Made clickable
+                  onClick={() => handleLogCardClick(activity)}
                 >
                   <div className="flex-1">
                     <p className="text-card-foreground font-medium">{t(activity.type)}</p> {/* Themed text */}
@@ -412,6 +426,12 @@ const getTitlePriorityClasses = (priority: string) => {
         task={selectedTask}
         onEdit={handleEditFromDetail}
       />
+      <LogDetailModal
+        isOpen={isLogDetailOpen}
+        onClose={() => setIsLogDetailOpen(false)}
+        logEntry={selectedLogEntry}
+        onEdit={handleEditFromLogDetail}
+      />
       {isEditModalOpen && editingActivity && (
         <EditLogModal
           isOpen={isEditModalOpen}
@@ -429,3 +449,5 @@ const getTitlePriorityClasses = (priority: string) => {
 };
 
 export default Index;
+
+</edits_to_apply>

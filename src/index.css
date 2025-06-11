@@ -1,49 +1,50 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Default Light Theme Variables */
+  /* Light Theme - Creamy, Silky, Soft Design */
   :root,
   [data-theme="light"] {
-    --background: 40 10% 98%; /* 極淡鵝黃色 */
-    --foreground: 220 10% 20%; /* 柔和深灰色 */
+    --background: 45 15% 97%; /* Very light creamy beige */
+    --foreground: 30 8% 25%; /* Warm dark brown for text */
 
-    --card: 40 5% 99%; /* 極淺暖色 */
-    --card-foreground: 220 10% 20%;
+    --card: 40 20% 98%; /* Slightly warmer cream for cards */
+    --card-foreground: 30 8% 25%;
 
-    --popover: 40 5% 99%;
-    --popover-foreground: 220 10% 20%;
+    --popover: 40 20% 98%;
+    --popover-foreground: 30 8% 25%;
 
-    --primary: 30 70% 70%; /* 柔和暖橙色 */
-    --primary-foreground: 220 10% 98%; /* 淺灰色 */
+    --primary: 35 45% 75%; /* Soft warm terracotta */
+    --primary-foreground: 45 15% 97%; /* Light cream text on primary */
 
-    --secondary: 220 5% 95%; /* 柔和淺灰色 */
-    --secondary-foreground: 220 10% 25%; /* 柔和深灰色 */
+    --secondary: 50 15% 92%; /* Very light warm beige */
+    --secondary-foreground: 30 12% 35%; /* Slightly darker warm brown */
 
-    --muted: 220 5% 95%;
-    --muted-foreground: 220 10% 40%; /* 柔和中灰色 */
+    --muted: 45 12% 94%; /* Soft light cream */
+    --muted-foreground: 30 8% 45%; /* Medium warm brown */
 
-    --accent: 220 5% 95%;
-    --accent-foreground: 220 10% 25%;
+    --accent: 42 25% 88%; /* Light warm gold accent */
+    --accent-foreground: 30 12% 30%; /* Dark warm brown */
 
-    --destructive: 0 70% 75%; /* 柔和紅色 */
-    --destructive-foreground: 220 10% 98%;
+    --destructive: 5 50% 80%; /* Soft coral pink for errors */
+    --destructive-foreground: 45 15% 97%;
 
-    --border: 220 5% 90%; /* 柔和淺灰色邊框 */
-    --input: 220 5% 90%;
-    --ring: 30 70% 70%; /* 與 primary 協調 */
+    --border: 45 10% 88%; /* Very light warm border */
+    --input: 45 10% 88%;
+    --ring: 35 45% 75%; /* Matches primary */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 40 8% 96%; /* 比主背景略深的柔和暖色 */
-    --sidebar-foreground: 220 10% 20%;
-    --sidebar-primary: 30 70% 70%;
-    --sidebar-primary-foreground: 220 10% 98%;
-    --sidebar-accent: 220 5% 92%;
-    --sidebar-accent-foreground: 220 10% 25%;
-    --sidebar-border: 220 5% 90%;
-    --sidebar-ring: 30 70% 70%;
+    --sidebar-background: 42 18% 95%; /* Slightly deeper cream for sidebar */
+    --sidebar-foreground: 30 8% 25%;
+    --sidebar-primary: 35 45% 75%;
+    --sidebar-primary-foreground: 45 15% 97%;
+    --sidebar-accent: 45 12% 90%;
+    --sidebar-accent-foreground: 30 12% 30%;
+    --sidebar-border: 45 10% 85%;
+    --sidebar-ring: 35 45% 75%;
   }
 
   [data-theme="dark"] {
@@ -82,6 +83,47 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  [data-theme="sakura"] {
+    --background: 330 25% 97%; /* Very light pinkish cream */
+    --foreground: 340 15% 25%; /* Warm dark rose-brown */
+
+    --card: 325 30% 98%; /* Soft pink-cream for cards */
+    --card-foreground: 340 15% 25%;
+
+    --popover: 325 30% 98%;
+    --popover-foreground: 340 15% 25%;
+
+    --primary: 340 40% 75%; /* Soft rose pink */
+    --primary-foreground: 330 25% 97%;
+
+    --secondary: 320 20% 92%; /* Light pink-beige */
+    --secondary-foreground: 340 18% 35%;
+
+    --muted: 325 15% 94%; /* Very soft pink-cream */
+    --muted-foreground: 340 12% 45%;
+
+    --accent: 315 35% 88%; /* Light pink accent */
+    --accent-foreground: 340 18% 30%;
+
+    --destructive: 5 50% 80%; /* Soft coral */
+    --destructive-foreground: 330 25% 97%;
+
+    --border: 325 12% 88%; /* Light pink border */
+    --input: 325 12% 88%;
+    --ring: 340 40% 75%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 320 22% 95%;
+    --sidebar-foreground: 340 15% 25%;
+    --sidebar-primary: 340 40% 75%;
+    --sidebar-primary-foreground: 330 25% 97%;
+    --sidebar-accent: 325 15% 90%;
+    --sidebar-accent-foreground: 340 18% 30%;
+    --sidebar-border: 325 12% 85%;
+    --sidebar-ring: 340 40% 75%;
   }
 }
 

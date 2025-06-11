@@ -58,7 +58,6 @@ export type Database = {
         Row: {
           content: Json
           created_at: string
-          updated_at: string
           id: string
           rat_ids: string[]
           type: string
@@ -67,7 +66,6 @@ export type Database = {
         Insert: {
           content: Json
           created_at?: string
-          updated_at?: string
           id?: string
           rat_ids?: string[]
           type: string
@@ -76,7 +74,6 @@ export type Database = {
         Update: {
           content?: Json
           created_at?: string
-          updated_at?: string
           id?: string
           rat_ids?: string[]
           type?: string
