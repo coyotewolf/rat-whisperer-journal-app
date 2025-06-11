@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { LogEntryService } from '@/services/logEntryService';
+import { supabase } from '@/integrations/supabase/client';
 import type { LogEntry } from '@/types/logEntry';
 import {
   cacheLogs,
@@ -11,6 +12,9 @@ import {
   enqueueLog,
   getOutboxLogs,
   clearOutboxLogs,
+  enqueueLogUpdate,
+  getOutboxLogUpdates,
+  clearOutboxLogUpdates,
 } from '@/lib/offlineDB';
 
 export { type LogEntry } from '@/types/logEntry';
@@ -25,14 +29,33 @@ export const useLogEntries = () => {
   const syncOutbox = async () => {
     if (!navigator.onLine || !user) return;
     const queued = await getOutboxLogs();
+    const updateQueued = await getOutboxLogUpdates();
     for (const item of queued) {
       try {
-        await LogEntryService.addLog(user.id, item);
+        const { timestamp, ...rest } = item as any;
+        await LogEntryService.addLog(user.id, rest);
       } catch (err) {
         console.error('Failed to sync log', err);
       }
     }
+    for (const up of updateQueued) {
+      try {
+        const { data: existing } = await supabase
+          .from('log_entries')
+          .select('updated_at')
+          .eq('id', up.id)
+          .maybeSingle();
+        if (existing && new Date(existing.updated_at) > new Date(up.updated_at)) {
+          console.warn('Server has newer log version for', up.id);
+          continue;
+        }
+        await LogEntryService.updateLog(up.id, { ...up.updates, updated_at: up.updated_at });
+      } catch (err) {
+        console.error('Failed to sync log update', err);
+      }
+    }
     if (queued.length) await clearOutboxLogs();
+    if (updateQueued.length) await clearOutboxLogUpdates();
   };
 
   const fetchLogs = async () => {
@@ -69,7 +92,8 @@ export const useLogEntries = () => {
     if (!user) return;
 
     if (!navigator.onLine) {
-      const offlineLog = { ...logData, timestamp: new Date().toISOString() };
+      const now = new Date().toISOString();
+      const offlineLog = { ...logData, timestamp: now, updated_at: now };
       await enqueueLog(offlineLog);
       setLogs(prev => [{ ...offlineLog, id: `local-${Date.now()}` }, ...prev]);
       toast({ title: t('Success'), description: t('Activity log queued offline') });
@@ -77,7 +101,8 @@ export const useLogEntries = () => {
     }
 
     try {
-      const data = await LogEntryService.addLog(user.id, logData);
+      const now = new Date().toISOString();
+      const data = await LogEntryService.addLog(user.id, { ...logData, updated_at: now });
       await fetchLogs();
 
       toast({
@@ -102,8 +127,16 @@ export const useLogEntries = () => {
   const updateLog = async (logId: string, updates: Partial<Omit<LogEntry, 'rat_id'>>) => {
     if (!user) return;
 
+    if (!navigator.onLine) {
+      const updated_at = new Date().toISOString();
+      await enqueueLogUpdate({ id: logId, updates, updated_at });
+      setLogs(prev => prev.map(log => log.id === logId ? { ...log, ...updates, updated_at } : log));
+      toast({ title: t('Success'), description: t('Log update queued offline') });
+      return;
+    }
+
     try {
-      await LogEntryService.updateLog(logId, updates);
+      await LogEntryService.updateLog(logId, { ...updates, updated_at: new Date().toISOString() });
       await fetchLogs();
 
       toast({
@@ -151,8 +184,15 @@ export const useLogEntries = () => {
       fetchLogs();
     };
     window.addEventListener('online', onOnline);
+    const channel = supabase
+      .channel('logs-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'log_entries' }, () => {
+        fetchLogs();
+      })
+      .subscribe();
     return () => {
       window.removeEventListener('online', onOnline);
+      supabase.removeChannel(channel);
     };
   }, [user?.id]);
  

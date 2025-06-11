@@ -13,16 +13,24 @@ interface AppDB extends DBSchema {
   };
   outboxLogs: {
     key: number;
-    value: Omit<LogEntry, 'id'> & { timestamp: string };
+    value: Omit<LogEntry, 'id'> & { timestamp: string; updated_at: string };
   };
   outboxTasks: {
     key: number;
     value: Omit<Task, 'id' | 'created_at' | 'updated_at'> & { created_at: string; updated_at: string };
   };
+  outboxLogUpdates: {
+    key: string;
+    value: { id: string; updates: Partial<LogEntry>; updated_at: string };
+  };
+  outboxTaskUpdates: {
+    key: string;
+    value: { id: string; updates: Partial<Task>; updated_at: string };
+  };
 }
 
 const DB_NAME = 'app-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const dbPromise = openDB<AppDB>(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -30,6 +38,8 @@ const dbPromise = openDB<AppDB>(DB_NAME, DB_VERSION, {
     if (!db.objectStoreNames.contains('tasks')) db.createObjectStore('tasks', { keyPath: 'id' });
     if (!db.objectStoreNames.contains('outboxLogs')) db.createObjectStore('outboxLogs', { keyPath: 'timestamp' });
     if (!db.objectStoreNames.contains('outboxTasks')) db.createObjectStore('outboxTasks', { keyPath: 'created_at' });
+    if (!db.objectStoreNames.contains('outboxLogUpdates')) db.createObjectStore('outboxLogUpdates', { keyPath: 'updated_at' });
+    if (!db.objectStoreNames.contains('outboxTaskUpdates')) db.createObjectStore('outboxTaskUpdates', { keyPath: 'updated_at' });
   }
 });
 
@@ -50,7 +60,7 @@ export async function getCachedLogs() {
   return await db.getAll('logs');
 }
 
-export async function enqueueLog(log: Omit<LogEntry, 'id'> & { timestamp: string }) {
+export async function enqueueLog(log: Omit<LogEntry, 'id'> & { timestamp: string; updated_at: string }) {
   const db = await dbPromise;
   await db.put('outboxLogs', log);
 }
@@ -95,6 +105,40 @@ export async function getOutboxTasks() {
 export async function clearOutboxTasks() {
   const db = await dbPromise;
   const tx = db.transaction('outboxTasks', 'readwrite');
+  await tx.store.clear();
+  await tx.done;
+}
+
+export async function enqueueLogUpdate(update: { id: string; updates: Partial<LogEntry>; updated_at: string }) {
+  const db = await dbPromise;
+  await db.put('outboxLogUpdates', update);
+}
+
+export async function getOutboxLogUpdates() {
+  const db = await dbPromise;
+  return await db.getAll('outboxLogUpdates');
+}
+
+export async function clearOutboxLogUpdates() {
+  const db = await dbPromise;
+  const tx = db.transaction('outboxLogUpdates', 'readwrite');
+  await tx.store.clear();
+  await tx.done;
+}
+
+export async function enqueueTaskUpdate(update: { id: string; updates: Partial<Task>; updated_at: string }) {
+  const db = await dbPromise;
+  await db.put('outboxTaskUpdates', update);
+}
+
+export async function getOutboxTaskUpdates() {
+  const db = await dbPromise;
+  return await db.getAll('outboxTaskUpdates');
+}
+
+export async function clearOutboxTaskUpdates() {
+  const db = await dbPromise;
+  const tx = db.transaction('outboxTaskUpdates', 'readwrite');
   await tx.store.clear();
   await tx.done;
 }

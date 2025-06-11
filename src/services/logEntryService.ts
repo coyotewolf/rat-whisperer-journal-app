@@ -77,6 +77,7 @@ export class LogEntryService {
         temperature: content.temperature,
         humidity: content.humidity,
         timestamp: entry.created_at,
+        updated_at: entry.updated_at,
         notes: content.notes || '',
         hashtags: content.tags || [], // Ensure hashtags is an array, defaulting to empty
         symptoms: content.symptoms || [], // Ensure symptoms is an array, defaulting to empty
@@ -111,7 +112,8 @@ export class LogEntryService {
         user_id: userId,
         rat_ids: logData.ratIds || [], // Only use rat_ids
         type: logData.type,
-        content: content as any
+        content: content as any,
+        updated_at: logData.updated_at
       })
       .select()
       .single();
@@ -143,6 +145,7 @@ export class LogEntryService {
       .update({
         content: content as any,
         rat_ids: updates.ratIds || [], // Only use rat_ids
+        updated_at: updates.updated_at
       })
       .eq('id', logId);
 
