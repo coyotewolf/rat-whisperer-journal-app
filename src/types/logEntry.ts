@@ -16,6 +16,7 @@ export interface LogEntry {
   dose?: string;
   food?: string;
   amount?: string;
+  status?: string; // Added for health status, etc.
 }
 
 export interface LogEntryContent {
@@ -30,4 +31,5 @@ export interface LogEntryContent {
   dose?: string;
   food?: string;
   amount?: string;
+  status?: string; // Added for health status, etc.
 }

@@ -80,6 +80,7 @@ export class LogEntryService {
         notes: content.notes || '',
         hashtags: content.tags || [], // Ensure hashtags is an array, defaulting to empty
         symptoms: content.symptoms || [], // Ensure symptoms is an array, defaulting to empty
+        status: content.status, // Extract status from content
         medication: content.medication,
         dose: content.dose,
         food: content.food,
@@ -101,6 +102,7 @@ export class LogEntryService {
       dose: logData.dose,
       food: logData.food,
       amount: logData.amount,
+      status: logData.status, // Include status in content for DB
     };
 
     const { data, error } = await supabase
@@ -133,6 +135,7 @@ export class LogEntryService {
       dose: updates.dose,
       food: updates.food,
       amount: updates.amount,
+      status: updates.status, // Include status in content for DB when updating
     };
 
     const { error } = await supabase

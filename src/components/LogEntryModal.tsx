@@ -86,32 +86,44 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
     try {
       let contentPayload = { ...formData };
       if (logType === 'behavior') {
-        contentPayload.tags = selectedTags;
+        contentPayload.tags = selectedTags; // This will become hashtags in the service
       }
 
-      const { data: newLogData, error } = await supabase
-        .from('log_entries')
-        .insert({
-          user_id: user.id,
-          rat_ids: selectedRats, // Only use rat_ids
-          type: logType,
-          content: contentPayload
-        })
-        .select()
-        .single(); // Assuming we expect a single record back
-
-      if (error) throw error;
-
-      toast({ title: t("Success"), description: t("Log entry added successfully!") });
+      // Construct the log data to be passed to the hook
+      const logEntryData = {
+        user_id: user.id, // user_id will be handled by useLogEntries or service
+        ratIds: selectedRats,
+        type: logType,
+        // Pass individual fields expected by LogEntry type or content payload
+        // Ensure these align with what useLogEntries and LogEntryService expect
+        behavior: logType === 'behavior' ? contentPayload.behavior : undefined, // Example
+        notes: contentPayload.notes,
+        hashtags: logType === 'behavior' ? selectedTags : undefined,
+        // Add other fields from formData as needed, matching LogEntry structure
+        weight: contentPayload.weight,
+        temperature: contentPayload.temperature,
+        humidity: contentPayload.humidity,
+        symptoms: contentPayload.symptoms,
+        medication: contentPayload.medication,
+        dose: contentPayload.dose,
+        food: contentPayload.food,
+        amount: contentPayload.amount,
+        status: contentPayload.status, // Add status from formData
+        // ... other specific fields from formData based on logType
+      };
       
-      if (newLogData) {
-        onLogAdded(newLogData);
-      }
+      // onLogAdded now expects the raw data to be processed by useLogEntries.addLog
+      // The actual Supabase call will happen there.
+      await onLogAdded(logEntryData);
+      // Success toast will be handled by useLogEntries after successful submission
+      
       onClose(); // This should trigger the full close and navigation via QuickLogModal
-      // resetForm(); // Resetting form is now handled by useEffect on isOpen/logType change
     } catch (error: any) {
-      console.error('Error adding log entry:', error);
-      toast({ title: t("Error"), description: error.message || t("Failed to add log entry"), variant: "destructive" });
+      // Error toast will be handled by useLogEntries if submission fails
+      console.error('Error preparing log entry or calling onLogAdded:', error);
+      // Optionally, show a generic error here if onLogAdded itself throws an unexpected error
+      // before even reaching useLogEntries, though typically errors are from the async submission.
+      toast({ title: t("Error"), description: t("An unexpected error occurred."), variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -54,7 +54,8 @@ const Index = () => {
         type: log.behavior || log.type,
         rat: log.ratNames ? log.ratNames.join(', ') : t('Unknown'),
         time: timeAgo,
-        status: log.type === 'health' ? 'good' : log.type === 'environment' ? 'completed' : 'completed',
+        // Use the actual status from the log object if available, otherwise fallback or specific logic
+        status: log.status || (log.type === 'environment' ? 'completed' : 'completed'), // Use log.status
         notes: log.notes,
         ratNames: log.ratNames || [],
         hashtags: log.hashtags || [],
@@ -64,21 +65,19 @@ const Index = () => {
     });
 
   // Function to handle new log entries from QuickLogModal
-  const handleNewLogEntry = async (newLog: any) => {
+  const handleNewLogEntry = async (logEntryDataFromModal: any) => { // Renamed for clarity
     try {
-      await addLog({
-        type: newLog.type,
-        ratIds: newLog.ratIds || [],
-        behavior: newLog.behavior,
-        weight: newLog.weight,
-        temperature: newLog.temperature,
-        humidity: newLog.humidity,
-        notes: newLog.notes || '',
-        hashtags: newLog.hashtags || []
-      });
-      console.log(t("New log entry added to Supabase"));
+      // Directly pass the object received from LogEntryModal.
+      // useLogEntries.addLog expects an object conforming to Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>
+      // We've structured logEntryDataFromModal in LogEntryModal to match this.
+      await addLog(logEntryDataFromModal);
+      // Successful toast and console logs are handled within useLogEntries.addLog
+      // console.log(t("New log entry processing initiated via hook")); // Optional: if you want a log here
     } catch (error) {
-      console.error(t("Failed to add log entry:"), error);
+      // Error handling (toast) is also primarily within useLogEntries.addLog
+      // This catch block might only catch errors if addLog itself is not found or if there's an issue
+      // in the way it's called before it even executes its own try/catch.
+      console.error(t("Error calling addLog from Index.tsx:"), error);
     }
   };
 
@@ -176,13 +175,24 @@ const getTitlePriorityClasses = (priority: string) => {
   };
 
   const getActivityStatusClasses = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) { // Use toLowerCase for case-insensitivity
+      // Health statuses
+      case 'excellent':
+        return 'bg-green-500 text-white border-green-600'; // Or use theme colors like 'bg-success text-success-foreground'
       case 'good':
-        return 'bg-accent text-accent-foreground border-accent'; // Example: Using accent for 'good'
+        return 'bg-lime-500 text-white border-lime-600'; // Or 'bg-accent text-accent-foreground'
+      case 'fair':
+        return 'bg-yellow-500 text-black border-yellow-600'; // Or 'bg-warning text-warning-foreground'
+      case 'poor':
+        return 'bg-orange-500 text-white border-orange-600'; // Or 'bg-destructive/80 text-destructive-foreground'
+      case 'sick':
+        return 'bg-red-600 text-white border-red-700'; // Or 'bg-destructive text-destructive-foreground'
+      
+      // Other statuses (e.g., from environment logs)
       case 'completed':
-        return 'bg-primary text-primary-foreground border-primary'; // Example: Using primary for 'completed'
-      default: // Assuming other statuses might be like 'warning' or 'neutral'
-        return 'bg-secondary text-secondary-foreground border-secondary'; // Example: Using secondary for others
+        return 'bg-primary text-primary-foreground border-primary';
+      default: // Fallback for unknown or other statuses
+        return 'bg-secondary text-secondary-foreground border-secondary';
     }
   };
 
