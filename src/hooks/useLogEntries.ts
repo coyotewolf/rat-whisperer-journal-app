@@ -42,10 +42,10 @@ export const useLogEntries = () => {
       try {
         const { data: existing } = await supabase
           .from('log_entries')
-          .select('updated_at')
+          .select('created_at')
           .eq('id', up.id)
           .maybeSingle();
-        if (existing && new Date(existing.updated_at) > new Date(up.updated_at)) {
+        if (existing && new Date(existing.created_at) > new Date(up.updated_at)) {
           console.warn('Server has newer log version for', up.id);
           continue;
         }

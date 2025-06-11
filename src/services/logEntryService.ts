@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { LogEntry, LogEntryContent } from '@/types/logEntry';
 
@@ -77,7 +78,7 @@ export class LogEntryService {
         temperature: content.temperature,
         humidity: content.humidity,
         timestamp: entry.created_at,
-        updated_at: entry.updated_at,
+        updated_at: entry.created_at, // Use created_at as fallback for updated_at
         notes: content.notes || '',
         hashtags: content.tags || [], // Ensure hashtags is an array, defaulting to empty
         symptoms: content.symptoms || [], // Ensure symptoms is an array, defaulting to empty
@@ -90,7 +91,7 @@ export class LogEntryService {
     }) || [];
   }
 
-  static async addLog(userId: string, logData: Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>) { // Removed rat_id from Omit
+  static async addLog(userId: string, logData: Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>) {
     const content: LogEntryContent = {
       behavior: logData.behavior,
       weight: logData.weight,
@@ -103,28 +104,27 @@ export class LogEntryService {
       dose: logData.dose,
       food: logData.food,
       amount: logData.amount,
-      status: logData.status, // Include status in content for DB
+      status: logData.status,
     };
 
     const { data, error } = await supabase
       .from('log_entries')
       .insert({
         user_id: userId,
-        rat_ids: logData.ratIds || [], // Only use rat_ids
+        rat_ids: logData.ratIds || [],
         type: logData.type,
         content: content as any,
-        updated_at: logData.updated_at
       })
       .select()
       .single();
 
     if (error) {
-      throw error; // Let upstream handle the error
+      throw error;
     }
     return data;
   }
 
-  static async updateLog(logId: string, updates: Partial<Omit<LogEntry, 'rat_id'>>) { // Removed rat_id from Partial Omit
+  static async updateLog(logId: string, updates: Partial<Omit<LogEntry, 'rat_id'>>) {
     const content: LogEntryContent = {
       behavior: updates.behavior,
       weight: updates.weight,
@@ -137,15 +137,14 @@ export class LogEntryService {
       dose: updates.dose,
       food: updates.food,
       amount: updates.amount,
-      status: updates.status, // Include status in content for DB when updating
+      status: updates.status,
     };
 
     const { error } = await supabase
       .from('log_entries')
       .update({
         content: content as any,
-        rat_ids: updates.ratIds || [], // Only use rat_ids
-        updated_at: updates.updated_at
+        rat_ids: updates.ratIds || [],
       })
       .eq('id', logId);
 
