@@ -4,66 +4,45 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, X, Palette } from 'lucide-react';
-import { useLogTagSuggestions } from '@/hooks/useLogTagSuggestions';
+import { useLogTagCategories } from '@/hooks/useLogTagCategories';
 
 const defaultColors = [
   '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', 
   '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'
 ];
 
-interface AddLogTagSuggestionFormProps {
-  onSuggestionAdded?: () => void;
+interface AddCategoryFormProps {
+  onCategoryAdded?: () => void;
   onCancel?: () => void;
   showCancelButton?: boolean;
-  defaultCategory?: string;
-  availableCategories?: string[];
 }
 
-export const AddLogTagSuggestionForm = ({ 
-  onSuggestionAdded, 
-  onCancel, 
-  showCancelButton = false, 
-  defaultCategory = 'general',
-  availableCategories = ['general', 'behavior', 'health']
-}: AddLogTagSuggestionFormProps) => {
+export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = false }: AddCategoryFormProps) => {
   const { t } = useTranslation();
-  const { addSuggestion } = useLogTagSuggestions();
+  const { addCategory } = useLogTagCategories();
   const [name, setName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [color, setColor] = useState('#6B7280');
-  const [category, setCategory] = useState(defaultCategory);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !displayName.trim()) return;
 
     setIsSubmitting(true);
     try {
-      await addSuggestion(name, color, category);
+      await addCategory(name, displayName, color);
       setName('');
+      setDisplayName('');
       setColor('#6B7280');
-      setCategory(defaultCategory);
-      if (onSuggestionAdded) {
-        onSuggestionAdded();
+      if (onCategoryAdded) {
+        onCategoryAdded();
       }
     } catch (error) {
-      console.error('Error adding suggestion:', error);
+      console.error('Error adding category:', error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const getCategoryDisplayName = (categoryName: string) => {
-    switch (categoryName) {
-      case 'behavior':
-        return t('Behavior');
-      case 'health':
-        return t('Health');
-      case 'general':
-      default:
-        return t('General');
     }
   };
 
@@ -71,29 +50,24 @@ export const AddLogTagSuggestionForm = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="tagName">{t("Tag Name")}</Label>
+          <Label htmlFor="categoryName">{t("Category Name")}</Label>
           <Input
-            id="tagName"
+            id="categoryName"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t("Enter tag name")}
+            placeholder={t("e.g., medical, training")}
             required
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="category">{t("Category")}</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableCategories.map(cat => (
-                <SelectItem key={cat} value={cat}>
-                  {getCategoryDisplayName(cat)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="displayName">{t("Display Name")}</Label>
+          <Input
+            id="displayName"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder={t("e.g., Medical, Training")}
+            required
+          />
         </div>
       </div>
       
@@ -101,7 +75,7 @@ export const AddLogTagSuggestionForm = ({
         <Label>{t("Color")}</Label>
         <div className="flex items-center gap-2">
           <div 
-            className="w-8 h-8 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center"
+            className="w-8 h-8 rounded border border-gray-300 cursor-pointer flex items-center justify-center"
             style={{ backgroundColor: color }}
           >
             <Palette className="h-4 w-4 text-white opacity-75" />
@@ -133,9 +107,9 @@ export const AddLogTagSuggestionForm = ({
             {t("Cancel")}
           </Button>
         )}
-        <Button type="submit" disabled={!name.trim() || isSubmitting}>
+        <Button type="submit" disabled={!name.trim() || !displayName.trim() || isSubmitting}>
           <Check className="h-4 w-4 mr-1" />
-          {isSubmitting ? t("Adding...") : t("Add Tag")}
+          {isSubmitting ? t("Adding...") : t("Add Category")}
         </Button>
       </div>
     </form>

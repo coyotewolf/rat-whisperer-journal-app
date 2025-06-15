@@ -81,6 +81,39 @@ export type Database = {
         }
         Relationships: []
       }
+      log_tag_categories: {
+        Row: {
+          color: string
+          created_at: string
+          display_name: string
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          display_name: string
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       log_tag_suggestions: {
         Row: {
           category: string | null
@@ -109,7 +142,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_log_tag_suggestions_category"
+            columns: ["user_id", "category"]
+            isOneToOne: false
+            referencedRelation: "log_tag_categories"
+            referencedColumns: ["user_id", "name"]
+          },
+        ]
       }
       personality_tags: {
         Row: {

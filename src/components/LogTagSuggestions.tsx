@@ -61,7 +61,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category }: Lo
           >
             <PlusCircle className="h-5 w-5" />
           </Button>
-          <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage tag suggestions")}>
+          <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage log suggestions")}>
             <ManageIcon className="h-5 w-5 text-orange-600 hover:text-orange-700" />
           </Button>
         </div>
@@ -129,7 +129,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category }: Lo
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center">{t("Manage Tag Suggestions")}</DialogTitle>
+              <DialogTitle className="flex-1 text-center">{t("Manage Log Suggestions")}</DialogTitle>
               <div className="w-10"></div>
             </div>
           </DialogHeader>
