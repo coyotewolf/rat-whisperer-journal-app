@@ -53,20 +53,12 @@ const Index = () => {
         timeAgo = t('Just now');
       }
 
-      // Determine status based on log type and available data
-      let status;
-      if (log.type === 'health' && log.status) {
-        status = log.status; // Use actual health status
-      } else {
-        status = 'completed'; // Default for other types
-      }
-
       return {
         id: log.id,
         type: log.behavior || log.type,
         rat: log.ratNames ? log.ratNames.join(', ') : t('Unknown'),
         time: timeAgo,
-        status: status,
+        status: log.status || (log.type === 'environment' ? 'completed' : 'completed'),
         notes: log.notes,
         ratNames: log.ratNames || [],
         hashtags: log.hashtags || [],
