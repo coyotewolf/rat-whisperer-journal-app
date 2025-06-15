@@ -52,10 +52,12 @@ const Index = () => {
         timeAgo = t('Just now');
       }
 
-      // For Health-type logs, use the actual health status; for others, use 'completed'
+      // Determine display status based on log type
       let displayStatus;
       if (log.type === 'health' && log.status) {
         displayStatus = log.status;
+      } else if (log.type === 'weight' && log.weight) {
+        displayStatus = `${log.weight} g`;
       } else {
         displayStatus = log.status || (log.type === 'environment' ? 'completed' : 'completed');
       }
@@ -197,6 +199,11 @@ const Index = () => {
   };
 
   const getActivityStatusClasses = (status: string) => {
+    // For weight logs showing actual weight value, use a neutral style
+    if (status && status.includes(' g')) {
+      return 'bg-primary text-primary-foreground border-primary';
+    }
+    
     switch (status?.toLowerCase()) {
       case 'excellent':
         return 'bg-green-500 text-white border-green-600';
