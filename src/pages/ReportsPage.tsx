@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, FileText, TrendingUp, Activity, Heart } from 'lucide-react';
+import { Calendar, FileText, Utensils, Activity, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BottomNav from '@/components/BottomNav';
 import DailySummaryReport from '@/components/reports/DailySummaryReport';
-import WeightTrendReport from '@/components/reports/WeightTrendReport';
+import FeedingEnvironmentReport from '@/components/reports/FeedingEnvironmentReport';
 import BehaviorAnalysisReport from '@/components/reports/BehaviorAnalysisReport';
 import HealthReport from '@/components/reports/HealthReport';
 
@@ -31,10 +31,10 @@ const ReportsPage = () => {
       color: 'text-red-600'
     },
     {
-      id: 'weight',
-      title: t('Weight Trends'),
-      description: t('Weight changes and growth patterns'),
-      icon: TrendingUp,
+      id: 'feeding',
+      title: t('Feeding & Environment'),
+      description: t('Food consumption and environmental conditions'),
+      icon: Utensils,
       color: 'text-green-600'
     },
     {
@@ -74,8 +74,8 @@ const ReportsPage = () => {
             <HealthReport />
           </TabsContent>
 
-          <TabsContent value="weight">
-            <WeightTrendReport />
+          <TabsContent value="feeding">
+            <FeedingEnvironmentReport />
           </TabsContent>
 
           <TabsContent value="behavior">
