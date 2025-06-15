@@ -1,43 +1,13 @@
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil, Check, X } from 'lucide-react';
+import { Trash2, Pencil, Check, X, Palette } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { usePersonalityTags, PersonalityTag } from '@/hooks/usePersonalityTags';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { AddPersonalityTagForm } from './AddPersonalityTagForm';
-import { cn } from '@/lib/utils';
-
-const colorOptions = [
-  "blue",
-  "purple", 
-  "red",
-  "green",
-  "orange",
-  "yellow",
-  "pink",
-  "gray",
-  "indigo",
-  "cyan",
-];
-
-const getThemedColorClasses = (colorName: string) => {
-  switch (colorName) {
-    case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-    case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
-    case "red": return "bg-red-500/10 text-red-600 dark:text-red-400";
-    case "green": return "bg-green-500/10 text-green-600 dark:text-green-400";
-    case "orange": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-    case "yellow": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400";
-    case "pink": return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
-    case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400";
-    case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400";
-    case "gray": return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
-    default: return "bg-muted/50 text-muted-foreground";
-  }
-};
 
 const PersonalityTagSettings = () => {
   const { t } = useTranslation();
@@ -52,7 +22,7 @@ const PersonalityTagSettings = () => {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
-  const [editingColor, setEditingColor] = useState<string>(colorOptions[0]);
+  const [editingColor, setEditingColor] = useState<string>('#6B7280');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null);
 
@@ -75,7 +45,7 @@ const PersonalityTagSettings = () => {
       await updatePersonalityTag(id, editingName.trim(), editingColor);
       setEditingId(null);
       setEditingName('');
-      setEditingColor(colorOptions[0]);
+      setEditingColor('#6B7280');
       toast({
         title: t("Success"),
         description: t("Personality tag updated successfully"),
@@ -93,7 +63,7 @@ const PersonalityTagSettings = () => {
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingName('');
-    setEditingColor(colorOptions[0]);
+    setEditingColor('#6B7280');
   };
 
   const handleDeleteTag = async () => {
@@ -133,7 +103,19 @@ const PersonalityTagSettings = () => {
           {availableTags.map(tag => (
             <li key={tag.id} className="p-3 border rounded-lg flex justify-between items-center bg-white shadow-sm">
               {editingId === tag.id ? (
-                <div className="flex flex-col flex-grow mr-2 space-y-2">
+                <div className="flex items-center gap-2 flex-grow mr-2">
+                  <div 
+                    className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: editingColor }}
+                  >
+                    <Palette className="h-3 w-3 text-white opacity-75" />
+                  </div>
+                  <Input
+                    type="color"
+                    value={editingColor}
+                    onChange={(e) => setEditingColor(e.target.value)}
+                    className="w-8 h-8 p-0 border-0 rounded"
+                  />
                   <Input
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
@@ -141,41 +123,20 @@ const PersonalityTagSettings = () => {
                     className="text-sm flex-grow"
                     autoFocus
                   />
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium">{t("Choose color:")}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {colorOptions.map((color) => (
-                        <Badge
-                          key={`edit-${tag.id}-${color}`}
-                          variant="outline"
-                          className={cn(
-                            `cursor-pointer`,
-                            getThemedColorClasses(color),
-                            editingColor === color ? "ring-2 ring-primary" : ""
-                          )}
-                          onClick={() => setEditingColor(color)}
-                        >
-                          {t("Sample")}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleSaveEdit(tag.id)} title={t("Save")}>
-                      <Check className="h-4 w-4 text-green-500 hover:text-green-700 mr-1" /> {t("Save")}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={handleCancelEdit} title={t("Cancel")}>
-                      <X className="h-4 w-4 text-gray-500 hover:text-gray-700 mr-1" /> {t("Cancel")}
-                    </Button>
-                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => handleSaveEdit(tag.id)} title={t("Save")}>
+                    <Check className="h-4 w-4 text-green-500 hover:text-green-700" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={handleCancelEdit} title={t("Cancel")}>
+                    <X className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 flex-grow">
                   <div 
                     className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
-                    style={{ backgroundColor: getColorHex(tag.color) }}
+                    style={{ backgroundColor: tag.color }}
                   />
-                  <p className={cn("font-semibold", getThemedColorClasses(tag.color))}>{tag.name}</p>
+                  <p className="font-semibold text-gray-800">{tag.name}</p>
                 </div>
               )}
               <div className="space-x-2 flex-shrink-0">
@@ -208,23 +169,6 @@ const PersonalityTagSettings = () => {
       />
     </div>
   );
-};
-
-// Helper function to convert color names to hex values
-const getColorHex = (colorName: string) => {
-  const colorMap: { [key: string]: string } = {
-    "blue": "#3B82F6",
-    "purple": "#8B5CF6", 
-    "red": "#EF4444",
-    "green": "#22C55E",
-    "orange": "#F97316",
-    "yellow": "#EAB308",
-    "pink": "#EC4899",
-    "cyan": "#06B6D4",
-    "indigo": "#6366F1",
-    "gray": "#6B7280"
-  };
-  return colorMap[colorName] || "#6B7280";
 };
 
 export default PersonalityTagSettings;

@@ -37,23 +37,6 @@ const PersonalityTagManager = ({ onSelect, selectedTags, placeholder }: Personal
     refetch();
   };
 
-  // Helper to get themed classes for a given color string
-  const getThemedColorClasses = (colorName: string) => {
-    switch (colorName) {
-      case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30";
-      case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30";
-      case "red": return "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30";
-      case "green": return "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30";
-      case "orange": return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30";
-      case "yellow": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30";
-      case "pink": return "bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/30";
-      case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30";
-      case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30";
-      case "gray": return "bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/30";
-      default: return "bg-muted/50 text-muted-foreground border-border";
-    }
-  };
-
   if (loading) {
     return <div className="text-sm text-gray-500">{t("Loading personality tags...")}</div>;
   }
@@ -101,24 +84,24 @@ const PersonalityTagManager = ({ onSelect, selectedTags, placeholder }: Personal
                 variant={isSelected ? "default" : "outline"}
                 className={`cursor-pointer transition-colors border-2 ${
                   isSelected
-                    ? "bg-orange-500 text-white"
-                    : "hover:bg-orange-100"
-                } ${getThemedColorClasses(tag.color)}`}
+                    ? "bg-orange-500 text-white border-orange-500"
+                    : "hover:bg-gray-100 text-gray-700 border-gray-300"
+                }`}
                 style={{ 
                   ...(isSelected && {
                     backgroundColor: '#f97316',
                     borderColor: '#f97316'
                   }),
                   ...(!isSelected && {
-                    borderColor: getColorHex(tag.color),
-                    backgroundColor: `${getColorHex(tag.color)}10`
+                    borderColor: tag.color,
+                    backgroundColor: `${tag.color}10`
                   })
                 }}
                 onClick={() => handleTagToggle(tag)}
               >
                 <div 
                   className="w-2 h-2 rounded-full mr-2 flex-shrink-0"
-                  style={{ backgroundColor: isSelected ? 'white' : getColorHex(tag.color) }}
+                  style={{ backgroundColor: isSelected ? 'white' : tag.color }}
                 />
                 {tag.name}
                 {isSelected && <X className="h-3 w-3 ml-1" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag);}} />}
@@ -156,23 +139,6 @@ const PersonalityTagManager = ({ onSelect, selectedTags, placeholder }: Personal
       </Dialog>
     </div>
   );
-};
-
-// Helper function to convert color names to hex values
-const getColorHex = (colorName: string) => {
-  const colorMap: { [key: string]: string } = {
-    "blue": "#3B82F6",
-    "purple": "#8B5CF6", 
-    "red": "#EF4444",
-    "green": "#22C55E",
-    "orange": "#F97316",
-    "yellow": "#EAB308",
-    "pink": "#EC4899",
-    "cyan": "#06B6D4",
-    "indigo": "#6366F1",
-    "gray": "#6B7280"
-  };
-  return colorMap[colorName] || "#6B7280";
 };
 
 export default PersonalityTagManager;

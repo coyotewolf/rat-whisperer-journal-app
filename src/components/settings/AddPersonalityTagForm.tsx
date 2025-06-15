@@ -2,41 +2,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, X } from 'lucide-react';
+import { PlusCircle, Palette, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { usePersonalityTags } from '@/hooks/usePersonalityTags';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
-const colorOptions = [
-  "blue",
-  "purple", 
-  "red",
-  "green",
-  "orange",
-  "yellow",
-  "pink",
-  "gray",
-  "indigo",
-  "cyan",
+const defaultColors = [
+  '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', 
+  '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'
 ];
-
-const getThemedColorClasses = (colorName: string) => {
-  switch (colorName) {
-    case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-    case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
-    case "red": return "bg-red-500/10 text-red-600 dark:text-red-400";
-    case "green": return "bg-green-500/10 text-green-600 dark:text-green-400";
-    case "orange": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-    case "yellow": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400";
-    case "pink": return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
-    case "cyan": return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400";
-    case "indigo": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400";
-    case "gray": return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
-    default: return "bg-muted/50 text-muted-foreground";
-  }
-};
 
 interface AddPersonalityTagFormProps {
   onTagAdded?: () => void;
@@ -50,7 +24,7 @@ export const AddPersonalityTagForm = ({ onTagAdded, onCancel, showCancelButton =
   const { toast } = useToast();
 
   const [newTagName, setNewTagName] = useState('');
-  const [newTagColor, setNewTagColor] = useState(colorOptions[0]);
+  const [newTagColor, setNewTagColor] = useState('#6B7280');
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddTag = async () => {
@@ -66,7 +40,7 @@ export const AddPersonalityTagForm = ({ onTagAdded, onCancel, showCancelButton =
     try {
       await addPersonalityTag(newTagName.trim(), newTagColor);
       setNewTagName("");
-      setNewTagColor(colorOptions[0]);
+      setNewTagColor('#6B7280');
       toast({
         title: t("Success"),
         description: t("Personality tag added successfully"),
@@ -90,6 +64,18 @@ export const AddPersonalityTagForm = ({ onTagAdded, onCancel, showCancelButton =
     <div className="space-y-2">
       <div className="flex gap-2 items-center">
         <div className="flex items-center gap-2 flex-1">
+          <div 
+            className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: newTagColor }}
+          >
+            <Palette className="h-3 w-3 text-white opacity-75" />
+          </div>
+          <Input
+            type="color"
+            value={newTagColor}
+            onChange={(e) => setNewTagColor(e.target.value)}
+            className="w-8 h-8 p-0 border-0 rounded"
+          />
           <Input
             placeholder={t("Add new personality tag here")}
             value={newTagName}
@@ -122,20 +108,15 @@ export const AddPersonalityTagForm = ({ onTagAdded, onCancel, showCancelButton =
         )}
       </div>
       
-      <div className="flex flex-wrap gap-1 ml-2">
-        {colorOptions.map((color) => (
-          <Badge
+      <div className="flex flex-wrap gap-1 ml-10">
+        {defaultColors.map((color) => (
+          <button
             key={color}
-            variant="outline"
-            className={cn(
-              `cursor-pointer`,
-              getThemedColorClasses(color),
-              newTagColor === color ? "ring-2 ring-primary" : ""
-            )}
+            type="button"
+            className={`w-5 h-5 rounded border ${newTagColor === color ? 'border-gray-800 border-2' : 'border-gray-300'}`}
+            style={{ backgroundColor: color }}
             onClick={() => setNewTagColor(color)}
-          >
-            {t("Sample")}
-          </Badge>
+          />
         ))}
       </div>
     </div>
