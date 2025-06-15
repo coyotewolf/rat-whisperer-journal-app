@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -88,7 +87,7 @@ export const usePersonalityTags = () => {
     try {
       const { error } = await supabase
         .from('personality_tags')
-        .update({ name: name.trim(), color })
+        .update({ name: name.trim(), color: color })
         .eq('id', id)
         .eq('user_id', user.id);
 
@@ -96,7 +95,7 @@ export const usePersonalityTags = () => {
 
       setPersonalityTags(prev => 
         prev.map(tag => 
-          tag.id === id ? { ...tag, name: name.trim(), color } : tag
+          tag.id === id ? { ...tag, name: name.trim(), color: color } : tag
         )
       );
       
