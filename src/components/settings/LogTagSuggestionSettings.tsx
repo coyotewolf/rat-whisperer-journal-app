@@ -76,13 +76,25 @@ const LogTagSuggestionSettings = () => {
     }
   };
 
-  const handleAddCategoryComplete = () => {
-    setShowAddCategory(false);
-    refreshCategories();
+  const handleAddCategoryComplete = async () => {
+    try {
+      console.log('Category add completed, refreshing...');
+      setShowAddCategory(false);
+      await refreshCategories();
+      console.log('Categories refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing categories:', error);
+    }
   };
 
   const handleCancelAddCategory = () => {
+    console.log('Canceling add category');
     setShowAddCategory(false);
+  };
+
+  const handleToggleAddCategory = () => {
+    console.log('Toggling add category form, current state:', showAddCategory);
+    setShowAddCategory(prev => !prev);
   };
 
   if (loading || categoriesLoading) {
@@ -105,7 +117,7 @@ const LogTagSuggestionSettings = () => {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setShowAddCategory(!showAddCategory)}
+            onClick={handleToggleAddCategory}
           >
             <PlusCircle className="h-4 w-4 mr-1" />
             {t("Add Category")}

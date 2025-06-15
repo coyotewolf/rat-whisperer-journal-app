@@ -30,7 +30,16 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !displayName.trim()) return;
+    e.stopPropagation();
+    
+    if (!name.trim() || !displayName.trim()) {
+      toast({
+        title: t("Error"),
+        description: t("Please fill in all required fields."),
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Check if category name already exists
     const normalizedName = name.trim().toLowerCase();
@@ -47,25 +56,60 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
 
     setIsSubmitting(true);
     try {
-      await addCategory(normalizedName, displayName.trim(), color);
+      console.log('Adding category:', { name: normalizedName, displayName: displayName.trim(), color });
+      const result = await addCategory(normalizedName, displayName.trim(), color);
+      console.log('Category added successfully:', result);
+      
+      // Reset form
       setName('');
       setDisplayName('');
       setColor('#6B7280');
+      
+      // Show success message
+      toast({
+        title: t("Success"),
+        description: t("Category added successfully"),
+      });
+      
+      // Call callback
       if (onCategoryAdded) {
         onCategoryAdded();
       }
     } catch (error) {
       console.error('Error adding category:', error);
-      // The error handling is already done in the hook, but we can add specific handling here
-      if (error instanceof Error && error.message.includes('duplicate key')) {
-        toast({
-          title: t("Error"),
-          description: t("A category with this name already exists."),
-          variant: "destructive",
-        });
+      
+      // Handle specific error types
+      let errorMessage = t("Failed to add category");
+      
+      if (error instanceof Error) {
+        if (error.message.includes('duplicate key') || error.message.includes('unique constraint')) {
+          errorMessage = t("A category with this name already exists.");
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = t("Network error. Please check your connection and try again.");
+        } else if (error.message.includes('auth') || error.message.includes('unauthorized')) {
+          errorMessage = t("Authentication error. Please login and try again.");
+        }
       }
+      
+      toast({
+        title: t("Error"),
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form when canceling
+    setName('');
+    setDisplayName('');
+    setColor('#6B7280');
+    setIsSubmitting(false);
+    
+    if (onCancel) {
+      onCancel();
     }
   };
 
@@ -80,6 +124,7 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
             onChange={(e) => setName(e.target.value)}
             placeholder={t("e.g., medical, training")}
             required
+            disabled={isSubmitting}
           />
           <p className="text-xs text-gray-500">
             {t("Internal name (lowercase, no spaces)")}
@@ -93,6 +138,7 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={t("e.g., Medical, Training")}
             required
+            disabled={isSubmitting}
           />
           <p className="text-xs text-gray-500">
             {t("Display name (shown in UI)")}
@@ -114,6 +160,7 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
             value={color}
             onChange={(e) => setColor(e.target.value)}
             className="w-16 h-8 p-0 border-0 rounded"
+            disabled={isSubmitting}
           />
         </div>
         <div className="flex flex-wrap gap-1">
@@ -124,6 +171,7 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
               className={`w-6 h-6 rounded border ${color === defaultColor ? 'border-gray-800 border-2' : 'border-gray-300'}`}
               style={{ backgroundColor: defaultColor }}
               onClick={() => setColor(defaultColor)}
+              disabled={isSubmitting}
             />
           ))}
         </div>
@@ -131,7 +179,7 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
 
       <div className="flex justify-end space-x-2">
         {showCancelButton && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
             <X className="h-4 w-4 mr-1" />
             {t("Cancel")}
           </Button>
