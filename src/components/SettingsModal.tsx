@@ -26,15 +26,15 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); // State for AuthModal
   const { user, signOut } = useAuth();
 
-  // Reset to main section whenever the modal is closed
+  // Reset to main section when modal opens (not when it closes)
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
       setCurrentSection('main');
     }
   }, [isOpen]);
 
   const handleClose = () => {
-    setCurrentSection('main');
+    // Don't reset state here - let it reset when modal reopens
     onClose();
   };
 
