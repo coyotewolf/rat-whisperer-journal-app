@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -84,22 +85,14 @@ export const usePersonalityTags = () => {
   const updatePersonalityTag = async (id: string, name: string, color: string) => {
     if (!user) return false;
 
-    console.log('Updating personality tag:', { id, name, color });
-
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('personality_tags')
         .update({ name: name.trim(), color })
         .eq('id', id)
-        .eq('user_id', user.id)
-        .select();
+        .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Supabase update error:', error);
-        throw error;
-      }
-
-      console.log('Update successful, data:', data);
+      if (error) throw error;
 
       setPersonalityTags(prev => 
         prev.map(tag => 
