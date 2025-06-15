@@ -40,12 +40,7 @@ const LogTagSuggestionSettings = () => {
       return;
     }
     try {
-      await updateSuggestion(id, editingName.trim());
-      // Update color separately
-      const suggestionToUpdate = suggestions.find(s => s.id === id);
-      if (suggestionToUpdate && editingColor !== suggestionToUpdate.color) {
-        // We need to add color update to the hook - for now just update name
-      }
+      await updateSuggestion(id, editingName.trim(), editingColor);
       setEditingId(null);
       setEditingName('');
       setEditingColor('#6B7280');
@@ -80,7 +75,7 @@ const LogTagSuggestionSettings = () => {
     }
     setIsAdding(true);
     try {
-      await addSuggestion(newTagName.trim());
+      await addSuggestion(newTagName.trim(), newTagColor);
       setNewTagName("");
       setNewTagColor('#6B7280');
       toast({
