@@ -17,11 +17,13 @@ interface LogTagSuggestionsProps {
 
 const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSuggestionsProps) => {
   const { t } = useTranslation();
-  const { suggestions, loading, deleteSuggestion } = useLogTagSuggestions();
+  const { suggestions, loading, deleteSuggestion, refreshSuggestions } = useLogTagSuggestions();
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
   const handleManageModalClose = () => {
     setIsManageModalOpen(false);
+    // Refresh suggestions when modal closes to pick up any newly added tags
+    refreshSuggestions();
   };
 
   if (loading) {
