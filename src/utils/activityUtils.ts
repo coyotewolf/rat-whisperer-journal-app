@@ -27,7 +27,13 @@ export const processRecentActivities = (logs: LogEntry[], t: (key: string, optio
       }
 
       let displayStatus;
-      if (log.type === 'health' && log.status) {
+      let behaviorTags = [];
+      
+      if (log.type === 'behavior' && log.hashtags && log.hashtags.length > 0) {
+        // For behavior logs, use the hashtags as behavior tags
+        behaviorTags = log.hashtags;
+        displayStatus = null; // We'll show tags instead of status
+      } else if (log.type === 'health' && log.status) {
         displayStatus = log.status;
       } else if (log.type === 'weight' && log.weight) {
         displayStatus = `${log.weight} g`;
@@ -41,6 +47,7 @@ export const processRecentActivities = (logs: LogEntry[], t: (key: string, optio
         rat: log.ratNames ? log.ratNames.join(', ') : t('Unknown'),
         time: timeAgo,
         status: displayStatus,
+        behaviorTags: behaviorTags,
         notes: log.notes,
         ratNames: log.ratNames || [],
         hashtags: log.hashtags || [],

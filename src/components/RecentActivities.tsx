@@ -50,11 +50,24 @@ const RecentActivities = ({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Badge
-                  className={`${getActivityStatusClasses(activity.status)} border-0`}
-                >
-                  {t(activity.status)}
-                </Badge>
+                {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {activity.behaviorTags.map((tag: string, index: number) => (
+                      <Badge
+                        key={index}
+                        className="bg-primary text-primary-foreground border-0 text-xs"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : activity.status ? (
+                  <Badge
+                    className={`${getActivityStatusClasses(activity.status)} border-0`}
+                  >
+                    {t(activity.status)}
+                  </Badge>
+                ) : null}
                 <Button
                   variant="ghost"
                   size="icon"
