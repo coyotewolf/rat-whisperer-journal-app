@@ -43,31 +43,33 @@ const RecentActivities = ({
               onClick={() => onLogCardClick(activity)}
             >
               <div className="flex-1">
-                <p className="font-medium">{t(activity.type)}</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-medium">{t(activity.type)}</p>
+                  {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {activity.behaviorTags.map((tag: string, index: number) => (
+                        <Badge
+                          key={index}
+                          className="bg-primary text-primary-foreground border-0 text-xs"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : activity.status ? (
+                    <Badge
+                      className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
+                    >
+                      {t(activity.status)}
+                    </Badge>
+                  ) : null}
+                </div>
                 <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
                 {activity.weight && (
                   <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {activity.behaviorTags.map((tag: string, index: number) => (
-                      <Badge
-                        key={index}
-                        className="bg-primary text-primary-foreground border-0 text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : activity.status ? (
-                  <Badge
-                    className={`${getActivityStatusClasses(activity.status)} border-0`}
-                  >
-                    {t(activity.status)}
-                  </Badge>
-                ) : null}
                 <Button
                   variant="ghost"
                   size="icon"
