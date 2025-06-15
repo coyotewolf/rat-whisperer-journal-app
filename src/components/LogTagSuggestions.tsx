@@ -1,13 +1,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PlusCircle, X, Settings2 as ManageIcon, ArrowLeft } from 'lucide-react';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLogTagSuggestions, type LogTagSuggestion } from "@/hooks/useLogTagSuggestions";
+import { useLogTagSuggestions } from "@/hooks/useLogTagSuggestions";
 import LogTagSuggestionSettings from "./settings/LogTagSuggestionSettings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { AddLogTagSuggestionForm } from "./settings/AddLogTagSuggestionForm";
 
 interface LogTagSuggestionsProps {
   onSelect: (tagName: string) => void;
@@ -17,14 +17,20 @@ interface LogTagSuggestionsProps {
 
 const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSuggestionsProps) => {
   const { t } = useTranslation();
-  const { suggestions, loading, deleteSuggestion, refreshSuggestions } = useLogTagSuggestions();
+  const { suggestions, loading, refreshSuggestions } = useLogTagSuggestions();
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const handleManageModalClose = () => {
     setIsManageModalOpen(false);
     // Refresh suggestions when modal closes to pick up any newly added tags
     refreshSuggestions();
   };
+
+  const handleQuickAddCompleted = () => {
+    setShowQuickAdd(false);
+    refreshSuggestions();
+  }
 
   if (loading) {
     return <div className="text-sm text-gray-500">{t("Loading suggestions...")}</div>;
@@ -34,14 +40,34 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSugges
     <div className="space-y-2">
       <div className="flex justify-between items-center mb-2">
         <p className="text-sm text-gray-600">{placeholder || t("Quick tag suggestions:")}</p>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowQuickAdd(prev => !prev)}
+            title={t("Quick add suggestion")}
+            className="text-green-600 hover:text-green-700"
+          >
+            <PlusCircle className="h-5 w-5" />
+          </Button>
           <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage tag suggestions")}>
             <ManageIcon className="h-5 w-5 text-orange-600 hover:text-orange-700" />
           </Button>
         </div>
       </div>
 
-      {suggestions.length === 0 ? (
+      {showQuickAdd && (
+        <div className="p-3 border rounded-lg bg-white shadow-sm">
+          <AddLogTagSuggestionForm
+            onSuggestionAdded={handleQuickAddCompleted}
+            onCancel={() => setShowQuickAdd(false)}
+            showCancelButton={true}
+          />
+        </div>
+      )}
+
+      {suggestions.length === 0 && !showQuickAdd ? (
          <p className="text-xs text-gray-500 py-2">{placeholder ? t("No {{placeholder}} yet. Click 'Manage' to add one.", { placeholder: placeholder.toLowerCase() }) : t("No quick tag suggestions yet. Click 'Manage' to add one.")}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
