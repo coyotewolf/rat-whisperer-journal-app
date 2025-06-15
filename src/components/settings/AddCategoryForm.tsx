@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Check, X, Palette } from 'lucide-react';
 import { useLogTagCategories } from '@/hooks/useLogTagCategories';
+import { useToast } from '@/hooks/use-toast';
 
 const defaultColors = [
   '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', 
@@ -20,7 +21,8 @@ interface AddCategoryFormProps {
 
 export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = false }: AddCategoryFormProps) => {
   const { t } = useTranslation();
-  const { addCategory } = useLogTagCategories();
+  const { addCategory, categories } = useLogTagCategories();
+  const { toast } = useToast();
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [color, setColor] = useState('#6B7280');
@@ -30,9 +32,22 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
     e.preventDefault();
     if (!name.trim() || !displayName.trim()) return;
 
+    // Check if category name already exists
+    const normalizedName = name.trim().toLowerCase();
+    const existingCategory = categories.find(cat => cat.name === normalizedName);
+    
+    if (existingCategory) {
+      toast({
+        title: t("Error"),
+        description: t("A category with this name already exists."),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await addCategory(name, displayName, color);
+      await addCategory(normalizedName, displayName.trim(), color);
       setName('');
       setDisplayName('');
       setColor('#6B7280');
@@ -41,6 +56,14 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
       }
     } catch (error) {
       console.error('Error adding category:', error);
+      // The error handling is already done in the hook, but we can add specific handling here
+      if (error instanceof Error && error.message.includes('duplicate key')) {
+        toast({
+          title: t("Error"),
+          description: t("A category with this name already exists."),
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -58,6 +81,9 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
             placeholder={t("e.g., medical, training")}
             required
           />
+          <p className="text-xs text-gray-500">
+            {t("Internal name (lowercase, no spaces)")}
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="displayName">{t("Display Name")}</Label>
@@ -68,6 +94,9 @@ export const AddCategoryForm = ({ onCategoryAdded, onCancel, showCancelButton = 
             placeholder={t("e.g., Medical, Training")}
             required
           />
+          <p className="text-xs text-gray-500">
+            {t("Display name (shown in UI)")}
+          </p>
         </div>
       </div>
       

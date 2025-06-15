@@ -81,6 +81,10 @@ const LogTagSuggestionSettings = () => {
     refreshCategories();
   };
 
+  const handleCancelAddCategory = () => {
+    setShowAddCategory(false);
+  };
+
   if (loading || categoriesLoading) {
     return <div className="text-center py-8 text-gray-500">{t("Loading...")}</div>;
   }
@@ -112,7 +116,7 @@ const LogTagSuggestionSettings = () => {
           <div className="mb-4 p-4 border rounded-lg bg-gray-50">
             <AddCategoryForm
               onCategoryAdded={handleAddCategoryComplete}
-              onCancel={() => setShowAddCategory(false)}
+              onCancel={handleCancelAddCategory}
               showCancelButton={true}
             />
           </div>
