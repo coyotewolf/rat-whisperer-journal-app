@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil, Check, X } from 'lucide-react';
+import { Trash2, Pencil, Check, X, Palette } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { usePersonalityTags, PersonalityTag } from '@/hooks/usePersonalityTags';
 import { useToast } from '@/hooks/use-toast';
@@ -41,12 +41,22 @@ const PersonalityTagSettings = () => {
       });
       return;
     }
-    
-    const success = await updatePersonalityTag(id, editingName.trim(), editingColor);
-    if (success) {
+    try {
+      await updatePersonalityTag(id, editingName.trim(), editingColor);
       setEditingId(null);
       setEditingName('');
       setEditingColor('#6B7280');
+      toast({
+        title: t("Success"),
+        description: t("Personality tag updated successfully"),
+      });
+    } catch (error) {
+      console.error('Error updating personality tag:', error);
+      toast({
+        title: t("Error"),
+        description: t("Failed to update personality tag"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -95,15 +105,16 @@ const PersonalityTagSettings = () => {
               {editingId === tag.id ? (
                 <div className="flex items-center gap-2 flex-grow mr-2">
                   <div 
-                    className="w-6 h-6 rounded-full border border-gray-300 flex-shrink-0"
+                    className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: editingColor }}
-                  />
+                  >
+                    <Palette className="h-3 w-3 text-white opacity-75" />
+                  </div>
                   <Input
                     type="color"
                     value={editingColor}
                     onChange={(e) => setEditingColor(e.target.value)}
-                    className="w-12 h-8 p-1 border rounded cursor-pointer"
-                    title={t("Choose color")}
+                    className="w-8 h-8 p-0 border-0 rounded"
                   />
                   <Input
                     value={editingName}
