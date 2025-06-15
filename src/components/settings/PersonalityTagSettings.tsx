@@ -6,6 +6,7 @@ import { Trash2, Pencil, Check, X, Palette } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { usePersonalityTags, PersonalityTag } from '@/hooks/usePersonalityTags';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { AddPersonalityTagForm } from './AddPersonalityTagForm';
 
 const defaultColors = [
@@ -27,6 +28,8 @@ const PersonalityTagSettings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
   const [editingColor, setEditingColor] = useState<string>('#6B7280');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null);
 
   const handleEditClick = (tag: PersonalityTag) => {
     setEditingId(tag.id);
@@ -68,10 +71,10 @@ const PersonalityTagSettings = () => {
     setEditingColor('#6B7280');
   };
 
-  const handleDeleteTag = async (id: string) => {
-    if (window.confirm(t("Are you sure you want to delete this personality tag?"))) {
+  const handleDeleteTag = async () => {
+    if (tagToDelete) {
       try {
-        await deletePersonalityTag(id);
+        await deletePersonalityTag(tagToDelete.id);
         toast({
           title: t("Success"),
           description: t("Personality tag deleted successfully"),
@@ -83,6 +86,9 @@ const PersonalityTagSettings = () => {
           description: t("Failed to delete personality tag"),
           variant: "destructive",
         });
+      } finally {
+        setTagToDelete(null);
+        setShowDeleteConfirm(false);
       }
     }
   };
@@ -157,7 +163,10 @@ const PersonalityTagSettings = () => {
                     <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
                   </Button>
                 )}
-                <Button variant="ghost" size="icon" onClick={() => handleDeleteTag(tag.id)} title={t("Delete personality tag")}>
+                <Button variant="ghost" size="icon" onClick={() => {
+                  setTagToDelete(tag);
+                  setShowDeleteConfirm(true);
+                }} title={t("Delete personality tag")}>
                   <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
                 </Button>
               </div>
@@ -165,6 +174,17 @@ const PersonalityTagSettings = () => {
           ))}
         </ul>
       )}
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteTag}
+        title={t("Delete Personality Tag")}
+        description={t("Are you sure you want to delete the tag '{{tagName}}'? This action cannot be undone.", { tagName: tagToDelete?.name })}
+        confirmText={t("Delete")}
+        cancelText={t("Cancel")}
+        variant="destructive"
+      />
     </div>
   );
 };
