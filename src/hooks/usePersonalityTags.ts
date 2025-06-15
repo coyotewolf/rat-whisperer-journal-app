@@ -84,18 +84,26 @@ export const usePersonalityTags = () => {
   const updatePersonalityTag = async (id: string, name: string, color: string) => {
     if (!user) return false;
 
-    try {
-      const { error } = await supabase
-        .from('personality_tags')
-        .update({ name: name.trim(), color: color })
-        .eq('id', id)
-        .eq('user_id', user.id);
+    console.log('Updating personality tag:', { id, name, color });
 
-      if (error) throw error;
+    try {
+      const { data, error } = await supabase
+        .from('personality_tags')
+        .update({ name: name.trim(), color })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select();
+
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Update successful, data:', data);
 
       setPersonalityTags(prev => 
         prev.map(tag => 
-          tag.id === id ? { ...tag, name: name.trim(), color: color } : tag
+          tag.id === id ? { ...tag, name: name.trim(), color } : tag
         )
       );
       
