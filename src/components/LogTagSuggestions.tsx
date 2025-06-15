@@ -13,24 +13,22 @@ interface LogTagSuggestionsProps {
   onSelect: (tagName: string) => void;
   selectedTags: string[];
   placeholder?: string;
-  category?: string; // New prop to filter by category
+  category?: string;
 }
 
-const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category }: LogTagSuggestionsProps) => {
+const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category = 'behavior' }: LogTagSuggestionsProps) => {
   const { t } = useTranslation();
   const { suggestions, loading, refreshSuggestions } = useLogTagSuggestions();
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
-  // Filter suggestions by category if provided
+  // Filter suggestions by category
   const filteredSuggestions = useMemo(() => {
-    if (!category) return suggestions;
     return suggestions.filter(suggestion => suggestion.category === category);
   }, [suggestions, category]);
 
   const handleManageModalClose = () => {
     setIsManageModalOpen(false);
-    // Refresh suggestions when modal closes to pick up any newly added tags
     refreshSuggestions();
   };
 
@@ -43,8 +41,8 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category }: Lo
     return <div className="text-sm text-gray-500">{t("Loading suggestions...")}</div>;
   }
 
-  const categoryName = category ? t(category) : '';
-  const displayPlaceholder = placeholder || (category ? t("Quick {{category}} suggestions:", { category: categoryName }) : t("Quick tag suggestions:"));
+  const categoryName = t(category);
+  const displayPlaceholder = placeholder || t("Quick {{category}} suggestions:", { category: categoryName });
 
   return (
     <div className="space-y-2">
@@ -79,7 +77,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category }: Lo
       )}
 
       {filteredSuggestions.length === 0 && !showQuickAdd ? (
-         <p className="text-xs text-gray-500 py-2">{category ? t("No {{category}} suggestions yet. Click 'Manage' to add one.", { category: categoryName }) : t("No quick tag suggestions yet. Click 'Manage' to add one.")}</p>
+         <p className="text-xs text-gray-500 py-2">{t("No {{category}} suggestions yet. Click 'Manage' to add one.", { category: categoryName })}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {filteredSuggestions.map((suggestion) => {

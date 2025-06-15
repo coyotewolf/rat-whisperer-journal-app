@@ -1,23 +1,18 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { useLogTagSuggestions } from '@/hooks/useLogTagSuggestions';
 import { useLogTagCategories } from '@/hooks/useLogTagCategories';
 import { AddLogTagSuggestionForm } from './AddLogTagSuggestionForm';
-import { AddCategoryForm } from './AddCategoryForm';
 import { CategoryHeader } from './CategoryHeader';
 import { CategoryTagList } from './CategoryTagList';
 
 const LogTagSuggestionSettings = () => {
   const { t } = useTranslation();
   const { suggestions, loading, updateSuggestion, deleteSuggestion, refreshSuggestions } = useLogTagSuggestions();
-  const { categories, loading: categoriesLoading, updateCategory, deleteCategory, refreshCategories } = useLogTagCategories();
+  const { categories, loading: categoriesLoading, updateCategory, deleteCategory } = useLogTagCategories();
 
-  const [showAddCategory, setShowAddCategory] = useState(false);
-  
   // Manage collapsed state with localStorage
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => {
     const saved = localStorage.getItem('collapsedLogCategories');
@@ -43,7 +38,7 @@ const LogTagSuggestionSettings = () => {
   const groupedSuggestions = useMemo(() => {
     const groups: Record<string, typeof suggestions> = {};
     suggestions.forEach(suggestion => {
-      const category = suggestion.category || 'general';
+      const category = suggestion.category || 'behavior';
       if (!groups[category]) {
         groups[category] = [];
       }
@@ -67,36 +62,6 @@ const LogTagSuggestionSettings = () => {
     };
   };
 
-  const handleDeleteCategory = async (id: string, categoryName: string) => {
-    try {
-      await deleteCategory(id);
-      refreshSuggestions();
-    } catch (error) {
-      console.error('Error deleting category:', error);
-    }
-  };
-
-  const handleAddCategoryComplete = async () => {
-    try {
-      console.log('Category add completed, refreshing...');
-      setShowAddCategory(false);
-      await refreshCategories();
-      console.log('Categories refreshed successfully');
-    } catch (error) {
-      console.error('Error refreshing categories:', error);
-    }
-  };
-
-  const handleCancelAddCategory = () => {
-    console.log('Canceling add category');
-    setShowAddCategory(false);
-  };
-
-  const handleToggleAddCategory = () => {
-    console.log('Toggling add category form, current state:', showAddCategory);
-    setShowAddCategory(prev => !prev);
-  };
-
   if (loading || categoriesLoading) {
     return <div className="text-center py-8 text-gray-500">{t("Loading...")}</div>;
   }
@@ -109,31 +74,6 @@ const LogTagSuggestionSettings = () => {
         onSuggestionAdded={refreshSuggestions} 
         availableCategories={availableCategories}
       />
-
-      <div className="border-t pt-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">{t("Categories")}</h3>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleToggleAddCategory}
-          >
-            <PlusCircle className="h-4 w-4 mr-1" />
-            {t("Add Category")}
-          </Button>
-        </div>
-
-        {showAddCategory && (
-          <div className="mb-4 p-4 border rounded-lg bg-gray-50">
-            <AddCategoryForm
-              onCategoryAdded={handleAddCategoryComplete}
-              onCancel={handleCancelAddCategory}
-              showCancelButton={true}
-            />
-          </div>
-        )}
-      </div>
 
       {Object.keys(groupedSuggestions).length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-8">{t("No tag suggestions yet. Add one above.")}</p>
@@ -152,7 +92,7 @@ const LogTagSuggestionSettings = () => {
                       tagCount={categoryTags.length}
                       isCollapsed={isCollapsed}
                       onUpdateCategory={updateCategory}
-                      onDeleteCategory={handleDeleteCategory}
+                      onDeleteCategory={() => {}}
                     />
                   </div>
                   

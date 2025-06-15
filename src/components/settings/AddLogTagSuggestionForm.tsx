@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, X, Palette } from 'lucide-react';
 import { useLogTagSuggestions } from '@/hooks/useLogTagSuggestions';
 
@@ -25,14 +24,13 @@ export const AddLogTagSuggestionForm = ({
   onSuggestionAdded, 
   onCancel, 
   showCancelButton = false, 
-  defaultCategory = 'general',
-  availableCategories = ['general', 'behavior', 'health']
+  defaultCategory = 'behavior',
+  availableCategories = ['behavior', 'health']
 }: AddLogTagSuggestionFormProps) => {
   const { t } = useTranslation();
   const { addSuggestion } = useLogTagSuggestions();
   const [name, setName] = useState('');
   const [color, setColor] = useState('#6B7280');
-  const [category, setCategory] = useState(defaultCategory);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,10 +39,9 @@ export const AddLogTagSuggestionForm = ({
 
     setIsSubmitting(true);
     try {
-      await addSuggestion(name, color, category);
+      await addSuggestion(name, color, defaultCategory);
       setName('');
       setColor('#6B7280');
-      setCategory(defaultCategory);
       if (onSuggestionAdded) {
         onSuggestionAdded();
       }
@@ -55,46 +52,17 @@ export const AddLogTagSuggestionForm = ({
     }
   };
 
-  const getCategoryDisplayName = (categoryName: string) => {
-    switch (categoryName) {
-      case 'behavior':
-        return t('Behavior');
-      case 'health':
-        return t('Health');
-      case 'general':
-      default:
-        return t('General');
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="tagName">{t("Tag Name")}</Label>
-          <Input
-            id="tagName"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("Enter tag name")}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="category">{t("Category")}</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableCategories.map(cat => (
-                <SelectItem key={cat} value={cat}>
-                  {getCategoryDisplayName(cat)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="tagName">{t("Tag Name")}</Label>
+        <Input
+          id="tagName"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("Enter tag name")}
+          required
+        />
       </div>
       
       <div className="space-y-2">
