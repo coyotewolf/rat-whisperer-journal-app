@@ -41,22 +41,12 @@ const PersonalityTagSettings = () => {
       });
       return;
     }
-    try {
-      await updatePersonalityTag(id, editingName.trim(), editingColor);
+    
+    const success = await updatePersonalityTag(id, editingName.trim(), editingColor);
+    if (success) {
       setEditingId(null);
       setEditingName('');
       setEditingColor('#6B7280');
-      toast({
-        title: t("Success"),
-        description: t("Personality tag updated successfully"),
-      });
-    } catch (error) {
-      console.error('Error updating personality tag:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to update personality tag"),
-        variant: "destructive",
-      });
     }
   };
 
