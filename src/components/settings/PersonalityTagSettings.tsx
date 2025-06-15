@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -46,7 +45,8 @@ const PersonalityTagSettings = () => {
     personalityTags: availableTags, 
     loading,
     updatePersonalityTag, 
-    deletePersonalityTag 
+    deletePersonalityTag,
+    refetch
   } = usePersonalityTags();
   const { toast } = useToast();
 
@@ -124,7 +124,7 @@ const PersonalityTagSettings = () => {
 
   return (
     <div className="space-y-4">
-      <AddPersonalityTagForm />
+      <AddPersonalityTagForm onTagAdded={refetch} />
 
       {availableTags.length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-8">{t("No personality tags yet. Add one above.")}</p>

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { AddLogTagSuggestionForm } from './AddLogTagSuggestionForm';
 
 const LogTagSuggestionSettings = () => {
   const { t } = useTranslation();
-  const { suggestions, loading, updateSuggestion, deleteSuggestion } = useLogTagSuggestions();
+  const { suggestions, loading, updateSuggestion, deleteSuggestion, refreshSuggestions } = useLogTagSuggestions();
   const { toast } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -81,7 +82,7 @@ const LogTagSuggestionSettings = () => {
 
   return (
     <div className="space-y-4">
-      <AddLogTagSuggestionForm />
+      <AddLogTagSuggestionForm onSuggestionAdded={refreshSuggestions} />
 
       {suggestions.length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-8">{t("No quick behavior suggestions yet. Add one above.")}</p>
