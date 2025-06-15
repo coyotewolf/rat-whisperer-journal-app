@@ -12,13 +12,15 @@ interface RecentActivitiesProps {
   onLogCardClick: (activity: any) => void;
   onEditActivity: (activity: any) => void;
   onQuickLogClick: () => void;
+  loading?: boolean;
 }
 
 const RecentActivities = ({ 
   recentActivities, 
   onLogCardClick, 
   onEditActivity, 
-  onQuickLogClick 
+  onQuickLogClick,
+  loading = false
 }: RecentActivitiesProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -35,57 +37,77 @@ const RecentActivities = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {recentActivities.length > 0 ? (
-          recentActivities.map((activity) => (
-            <div
-              key={activity.id}
-              className={`flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all ${getRecentActivityCardColorClasses(activity.type)}`}
-              onClick={() => onLogCardClick(activity)}
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium">{t(activity.type)}</p>
-                  {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {activity.behaviorTags.map((tag: string, index: number) => (
-                        <Badge
-                          key={index}
-                          className="bg-primary text-primary-foreground border-0 text-xs"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
+        {loading ? (
+          // Skeleton loading state
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="h-4 bg-muted rounded w-16"></div>
+                      <div className="h-4 bg-muted rounded w-12"></div>
                     </div>
-                  ) : activity.status ? (
-                    <Badge
-                      className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
-                    >
-                      {t(activity.status)}
-                    </Badge>
-                  ) : null}
+                    <div className="h-3 bg-muted rounded w-24"></div>
+                  </div>
+                  <div className="h-7 w-7 bg-muted rounded"></div>
                 </div>
-                <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
-                {activity.weight && (
-                  <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
-                )}
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="opacity-70 hover:opacity-100 hover:text-primary h-7 w-7"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditActivity(activity);
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+            ))}
+          </div>
+        ) : recentActivities.length > 0 ? (
+          <div className="space-y-3 animate-fade-in">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className={`flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all ${getRecentActivityCardColorClasses(activity.type)}`}
+                onClick={() => onLogCardClick(activity)}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-medium">{t(activity.type)}</p>
+                    {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {activity.behaviorTags.map((tag: string, index: number) => (
+                          <Badge
+                            key={index}
+                            className="bg-primary text-primary-foreground border-0 text-xs"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : activity.status ? (
+                      <Badge
+                        className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
+                      >
+                        {t(activity.status)}
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
+                  {activity.weight && (
+                    <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-70 hover:opacity-100 hover:text-primary h-7 w-7"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditActivity(activity);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <div className="text-center py-4">
+          <div className="text-center py-4 animate-fade-in">
             <p className="text-muted-foreground">{t("No recent activities")}</p>
             <Button
               variant="outline"
