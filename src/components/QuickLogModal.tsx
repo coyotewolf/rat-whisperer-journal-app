@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,12 +25,12 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
   const { t } = useTranslation();
 
   const logTypes = [
-    { type: "behavior", label: t("Behavior"), icon: Activity, bgColor: "bg-[hsl(217,70%,75%)]", textColor: "text-slate-800" },
-    { type: "health", label: t("Health Check"), icon: Heart, bgColor: "bg-[hsl(262,60%,82%)]", textColor: "text-slate-800" },
-    { type: "weight", label: t("Weight"), icon: Scale, bgColor: "bg-[hsl(145,50%,75%)]", textColor: "text-slate-800" },
-    { type: "environment", label: t("Environment"), icon: Thermometer, bgColor: "bg-[hsl(30,70%,80%)]", textColor: "text-slate-800" },
-    { type: "medication", label: t("Medication"), icon: Pill, bgColor: "bg-[hsl(0,70%,80%)]", textColor: "text-slate-800" },
-    { type: "feeding", label: t("Feeding"), icon: Utensils, bgColor: "bg-[hsl(45,75%,80%)]", textColor: "text-slate-800" },
+    { type: "behavior", label: t("Behavior"), icon: Activity, bgColor: "bg-[hsl(217,70%,75%)]", textColor: "text-black" },
+    { type: "health", label: t("Health Check"), icon: Heart, bgColor: "bg-[hsl(262,60%,82%)]", textColor: "text-black" },
+    { type: "weight", label: t("Weight"), icon: Scale, bgColor: "bg-[hsl(145,50%,75%)]", textColor: "text-black" },
+    { type: "environment", label: t("Environment"), icon: Thermometer, bgColor: "bg-[hsl(30,70%,80%)]", textColor: "text-black" },
+    { type: "medication", label: t("Medication"), icon: Pill, bgColor: "bg-[hsl(0,70%,80%)]", textColor: "text-black" },
+    { type: "feeding", label: t("Feeding"), icon: Utensils, bgColor: "bg-[hsl(45,75%,80%)]", textColor: "text-black" },
   ];
 
   const handleLogTypeClick = (logType: string) => {
@@ -89,13 +90,13 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onClose} // This closes QuickLogModal directly if its own back button is clicked
+                onClick={onClose}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <DialogTitle className="flex-1 text-center text-foreground">{t("Quick Log Entry")}</DialogTitle>
-              <div className="w-10"></div> {/* Placeholder to balance the back button */}
+              <div className="w-10"></div>
             </div>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 p-4">
