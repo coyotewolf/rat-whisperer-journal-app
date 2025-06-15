@@ -14,7 +14,7 @@ interface RecentActivitiesProps {
   onQuickLogClick: () => void;
 }
 
-const Recent Activities = ({ 
+const RecentActivities = ({ 
   recentActivities, 
   onLogCardClick, 
   onEditActivity, 
