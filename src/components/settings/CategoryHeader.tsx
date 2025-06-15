@@ -9,8 +9,8 @@ interface CategoryHeaderProps {
   category: LogTagCategory;
   tagCount: number;
   isCollapsed: boolean;
-  onUpdateCategory: (id: string, displayName: string, color?: string) => Promise<LogTagCategory>;
-  onDeleteCategory: (id: string, categoryName: string) => Promise<void>;
+  onUpdateCategory?: (id: string, displayName: string, color?: string) => Promise<LogTagCategory>;
+  onDeleteCategory?: (id: string, categoryName: string) => Promise<void>;
 }
 
 export const CategoryHeader = ({ 

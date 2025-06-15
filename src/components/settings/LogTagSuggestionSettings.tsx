@@ -11,7 +11,7 @@ import { CategoryTagList } from './CategoryTagList';
 const LogTagSuggestionSettings = () => {
   const { t } = useTranslation();
   const { suggestions, loading, updateSuggestion, deleteSuggestion, refreshSuggestions } = useLogTagSuggestions();
-  const { categories, loading: categoriesLoading, updateCategory, deleteCategory } = useLogTagCategories();
+  const { categories, loading: categoriesLoading } = useLogTagCategories();
 
   // Manage collapsed state with localStorage
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => {
@@ -91,8 +91,6 @@ const LogTagSuggestionSettings = () => {
                       category={categoryInfo}
                       tagCount={categoryTags.length}
                       isCollapsed={isCollapsed}
-                      onUpdateCategory={updateCategory}
-                      onDeleteCategory={() => {}}
                     />
                   </div>
                   
