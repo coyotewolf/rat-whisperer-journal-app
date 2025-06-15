@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, FileText, TrendingUp, Activity } from 'lucide-react';
+import { Calendar, FileText, TrendingUp, Activity, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +9,7 @@ import BottomNav from '@/components/BottomNav';
 import DailySummaryReport from '@/components/reports/DailySummaryReport';
 import WeightTrendReport from '@/components/reports/WeightTrendReport';
 import BehaviorAnalysisReport from '@/components/reports/BehaviorAnalysisReport';
+import HealthReport from '@/components/reports/HealthReport';
 
 const ReportsPage = () => {
   const { t } = useTranslation();
@@ -23,6 +24,13 @@ const ReportsPage = () => {
       color: 'text-blue-600'
     },
     {
+      id: 'health',
+      title: t('Health Reports'),
+      description: t('Health status and medical records'),
+      icon: Heart,
+      color: 'text-red-600'
+    },
+    {
       id: 'weight',
       title: t('Weight Trends'),
       description: t('Weight changes and growth patterns'),
@@ -35,13 +43,6 @@ const ReportsPage = () => {
       description: t('Activity patterns and behavioral insights'),
       icon: Activity,
       color: 'text-purple-600'
-    },
-    {
-      id: 'health',
-      title: t('Health Reports'),
-      description: t('Health status and medical records'),
-      icon: FileText,
-      color: 'text-red-600'
     }
   ];
 
@@ -69,26 +70,16 @@ const ReportsPage = () => {
             <DailySummaryReport selectedDate={selectedDate} onDateChange={setSelectedDate} />
           </TabsContent>
 
+          <TabsContent value="health">
+            <HealthReport />
+          </TabsContent>
+
           <TabsContent value="weight">
             <WeightTrendReport />
           </TabsContent>
 
           <TabsContent value="behavior">
             <BehaviorAnalysisReport />
-          </TabsContent>
-
-          <TabsContent value="health">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-red-600" />
-                  {t('Health Reports')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{t('Health reporting features coming soon...')}</p>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
