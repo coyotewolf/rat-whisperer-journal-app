@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 interface TagItemProps {
   suggestion: LogTagSuggestion;
   categories: LogTagCategory[];
-  onUpdateSuggestion: (id: string, name: string, color: string, category: string) => Promise<void>;
+  onUpdateSuggestion: (id: string, name: string, color?: string, category?: string) => Promise<LogTagSuggestion>;
   onDeleteSuggestion: (id: string) => Promise<void>;
 }
 

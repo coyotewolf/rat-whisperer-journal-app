@@ -6,7 +6,7 @@ import { TagItem } from './TagItem';
 interface CategoryTagListProps {
   tags: LogTagSuggestion[];
   categories: LogTagCategory[];
-  onUpdateSuggestion: (id: string, name: string, color: string, category: string) => Promise<void>;
+  onUpdateSuggestion: (id: string, name: string, color?: string, category?: string) => Promise<LogTagSuggestion>;
   onDeleteSuggestion: (id: string) => Promise<void>;
 }
 
