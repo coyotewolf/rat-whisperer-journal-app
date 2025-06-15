@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Palette, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLogTagSuggestions } from '@/hooks/useLogTagSuggestions';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,19 +17,28 @@ interface AddLogTagSuggestionFormProps {
   onSuggestionAdded?: () => void;
   onCancel?: () => void;
   showCancelButton?: boolean;
+  defaultCategory?: string;
 }
 
-export const AddLogTagSuggestionForm = ({ onSuggestionAdded, onCancel, showCancelButton = false }: AddLogTagSuggestionFormProps) => {
+export const AddLogTagSuggestionForm = ({ 
+  onSuggestionAdded, 
+  onCancel, 
+  showCancelButton = false,
+  defaultCategory = 'general'
+}: AddLogTagSuggestionFormProps) => {
   const { t } = useTranslation();
   const { addSuggestion } = useLogTagSuggestions();
   const { toast } = useToast();
 
-  const [newTagName, setNewTagName] = useState('');
-  const [newTagColor, setNewTagColor] = useState('#6B7280');
-  const [isAdding, setIsAdding] = useState(false);
+  const [name, setName] = useState('');
+  const [color, setColor] = useState('#6B7280');
+  const [category, setCategory] = useState(defaultCategory);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddSuggestion = async () => {
-    if (!newTagName.trim()) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
       toast({
         title: t("Error"),
         description: t("Tag name cannot be empty."),
@@ -36,91 +46,90 @@ export const AddLogTagSuggestionForm = ({ onSuggestionAdded, onCancel, showCance
       });
       return;
     }
-    setIsAdding(true);
+
+    setIsSubmitting(true);
     try {
-      await addSuggestion(newTagName.trim(), newTagColor);
-      setNewTagName("");
-      setNewTagColor('#6B7280');
-      toast({
-        title: t("Success"),
-        description: t("Tag suggestion added successfully"),
-      });
+      await addSuggestion(name.trim(), color, category);
+      setName('');
+      setColor('#6B7280');
+      setCategory(defaultCategory);
+      
       if (onSuggestionAdded) {
         onSuggestionAdded();
       }
     } catch (error) {
       console.error('Error adding tag suggestion:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to add tag suggestion"),
-        variant: "destructive",
-      });
     } finally {
-      setIsAdding(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2 items-center">
-        <div className="flex items-center gap-2 flex-1">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="tag-name">{t("Tag Name")}</Label>
+        <Input
+          id="tag-name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("Enter tag name")}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="tag-category">{t("Category")}</Label>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger>
+            <SelectValue placeholder={t("Select category")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="general">{t("General")}</SelectItem>
+            <SelectItem value="behavior">{t("Behavior")}</SelectItem>
+            <SelectItem value="health">{t("Health")}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="tag-color">{t("Color")}</Label>
+        <div className="flex items-center gap-2">
           <div 
-            className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: newTagColor }}
-          >
-            <Palette className="h-3 w-3 text-white opacity-75" />
-          </div>
-          <Input
-            type="color"
-            value={newTagColor}
-            onChange={(e) => setNewTagColor(e.target.value)}
-            className="w-8 h-8 p-0 border-0 rounded"
+            className="w-8 h-8 rounded border border-gray-300 flex-shrink-0"
+            style={{ backgroundColor: color }}
           />
           <Input
-            placeholder={t("Add new behavior suggestion here")}
-            value={newTagName}
-            onChange={(e) => setNewTagName(e.target.value)}
-            onKeyPress={(e) => { if (e.key === 'Enter') handleAddSuggestion(); }}
-            className="text-sm flex-1"
-            disabled={isAdding}
-            autoFocus
+            id="tag-color"
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            className="w-16 h-8 p-0 border-0"
           />
         </div>
-        <Button
-          type="button"
-          onClick={handleAddSuggestion}
-          disabled={!newTagName.trim() || isAdding}
-          variant="outline"
-          size="sm"
-        >
-          <PlusCircle className="h-4 w-4" />
-        </Button>
+        <div className="flex flex-wrap gap-1 mt-2">
+          {defaultColors.map((defaultColor) => (
+            <button
+              key={defaultColor}
+              type="button"
+              className={`w-6 h-6 rounded border ${color === defaultColor ? 'border-gray-800 border-2' : 'border-gray-300'}`}
+              style={{ backgroundColor: defaultColor }}
+              onClick={() => setColor(defaultColor)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-2">
         {showCancelButton && onCancel && (
-          <Button
-            type="button"
-            onClick={onCancel}
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-          >
-            <X className="h-4 w-4" />
+          <Button type="button" variant="outline" onClick={onCancel}>
+            {t("Cancel")}
           </Button>
         )}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? t("Adding...") : t("Add Suggestion")}
+        </Button>
       </div>
-      
-      <div className="flex flex-wrap gap-1 ml-10">
-        {defaultColors.map((color) => (
-          <button
-            key={color}
-            type="button"
-            className={`w-5 h-5 rounded border ${newTagColor === color ? 'border-gray-800 border-2' : 'border-gray-300'}`}
-            style={{ backgroundColor: color }}
-            onClick={() => setNewTagColor(color)}
-          />
-        ))}
-      </div>
-    </div>
+    </form>
   );
 };
-
-export default AddLogTagSuggestionForm;
