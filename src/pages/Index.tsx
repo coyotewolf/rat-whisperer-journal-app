@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,12 +52,20 @@ const Index = () => {
         timeAgo = t('Just now');
       }
 
+      // For Health-type logs, use the actual health status; for others, use 'completed'
+      let displayStatus;
+      if (log.type === 'health' && log.status) {
+        displayStatus = log.status;
+      } else {
+        displayStatus = log.status || (log.type === 'environment' ? 'completed' : 'completed');
+      }
+
       return {
         id: log.id,
         type: log.behavior || log.type,
         rat: log.ratNames ? log.ratNames.join(', ') : t('Unknown'),
         time: timeAgo,
-        status: log.status || (log.type === 'environment' ? 'completed' : 'completed'),
+        status: displayStatus,
         notes: log.notes,
         ratNames: log.ratNames || [],
         hashtags: log.hashtags || [],
@@ -352,7 +359,7 @@ const Index = () => {
                   onClick={() => handleLogCardClick(activity)}
                 >
                   <div className="flex-1">
-                    <p className="font-medium">{t(activity.type)}</p> {/* Text color will be inherited or can be set by getRecentActivityCardColorClasses if needed */}
+                    <p className="font-medium">{t(activity.type)}</p>
                     <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
                     {activity.weight && (
                       <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
@@ -360,14 +367,14 @@ const Index = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
-                      className={`${getActivityStatusClasses(activity.status)} border-0`} // Status badge remains as is
+                      className={`${getActivityStatusClasses(activity.status)} border-0`}
                     >
                       {t(activity.status)}
                     </Badge>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="opacity-70 hover:opacity-100 hover:text-primary h-7 w-7" // Adjusted for new background
+                      className="opacity-70 hover:opacity-100 hover:text-primary h-7 w-7"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditActivity(activity);
