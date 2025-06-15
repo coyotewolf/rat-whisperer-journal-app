@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
@@ -21,11 +21,9 @@ export { type LogEntry } from '@/types/logEntry';
 export const useLogEntries = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const isFetchingRef = useRef(false);
 
   const syncOutbox = async () => {
     if (!navigator.onLine || !user) return;
@@ -59,30 +57,16 @@ export const useLogEntries = () => {
     if (updateQueued.length) await clearOutboxLogUpdates();
   };
 
-  const fetchLogs = async (forceRefresh = false) => {
-    if (isFetchingRef.current && !forceRefresh) return;
-    isFetchingRef.current = true;
-
-    // Only load cached data if this is the initial load and we're not forcing a refresh
-    if (!initialLoadComplete && !forceRefresh) {
-      const cached = await getCachedLogs();
-      if (cached.length) {
-        setLogs(cached);
-        setLoading(false);
-      }
-    }
-
+  const fetchLogs = async () => {
+    const cached = await getCachedLogs();
+    if (cached.length) setLogs(cached);
     if (!user) {
       setLoading(false);
-      isFetchingRef.current = false;
-      setInitialLoadComplete(true);
       return;
     }
 
     if (!navigator.onLine) {
       setLoading(false);
-      isFetchingRef.current = false;
-      setInitialLoadComplete(true);
       return;
     }
 
@@ -93,17 +77,13 @@ export const useLogEntries = () => {
       await cacheLogs(transformedLogs);
     } catch (error) {
       console.error('Error fetching logs:', error);
-      if (!initialLoadComplete) {
-        toast({
-          title: t("Error"),
-          description: t("Failed to fetch activity logs"),
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: t("Error"),
+        description: t("Failed to fetch activity logs"),
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
-      setInitialLoadComplete(true);
-      isFetchingRef.current = false;
     }
   };
 
@@ -122,7 +102,7 @@ export const useLogEntries = () => {
     try {
       const now = new Date().toISOString();
       const data = await LogEntryService.addLog(user.id, { ...logData, updated_at: now });
-      await fetchLogs(true); // Force refresh to get latest data
+      await fetchLogs();
 
       toast({
         title: t("Success"),
@@ -169,7 +149,7 @@ export const useLogEntries = () => {
     } catch (error) {
       console.error('Error updating log:', error);
       // Revert local state on error
-      await fetchLogs(true);
+      await fetchLogs();
       toast({
         title: t("Error"),
         description: t("Failed to update activity log"),
@@ -184,7 +164,7 @@ export const useLogEntries = () => {
 
     try {
       await LogEntryService.deleteLog(logId);
-      await fetchLogs(true); // Force refresh after deletion
+      await fetchLogs();
 
       toast({
         title: t("Success"),
@@ -195,6 +175,7 @@ export const useLogEntries = () => {
       toast({
         title: t("Error"),
         description: t("Failed to delete activity log"),
+        variant: "destructive",
       });
       throw error;
     }
@@ -205,42 +186,27 @@ export const useLogEntries = () => {
       fetchLogs();
     }
     const onOnline = () => {
-      if (initialLoadComplete) {
-        fetchLogs(true); // Force refresh when coming back online
-      }
+      fetchLogs();
     };
-    
-    const onFocus = () => {
-      if (initialLoadComplete && document.visibilityState === 'visible') {
-        fetchLogs(true); // Force refresh when tab becomes visible
-      }
-    };
-    
     window.addEventListener('online', onOnline);
-    document.addEventListener('visibilitychange', onFocus);
-    
     const channel = supabase
       .channel('logs-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'log_entries' }, () => {
-        if (initialLoadComplete) {
-          fetchLogs(true); // Force refresh on realtime updates
-        }
+        fetchLogs();
       })
       .subscribe();
-      
     return () => {
       window.removeEventListener('online', onOnline);
-      document.removeEventListener('visibilitychange', onFocus);
       supabase.removeChannel(channel);
     };
-  }, [user?.id, initialLoadComplete]);
+  }, [user?.id]);
  
   return {
     logs,
-    loading: loading && !initialLoadComplete,
+    loading,
     addLog,
     updateLog,
     deleteLog,
-    refreshLogs: () => fetchLogs(true),
+    refreshLogs: fetchLogs,
   };
 };

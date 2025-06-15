@@ -1,3 +1,4 @@
+
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
 import SettingsModal from "@/components/SettingsModal";
@@ -20,7 +21,7 @@ import { processRecentActivities } from "@/utils/activityUtils";
 const Index = () => {
   const { t } = useTranslation();
   const { tasks, loading, createTask, updateTask } = useTasks();
-  const { logs, addLog, updateLog, deleteLog, loading: logsLoading } = useLogEntries();
+  const { logs, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
   const {
     isQuickLogOpen,
@@ -144,7 +145,6 @@ const Index = () => {
           onLogCardClick={handleLogCardClick}
           onEditActivity={handleEditActivity}
           onQuickLogClick={() => setIsQuickLogOpen(true)}
-          loading={logsLoading}
         />
       </div>
 
