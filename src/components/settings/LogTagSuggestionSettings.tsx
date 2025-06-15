@@ -8,6 +8,11 @@ import { useLogTagSuggestions, type LogTagSuggestion } from '@/hooks/useLogTagSu
 import { useToast } from '@/hooks/use-toast';
 import { AddLogTagSuggestionForm } from './AddLogTagSuggestionForm';
 
+const defaultColors = [
+  '#6B7280', '#EF4444', '#F97316', '#EAB308', '#22C55E', 
+  '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'
+];
+
 const LogTagSuggestionSettings = () => {
   const { t } = useTranslation();
   const { suggestions, loading, updateSuggestion, deleteSuggestion, refreshSuggestions } = useLogTagSuggestions();
@@ -91,32 +96,45 @@ const LogTagSuggestionSettings = () => {
           {suggestions.map(suggestion => (
             <li key={suggestion.id} className="p-3 border rounded-lg flex justify-between items-center bg-white shadow-sm">
               {editingId === suggestion.id ? (
-                <div className="flex items-center gap-2 flex-grow mr-2">
-                  <div 
-                    className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: editingColor }}
-                  >
-                    <Palette className="h-3 w-3 text-white opacity-75" />
+                <div className="flex flex-col gap-2 flex-grow mr-2">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: editingColor }}
+                    >
+                      <Palette className="h-3 w-3 text-white opacity-75" />
+                    </div>
+                    <Input
+                      type="color"
+                      value={editingColor}
+                      onChange={(e) => setEditingColor(e.target.value)}
+                      className="w-8 h-8 p-0 border-0 rounded"
+                    />
+                    <Input
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onKeyPress={(e) => { if (e.key === 'Enter') handleSaveEdit(suggestion.id); }}
+                      className="text-sm flex-grow"
+                      autoFocus
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => handleSaveEdit(suggestion.id)} title={t("Save")}>
+                      <Check className="h-4 w-4 text-green-500 hover:text-green-700" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleCancelEdit} title={t("Cancel")}>
+                      <X className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                    </Button>
                   </div>
-                  <Input
-                    type="color"
-                    value={editingColor}
-                    onChange={(e) => setEditingColor(e.target.value)}
-                    className="w-8 h-8 p-0 border-0 rounded"
-                  />
-                  <Input
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onKeyPress={(e) => { if (e.key === 'Enter') handleSaveEdit(suggestion.id); }}
-                    className="text-sm flex-grow"
-                    autoFocus
-                  />
-                  <Button variant="ghost" size="icon" onClick={() => handleSaveEdit(suggestion.id)} title={t("Save")}>
-                    <Check className="h-4 w-4 text-green-500 hover:text-green-700" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={handleCancelEdit} title={t("Cancel")}>
-                    <X className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                  </Button>
+                  <div className="flex flex-wrap gap-1 ml-10">
+                    {defaultColors.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        className={`w-5 h-5 rounded border ${editingColor === color ? 'border-gray-800 border-2' : 'border-gray-300'}`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => setEditingColor(color)}
+                      />
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 flex-grow">
