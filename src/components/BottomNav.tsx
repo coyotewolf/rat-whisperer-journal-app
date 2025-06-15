@@ -1,7 +1,7 @@
 
 import { useLocation, Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { Home, Users, Activity, BookOpen, MessageSquare } from "lucide-react";
+import { Home, Users, Activity, BookOpen, MessageSquare, BarChart3 } from "lucide-react";
 
 const BottomNav = () => {
   const { t } = useTranslation();
@@ -12,6 +12,7 @@ const BottomNav = () => {
     { path: "/", icon: Home, label: t("Home") },
     { path: "/rats", icon: Users, label: t("Rats") },
     { path: "/logs", icon: Activity, label: t("Logs") },
+    { path: "/reports", icon: BarChart3, label: t("Reports") },
     { path: "/library", icon: BookOpen, label: t("Library") },
     { path: "/community", icon: MessageSquare, label: t("Community") },
   ];
