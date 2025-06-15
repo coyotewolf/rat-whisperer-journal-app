@@ -1,12 +1,14 @@
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Trash2, Pencil, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { usePersonalityTags, PersonalityTag } from '@/hooks/usePersonalityTags';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { Badge } from '@/components/ui/badge';
+import { AddPersonalityTagForm } from './AddPersonalityTagForm';
 import { cn } from '@/lib/utils';
 
 const colorOptions = [
@@ -24,11 +26,6 @@ const colorOptions = [
 
 const getThemedColorClasses = (colorName: string) => {
   switch (colorName) {
-    case "primary": return "bg-primary/10 text-primary";
-    case "secondary": return "bg-secondary/10 text-secondary-foreground";
-    case "accent": return "bg-accent/10 text-accent-foreground";
-    case "destructive": return "bg-destructive/10 text-destructive-foreground";
-    case "muted": return "bg-muted/50 text-muted-foreground";
     case "blue": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
     case "purple": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
     case "red": return "bg-red-500/10 text-red-600 dark:text-red-400";
@@ -48,7 +45,6 @@ const PersonalityTagSettings = () => {
   const { 
     personalityTags: availableTags, 
     loading,
-    addPersonalityTag, 
     updatePersonalityTag, 
     deletePersonalityTag 
   } = usePersonalityTags();
@@ -57,9 +53,6 @@ const PersonalityTagSettings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
   const [editingColor, setEditingColor] = useState<string>(colorOptions[0]);
-  const [newTagName, setNewTagName] = useState('');
-  const [newTagColor, setNewTagColor] = useState(colorOptions[0]);
-  const [isAdding, setIsAdding] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tagToDelete, setTagToDelete] = useState<PersonalityTag | null>(null);
 
@@ -103,36 +96,6 @@ const PersonalityTagSettings = () => {
     setEditingColor(colorOptions[0]);
   };
 
-  const handleAddTag = async () => {
-    if (!newTagName.trim()) {
-      toast({
-        title: t("Error"),
-        description: t("Tag name cannot be empty."),
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsAdding(true);
-    try {
-      await addPersonalityTag(newTagName.trim(), newTagColor);
-      setNewTagName("");
-      setNewTagColor(colorOptions[0]);
-      toast({
-        title: t("Success"),
-        description: t("Personality tag added successfully"),
-      });
-    } catch (error) {
-      console.error('Error adding personality tag:', error);
-      toast({
-        title: t("Error"),
-        description: t("Failed to add personality tag"),
-        variant: "destructive",
-      });
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
   const handleDeleteTag = async () => {
     if (tagToDelete) {
       try {
@@ -161,46 +124,7 @@ const PersonalityTagSettings = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <Input
-          placeholder={t("Add new personality tag here")}
-          value={newTagName}
-          onChange={(e) => setNewTagName(e.target.value)}
-          onKeyPress={(e) => { if (e.key === 'Enter') handleAddTag(); }}
-          className="text-sm"
-          disabled={isAdding}
-        />
-        <div className="space-y-2">
-          <p className="text-sm font-medium">{t("Choose color:")}</p>
-          <div className="flex flex-wrap gap-2">
-            {colorOptions.map((color) => (
-              <Badge
-                key={`new-${color}`}
-                variant="outline"
-                className={cn(
-                  `cursor-pointer`,
-                  getThemedColorClasses(color),
-                  newTagColor === color ? "ring-2 ring-primary" : ""
-                )}
-                onClick={() => setNewTagColor(color)}
-              >
-                {t("Sample")}
-              </Badge>
-            ))}
-          </div>
-        </div>
-        <Button
-          type="button"
-          onClick={handleAddTag}
-          disabled={!newTagName.trim() || isAdding}
-          variant="outline"
-          size="sm"
-          className="w-full"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {t("Add Tag")}
-        </Button>
-      </div>
+      <AddPersonalityTagForm />
 
       {availableTags.length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-8">{t("No personality tags yet. Add one above.")}</p>
@@ -246,7 +170,13 @@ const PersonalityTagSettings = () => {
                   </div>
                 </div>
               ) : (
-                <p className={cn("font-semibold flex-grow", getThemedColorClasses(tag.color))}>{tag.name}</p>
+                <div className="flex items-center gap-3 flex-grow">
+                  <div 
+                    className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                    style={{ backgroundColor: getColorHex(tag.color) }}
+                  />
+                  <p className={cn("font-semibold", getThemedColorClasses(tag.color))}>{tag.name}</p>
+                </div>
               )}
               <div className="space-x-2 flex-shrink-0">
                 {editingId !== tag.id && (
@@ -278,6 +208,23 @@ const PersonalityTagSettings = () => {
       />
     </div>
   );
+};
+
+// Helper function to convert color names to hex values
+const getColorHex = (colorName: string) => {
+  const colorMap: { [key: string]: string } = {
+    "blue": "#3B82F6",
+    "purple": "#8B5CF6", 
+    "red": "#EF4444",
+    "green": "#22C55E",
+    "orange": "#F97316",
+    "yellow": "#EAB308",
+    "pink": "#EC4899",
+    "cyan": "#06B6D4",
+    "indigo": "#6366F1",
+    "gray": "#6B7280"
+  };
+  return colorMap[colorName] || "#6B7280";
 };
 
 export default PersonalityTagSettings;
