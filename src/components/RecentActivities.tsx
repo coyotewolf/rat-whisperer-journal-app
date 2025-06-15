@@ -43,23 +43,8 @@ const RecentActivities = ({
               onClick={() => onLogCardClick(activity)}
             >
               <div className="flex-1">
-                {activity.type === 'behavior' && activity.behaviorTags && activity.behaviorTags.length > 0 ? (
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap gap-1">
-                      {activity.behaviorTags.map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs bg-white/20 border-white/30">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="font-medium">{t(activity.type)}</p>
-                    <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
-                  </div>
-                )}
+                <p className="font-medium">{t(activity.type)}</p>
+                <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
                 {activity.weight && (
                   <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
                 )}

@@ -35,26 +35,15 @@ export const processRecentActivities = (logs: LogEntry[], t: (key: string, optio
         displayStatus = log.status || (log.type === 'environment' ? 'completed' : 'completed');
       }
 
-      // For behavior logs, use hashtags as the primary display instead of generic type
-      let displayType;
-      let behaviorTags = [];
-      if (log.type === 'behavior' && log.hashtags && log.hashtags.length > 0) {
-        displayType = 'behavior';
-        behaviorTags = log.hashtags;
-      } else {
-        displayType = log.behavior || log.type;
-      }
-
       return {
         id: log.id,
-        type: displayType,
+        type: log.behavior || log.type,
         rat: log.ratNames ? log.ratNames.join(', ') : t('Unknown'),
         time: timeAgo,
         status: displayStatus,
         notes: log.notes,
         ratNames: log.ratNames || [],
         hashtags: log.hashtags || [],
-        behaviorTags: behaviorTags,
         weight: log.weight,
         originalLog: log
       };
