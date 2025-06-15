@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -136,8 +135,12 @@ export const useLogEntries = () => {
     }
 
     try {
+      // Update local state first to prevent flickering
+      setLogs(prev => prev.map(log => 
+        log.id === logId ? { ...log, ...updates, updated_at: new Date().toISOString() } : log
+      ));
+
       await LogEntryService.updateLog(logId, { ...updates, updated_at: new Date().toISOString() });
-      await fetchLogs();
 
       toast({
         title: t("Success"),
@@ -145,6 +148,8 @@ export const useLogEntries = () => {
       });
     } catch (error) {
       console.error('Error updating log:', error);
+      // Revert local state on error
+      await fetchLogs();
       toast({
         title: t("Error"),
         description: t("Failed to update activity log"),
