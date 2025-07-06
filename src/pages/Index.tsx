@@ -163,7 +163,6 @@ const Index = () => {
         }}
         onSave={handleTaskSave}
         task={editingTask}
-        onDelete={deleteTask} // Pass the deleteTask function
       />
       <TaskDetailModal
         isOpen={isTaskDetailOpen}

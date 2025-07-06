@@ -271,12 +271,12 @@ const RatsPage = () => {
                       {/* Personality Traits */}
                       {rat.personality && rat.personality.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {rat.personality.map((trait: { name: string; value: string }, index: number) => (
-                            <Badge
-                              key={index}
-                              className={`${getPersonalityColorClasses(trait.value)} text-xs`}
+                          {rat.personality.map((trait: string, index: number) => (
+                            <Badge 
+                              key={index} 
+                              className={`${getPersonalityColorClasses(trait)} text-xs`}
                             >
-                              {t(trait.name)}
+                              {t(trait)}
                             </Badge>
                           ))}
                         </div>
