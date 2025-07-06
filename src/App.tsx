@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -9,6 +8,7 @@ import { AppSettingsProvider } from "@/contexts/AppSettingsContext";
 import Index from "./pages/Index";
 import RatsPage from "./pages/RatsPage";
 import LogsPage from "./pages/LogsPage";
+import ReportsPage from "./pages/ReportsPage";
 import LibraryPage from "./pages/LibraryPage";
 import CommunityPage from "./pages/CommunityPage";
 import TasksPage from "./pages/TasksPage";
@@ -28,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/rats" element={<RatsPage />} />
               <Route path="/logs" element={<LogsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/tasks" element={<TasksPage />} />

@@ -1,0 +1,92 @@
+
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Calendar, FileText, Utensils, Activity, Heart } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BottomNav from '@/components/BottomNav';
+import DailySummaryReport from '@/components/reports/DailySummaryReport';
+import FeedingEnvironmentReport from '@/components/reports/FeedingEnvironmentReport';
+import BehaviorAnalysisReport from '@/components/reports/BehaviorAnalysisReport';
+import HealthReport from '@/components/reports/HealthReport';
+
+const ReportsPage = () => {
+  const { t } = useTranslation();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const reportTypes = [
+    {
+      id: 'daily',
+      title: t('Daily Summary'),
+      description: t('Today\'s activities and health overview'),
+      icon: Calendar,
+      color: 'text-blue-600'
+    },
+    {
+      id: 'health',
+      title: t('Health Reports'),
+      description: t('Health status and medical records'),
+      icon: Heart,
+      color: 'text-red-600'
+    },
+    {
+      id: 'feeding',
+      title: t('Feeding & Environment'),
+      description: t('Food consumption and environmental conditions'),
+      icon: Utensils,
+      color: 'text-green-600'
+    },
+    {
+      id: 'behavior',
+      title: t('Behavior Analysis'),
+      description: t('Activity patterns and behavioral insights'),
+      icon: Activity,
+      color: 'text-purple-600'
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">{t('Reports')}</h1>
+          <Button variant="outline" size="sm">
+            {t('Export All')}
+          </Button>
+        </div>
+
+        <Tabs defaultValue="daily" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            {reportTypes.map((type) => (
+              <TabsTrigger key={type.id} value={type.id} className="text-xs">
+                <type.icon className="h-4 w-4 mr-1" />
+                {type.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <TabsContent value="daily">
+            <DailySummaryReport selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          </TabsContent>
+
+          <TabsContent value="health">
+            <HealthReport />
+          </TabsContent>
+
+          <TabsContent value="feeding">
+            <FeedingEnvironmentReport />
+          </TabsContent>
+
+          <TabsContent value="behavior">
+            <BehaviorAnalysisReport />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <BottomNav />
+    </div>
+  );
+};
+
+export default ReportsPage;

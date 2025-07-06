@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
-import MultiSelectRats from "@/components/MultiSelectRats"; // Import MultiSelectRats
+import MultiSelectRats from "@/components/MultiSelectRats";
 
 // Import new log form components
 import BehaviorLogForm from "./log-forms/BehaviorLogForm";
@@ -27,9 +28,9 @@ interface LogEntryModalProps {
 
 const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntryModalProps) => {
   const [rats, setRats] = useState<any[]>([]);
-  const [selectedRats, setSelectedRats] = useState<string[]>([]); // Changed to array for MultiSelectRats
+  const [selectedRats, setSelectedRats] = useState<string[]>([]);
   const [formData, setFormData] = useState<any>({});
-  const [selectedTags, setSelectedTags] = useState<string[]>([]); // Specifically for behavior logs
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -38,12 +39,10 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
   useEffect(() => {
     if (user && isOpen) {
       fetchRats();
-      // Reset form data when modal opens or logType changes
       resetForm(); 
     }
   }, [user, isOpen, logType]);
 
-  // Add a useEffect to log selectedRats whenever it changes
   useEffect(() => {
     console.log("LogEntryModal: selectedRats changed to", selectedRats);
   }, [selectedRats]);
@@ -59,17 +58,17 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
     
     if (!error) {
       setRats(data || []);
-      setSelectedRats([]); // 確保在獲取老鼠列表後，rat 欄位是空的
+      setSelectedRats([]);
     }
   };
 
   const handleDataChange = useCallback((data: any) => {
     setFormData(prev => ({ ...prev, ...data }));
-  }, []); // No dependencies, as setFormData is stable
+  }, []);
 
   const handleTagsChange = useCallback((tags: string[]) => {
     setSelectedTags(tags);
-  }, []); // No dependencies, as setSelectedTags is stable
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +76,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
       toast({ title: t("Error"), description: t("User not authenticated."), variant: "destructive" });
       return;
     }
-    if (selectedRats.length === 0) { // Check if any rat is selected
+    if (selectedRats.length === 0) {
       toast({ title: t("Error"), description: t("Please select at least one rat."), variant: "destructive" });
       return;
     }
@@ -85,21 +84,17 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
     setLoading(true);
     try {
       let contentPayload = { ...formData };
-      if (logType === 'behavior') {
-        contentPayload.tags = selectedTags; // This will become hashtags in the service
+      if (logType === 'behavior' || logType === 'health') {
+        contentPayload.tags = selectedTags;
       }
 
-      // Construct the log data to be passed to the hook
       const logEntryData = {
-        user_id: user.id, // user_id will be handled by useLogEntries or service
+        user_id: user.id,
         ratIds: selectedRats,
         type: logType,
-        // Pass individual fields expected by LogEntry type or content payload
-        // Ensure these align with what useLogEntries and LogEntryService expect
-        behavior: logType === 'behavior' ? contentPayload.behavior : undefined, // Example
+        behavior: logType === 'behavior' ? contentPayload.behavior : undefined,
         notes: contentPayload.notes,
-        hashtags: logType === 'behavior' ? selectedTags : undefined,
-        // Add other fields from formData as needed, matching LogEntry structure
+        hashtags: (logType === 'behavior' || logType === 'health') ? selectedTags : undefined,
         weight: contentPayload.weight,
         temperature: contentPayload.temperature,
         humidity: contentPayload.humidity,
@@ -108,21 +103,13 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         dose: contentPayload.dose,
         food: contentPayload.food,
         amount: contentPayload.amount,
-        status: contentPayload.status, // Add status from formData
-        // ... other specific fields from formData based on logType
+        status: contentPayload.status,
       };
       
-      // onLogAdded now expects the raw data to be processed by useLogEntries.addLog
-      // The actual Supabase call will happen there.
       await onLogAdded(logEntryData);
-      // Success toast will be handled by useLogEntries after successful submission
-      
-      onClose(); // This should trigger the full close and navigation via QuickLogModal
+      onClose();
     } catch (error: any) {
-      // Error toast will be handled by useLogEntries if submission fails
       console.error('Error preparing log entry or calling onLogAdded:', error);
-      // Optionally, show a generic error here if onLogAdded itself throws an unexpected error
-      // before even reaching useLogEntries, though typically errors are from the async submission.
       toast({ title: t("Error"), description: t("An unexpected error occurred."), variant: "destructive" });
     } finally {
       setLoading(false);
@@ -130,15 +117,14 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
   };
 
   const resetForm = () => {
-    // Keep selectedRats as is, or reset if needed based on UX decision
-    setSelectedRats([]); // Uncomment if rat selection should reset too
+    setSelectedRats([]);
     setFormData({});
     setSelectedTags([]);
   };
 
   const renderLogTypeFields = useMemo(() => {
     const formProps = {
-      initialData: {}, // For "Add New", initialData is empty
+      initialData: {},
       onDataChange: handleDataChange,
     };
 
@@ -146,7 +132,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
       case 'behavior':
         return <BehaviorLogForm {...formProps} selectedTags={selectedTags} onTagsChange={handleTagsChange} />;
       case 'health':
-        return <HealthLogForm {...formProps} />;
+        return <HealthLogForm {...formProps} selectedTags={selectedTags} onTagsChange={handleTagsChange} />;
       case 'weight':
         return <WeightLogForm {...formProps} />;
       case 'environment':
@@ -158,7 +144,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
       default:
         return <p>{t("Unknown log type")}</p>;
     }
-  }, [logType, selectedTags, handleDataChange, handleTagsChange, t]); // Dependencies for useMemo
+  }, [logType, selectedTags, handleDataChange, handleTagsChange, t]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(openState) => {
@@ -173,7 +159,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <DialogTitle className="flex-1 text-center">{t("Add {{logType}} Log", { logType: t(logType.charAt(0).toUpperCase() + logType.slice(1)) })}</DialogTitle>
-            <div className="w-10"></div> {/* Spacer */}
+            <div className="w-10"></div>
           </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -186,7 +172,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
             />
           </div>
           
-          {renderLogTypeFields} {/* Call useMemo result directly */}
+          {renderLogTypeFields}
           
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
