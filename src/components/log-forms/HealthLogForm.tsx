@@ -1,20 +1,16 @@
-
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react"; // Import useCallback
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
-import LogTagSuggestions from "@/components/LogTagSuggestions";
 
 interface HealthLogFormProps {
-  initialData?: any;
+  initialData?: any; // For pre-filling data if editing
   onDataChange: (data: any) => void;
-  selectedTags?: string[];
-  onTagsChange?: (tags: string[]) => void;
 }
 
-const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsChange }: HealthLogFormProps) => {
+const HealthLogForm = ({ initialData, onDataChange }: HealthLogFormProps) => {
   const { t } = useTranslation();
   const [status, setStatus] = useState(initialData?.status || "");
   const [notes, setNotes] = useState(initialData?.notes || "");
@@ -36,16 +32,6 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
     setStatus(value);
   }, []);
 
-  const handleTagSelection = (tagName: string) => {
-    if (!onTagsChange) return;
-    
-    if (selectedTags.includes(tagName)) {
-      onTagsChange(selectedTags.filter(tag => tag !== tagName));
-    } else {
-      onTagsChange([...selectedTags, tagName]);
-    }
-  };
-
   return (
     <>
       <div className="space-y-2">
@@ -63,18 +49,6 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
           </SelectContent>
         </Select>
       </div>
-
-      {onTagsChange && (
-        <div className="space-y-2">
-          <LogTagSuggestions
-            onSelect={handleTagSelection}
-            selectedTags={selectedTags}
-            category="health"
-            placeholder={t("Quick health suggestions:")}
-          />
-        </div>
-      )}
-
       <div className="space-y-2">
         <Label htmlFor="notes">{t("Notes")}</Label>
         <Textarea

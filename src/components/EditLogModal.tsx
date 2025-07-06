@@ -50,12 +50,15 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
 
   useEffect(() => {
     if (logToEdit) {
+      // Pre-fill form data based on the log being edited
+      // For specific log types, initialData will be passed to the sub-forms
       setFormData({
         notes: logToEdit.notes || "",
+        // The specific fields (behavior, weight, temp, humidity) will be handled by sub-forms
       });
       setSelectedRats(logToEdit.ratIds || []);
-      // 行為日誌和健康日誌都使用 hashtag
-      setHashtags((logToEdit.type === 'behavior' || logToEdit.type === 'health') ? logToEdit.hashtags || [] : []);
+      // 只有行為日誌才使用 hashtag，其他類型清空
+      setHashtags(logToEdit.type === 'behavior' ? logToEdit.hashtags || [] : []);
     }
   }, [logToEdit]);
 
@@ -67,14 +70,17 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
     setHashtags(tags);
   };
 
+  // This function will be called by the MultiSelectRats component
   const handleRatSelectionChange = (ratIds: string[]) => {
     setSelectedRats(ratIds);
   };
   
   const handleTagSelection = (tagName: string) => {
     if (hashtags.includes(tagName)) {
+      // Remove tag if already selected
       setHashtags(prev => prev.filter(tag => tag !== tagName));
     } else {
+      // Add tag if not selected
       setHashtags(prev => [...prev, tagName]);
     }
   };
@@ -89,12 +95,13 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
  
     const updatedLogData = {
       ...logToEdit,
-      ...formData,
+      ...formData, // formData now contains data from sub-forms
       ratIds: selectedRats,
       hashtags: hashtags,
       timestamp: logToEdit.timestamp,
     };
     
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
 
     onLogUpdated(updatedLogData);
@@ -123,7 +130,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
 
   const renderLogTypeFields = () => {
     const formProps = {
-      initialData: logToEdit,
+      initialData: logToEdit, // Pass the entire logToEdit as initialData
       onDataChange: handleDataChange,
     };
 
@@ -131,7 +138,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
       case 'behavior':
         return <BehaviorLogForm {...formProps} selectedTags={hashtags} onTagsChange={handleTagsChange} />;
       case 'health':
-        return <HealthLogForm {...formProps} selectedTags={hashtags} onTagsChange={handleTagsChange} />;
+        return <HealthLogForm {...formProps} />;
       case 'weight':
         return <WeightLogForm {...formProps} />;
       case 'environment':
@@ -147,7 +154,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
+      <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}> {/* Themed background and text */}
         <DialogHeader>
           <div className={cn("flex items-center")}>
             <Button
@@ -199,7 +206,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className={cn("flex items-center")}>
-              <AlertTriangle className={cn("mr-2 h-5 w-5 text-destructive")} /> {t("Confirm Deletion")}
+              <AlertTriangle className={cn("mr-2 h-5 w-5 text-destructive")} /> {t("Confirm Deletion")} {/* Themed icon */}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t("Are you sure you want to permanently delete this log entry? This action cannot be undone.")}

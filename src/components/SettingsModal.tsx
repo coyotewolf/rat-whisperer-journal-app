@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -25,22 +25,6 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); // State for AuthModal
   const { user, signOut } = useAuth();
-
-  // Reset to main section when modal opens (not when it closes)
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentSection('main');
-    }
-  }, [isOpen]);
-
-  const handleClose = () => {
-    // Don't reset state here - let it reset when modal reopens
-    onClose();
-  };
-
-  const handleBackToMain = () => {
-    setCurrentSection('main');
-  };
 
   const settingsSections = [
     {
@@ -76,15 +60,15 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const renderContent = () => {
     switch (currentSection) {
       case 'language':
-        return <LanguageSettings onBack={handleBackToMain} />;
+        return <LanguageSettings onBack={() => setCurrentSection('main')} />;
       case 'fonts':
-        return <FontSettings onBack={handleBackToMain} />;
+        return <FontSettings onBack={() => setCurrentSection('main')} />;
       case 'themes':
-        return <ThemeSettings onBack={handleBackToMain} />;
+        return <ThemeSettings onBack={() => setCurrentSection('main')} />;
       case 'taskSuggestions':
-        return <TaskSuggestionSettings onBack={handleBackToMain} />;
+        return <TaskSuggestionSettings onBack={() => setCurrentSection('main')} />;
       case 'account':
-        return <AccountSettings onBack={handleBackToMain} />;
+        return <AccountSettings onBack={() => setCurrentSection('main')} />;
       default:
         return (
           <div className="grid grid-cols-1 gap-3 mt-4">
@@ -132,7 +116,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
@@ -144,7 +128,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           </DialogHeader>
           {renderContent()}
           {currentSection === 'main' && (
-            <Button variant="ghost" onClick={handleClose} className="mt-4 text-gray-500 hover:text-gray-700">
+            <Button variant="ghost" onClick={onClose} className="mt-4 text-gray-500 hover:text-gray-700">
               {t("Close")}
             </Button>
           )}

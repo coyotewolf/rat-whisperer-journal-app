@@ -9,7 +9,6 @@ export interface LogTagSuggestion {
   id: string;
   name: string;
   color?: string;
-  category?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -34,8 +33,7 @@ export const useLogTagSuggestions = () => {
         .from('log_tag_suggestions')
         .select('*')
         .eq('user_id', user.id)
-        .order('category', { ascending: true })
-        .order('name', { ascending: true });
+        .order('name');
 
       if (error) throw error;
       setSuggestions(data || []);
@@ -51,7 +49,7 @@ export const useLogTagSuggestions = () => {
     }
   };
 
-  const addSuggestion = async (name: string, color: string = '#6B7280', category: string = 'general') => {
+  const addSuggestion = async (name: string, color: string = '#6B7280') => {
     if (!user) return;
 
     try {
@@ -61,20 +59,13 @@ export const useLogTagSuggestions = () => {
           user_id: user.id,
           name: name.trim(),
           color,
-          category,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setSuggestions(prev => [...prev, data].sort((a, b) => {
-        if (a.category !== b.category) {
-          return a.category.localeCompare(b.category);
-        }
-        return a.name.localeCompare(b.name);
-      }));
-      
+      setSuggestions(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
       toast({
         title: t("Success"),
         description: t("Tag suggestion added successfully"),
@@ -92,16 +83,13 @@ export const useLogTagSuggestions = () => {
     }
   };
 
-  const updateSuggestion = async (id: string, name: string, color?: string, category?: string) => {
+  const updateSuggestion = async (id: string, name: string, color?: string) => {
     if (!user) return;
 
     try {
       const updateData: any = { name: name.trim() };
       if (color !== undefined) {
         updateData.color = color;
-      }
-      if (category !== undefined) {
-        updateData.category = category;
       }
 
       const { data, error } = await supabase
@@ -115,12 +103,7 @@ export const useLogTagSuggestions = () => {
       if (error) throw error;
 
       setSuggestions(prev => 
-        prev.map(s => s.id === id ? data : s).sort((a, b) => {
-          if (a.category !== b.category) {
-            return a.category.localeCompare(b.category);
-          }
-          return a.name.localeCompare(b.name);
-        })
+        prev.map(s => s.id === id ? data : s).sort((a, b) => a.name.localeCompare(b.name))
       );
 
       toast({

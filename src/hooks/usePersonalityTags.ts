@@ -86,27 +86,19 @@ export const usePersonalityTags = () => {
     if (!user) return false;
 
     try {
-      console.log('Updating tag in database:', { id, name, color }); // Debug log
-      
       const { error } = await supabase
         .from('personality_tags')
         .update({ name: name.trim(), color })
         .eq('id', id)
         .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Database update error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // Update local state immediately
       setPersonalityTags(prev => 
         prev.map(tag => 
           tag.id === id ? { ...tag, name: name.trim(), color } : tag
         )
       );
-      
-      console.log('Tag updated successfully in local state'); // Debug log
       
       toast({
         title: t("Success"),

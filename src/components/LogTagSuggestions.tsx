@@ -1,86 +1,49 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PlusCircle, X, Settings2 as ManageIcon, ArrowLeft } from 'lucide-react';
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useLogTagSuggestions } from "@/hooks/useLogTagSuggestions";
+import { useLogTagSuggestions, type LogTagSuggestion } from "@/hooks/useLogTagSuggestions";
 import LogTagSuggestionSettings from "./settings/LogTagSuggestionSettings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
-import { AddLogTagSuggestionForm } from "./settings/AddLogTagSuggestionForm";
 
 interface LogTagSuggestionsProps {
   onSelect: (tagName: string) => void;
   selectedTags: string[];
   placeholder?: string;
-  category?: string;
 }
 
-const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category = 'behavior' }: LogTagSuggestionsProps) => {
+const LogTagSuggestions = ({ onSelect, selectedTags, placeholder }: LogTagSuggestionsProps) => {
   const { t } = useTranslation();
-  const { suggestions, loading, refreshSuggestions } = useLogTagSuggestions();
+  const { suggestions, loading, deleteSuggestion } = useLogTagSuggestions();
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-
-  // Filter suggestions by category
-  const filteredSuggestions = useMemo(() => {
-    return suggestions.filter(suggestion => suggestion.category === category);
-  }, [suggestions, category]);
 
   const handleManageModalClose = () => {
     setIsManageModalOpen(false);
-    refreshSuggestions();
   };
-
-  const handleQuickAddCompleted = () => {
-    setShowQuickAdd(false);
-    refreshSuggestions();
-  }
 
   if (loading) {
     return <div className="text-sm text-gray-500">{t("Loading suggestions...")}</div>;
   }
 
-  const categoryName = t(category);
-  const displayPlaceholder = placeholder || t("Quick {{category}} suggestions:", { category: categoryName });
-
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center mb-2">
-        <p className="text-sm text-gray-600">{displayPlaceholder}</p>
-        <div className="flex items-center space-x-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowQuickAdd(prev => !prev)}
-            title={t("Quick add suggestion")}
-            className="text-green-600 hover:text-green-700"
-          >
-            <PlusCircle className="h-5 w-5" />
-          </Button>
-          <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage log suggestions")}>
+        <p className="text-sm text-gray-600">{placeholder || t("Quick tag suggestions:")}</p>
+        <div className="flex items-center space-x-2">
+          <Button type="button" variant="ghost" size="icon" onClick={() => setIsManageModalOpen(true)} title={t("Manage tag suggestions")}>
             <ManageIcon className="h-5 w-5 text-orange-600 hover:text-orange-700" />
           </Button>
         </div>
       </div>
 
-      {showQuickAdd && (
-        <div className="p-3 border rounded-lg bg-white shadow-sm">
-          <AddLogTagSuggestionForm
-            onSuggestionAdded={handleQuickAddCompleted}
-            onCancel={() => setShowQuickAdd(false)}
-            showCancelButton={true}
-            defaultCategory={category}
-          />
-        </div>
-      )}
-
-      {filteredSuggestions.length === 0 && !showQuickAdd ? (
-         <p className="text-xs text-gray-500 py-2">{t("No {{category}} suggestions yet. Click 'Manage' to add one.", { category: categoryName })}</p>
+      {suggestions.length === 0 ? (
+         <p className="text-xs text-gray-500 py-2">{placeholder ? t("No {{placeholder}} yet. Click 'Manage' to add one.", { placeholder: placeholder.toLowerCase() }) : t("No quick tag suggestions yet. Click 'Manage' to add one.")}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {filteredSuggestions.map((suggestion) => {
+          {suggestions.map((suggestion) => {
             const isSelected = selectedTags.includes(suggestion.name);
             return (
               <Badge
@@ -127,7 +90,7 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category = 'be
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <DialogTitle className="flex-1 text-center">{t("Manage Log Suggestions")}</DialogTitle>
+              <DialogTitle className="flex-1 text-center">{t("Manage Behavior Suggestions")}</DialogTitle>
               <div className="w-10"></div>
             </div>
           </DialogHeader>
