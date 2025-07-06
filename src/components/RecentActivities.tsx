@@ -7,7 +7,6 @@ import { Heart, Pencil, Activity, Scale, Thermometer, Pill, Utensils } from "luc
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { getRecentActivityCardColorClasses, getActivityStatusClasses } from "@/utils/cardStyleUtils";
-import { getCategoryHierarchy, getPriorityClasses } from "@/utils/categoryHierarchy";
 
 interface RecentActivitiesProps {
   recentActivities: any[];
@@ -59,142 +58,6 @@ const RecentActivities = ({
     }
   };
 
-  const renderActivityContent = (activity: any) => {
-    const hierarchy = getCategoryHierarchy(activity.type);
-    
-    switch (activity.type) {
-      case 'health':
-        return (
-          <div className={hierarchy.spacing.internal}>
-            <div className="flex items-center gap-2 mb-2">
-              {getLogIcon(activity.type)}
-              <p className={hierarchy.visualWeight.titleSize}>{t(activity.type)}</p>
-            </div>
-            {activity.status && (
-              <div className="mb-2">
-                <Badge className={`${getActivityStatusClasses(activity.status)} ${hierarchy.visualWeight.statusSize}`}>
-                  {t(activity.status)}
-                </Badge>
-              </div>
-            )}
-            <div className="space-y-1">
-              <p className={`${hierarchy.visualWeight.timeSize} opacity-80`}>
-                {activity.rat} • {activity.time}
-              </p>
-              {activity.notes && (
-                <p className={`${hierarchy.visualWeight.timeSize} opacity-70 line-clamp-2`}>
-                  {activity.notes}
-                </p>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'weight':
-        return (
-          <div className={hierarchy.spacing.internal}>
-            <div className="flex items-center gap-2 mb-2">
-              {getLogIcon(activity.type)}
-              <p className={hierarchy.visualWeight.titleSize}>{t(activity.type)}</p>
-            </div>
-            {activity.weight && (
-              <div className="mb-2">
-                <span className={`${hierarchy.visualWeight.valueSize} text-primary`}>
-                  {activity.weight}g
-                </span>
-              </div>
-            )}
-            <p className={`${hierarchy.visualWeight.timeSize} opacity-80`}>
-              {activity.rat} • {activity.time}
-            </p>
-          </div>
-        );
-
-      case 'behavior':
-        return (
-          <div className={hierarchy.spacing.internal}>
-            <div className="flex items-center gap-2 mb-2">
-              {getLogIcon(activity.type)}
-              <p className={hierarchy.visualWeight.titleSize}>{t(activity.type)}</p>
-            </div>
-            {activity.behaviorTags && activity.behaviorTags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {activity.behaviorTags.map((tag: string, index: number) => (
-                  <Badge
-                    key={index}
-                    className={`bg-primary text-primary-foreground border-0 ${hierarchy.visualWeight.statusSize}`}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            <p className={`${hierarchy.visualWeight.timeSize} opacity-80`}>
-              {activity.rat} • {activity.time}
-            </p>
-          </div>
-        );
-
-      case 'medication':
-        return (
-          <div className={hierarchy.spacing.internal}>
-            <div className="flex items-center gap-2 mb-2">
-              {getLogIcon(activity.type)}
-              <p className={hierarchy.visualWeight.titleSize}>{t(activity.type)}</p>
-            </div>
-            {activity.status && (
-              <div className="mb-2">
-                <Badge className={`${getActivityStatusClasses(activity.status)} ${hierarchy.visualWeight.statusSize}`}>
-                  {t(activity.status)}
-                </Badge>
-              </div>
-            )}
-            <p className={`${hierarchy.visualWeight.timeSize} opacity-80`}>
-              {activity.rat} • {activity.time}
-            </p>
-          </div>
-        );
-
-      case 'feeding':
-        return (
-          <div className={hierarchy.spacing.internal}>
-            <div className="flex items-center gap-2 mb-2">
-              {getLogIcon(activity.type)}
-              <p className={hierarchy.visualWeight.titleSize}>{t(activity.type)}</p>
-            </div>
-            {activity.status && (
-              <div className="mb-2">
-                <Badge className={`${getActivityStatusClasses(activity.status)} ${hierarchy.visualWeight.statusSize}`}>
-                  {t(activity.status)}
-                </Badge>
-              </div>
-            )}
-            <p className={`${hierarchy.visualWeight.timeSize} opacity-80`}>
-              {activity.rat} • {activity.time}
-            </p>
-          </div>
-        );
-
-      default:
-        return (
-          <div className={hierarchy.spacing.internal}>
-            <div className="flex items-center gap-2 mb-1">
-              {getLogIcon(activity.type)}
-              <p className={hierarchy.visualWeight.titleSize}>{t(activity.type)}</p>
-              {activity.status && (
-                <Badge className={`${getActivityStatusClasses(activity.status)} ${hierarchy.visualWeight.statusSize}`}>
-                  {t(activity.status)}
-                </Badge>
-              )}
-            </div>
-            <p className={`${hierarchy.visualWeight.timeSize} opacity-80`}>
-              {activity.rat} • {activity.time}
-            </p>
-          </div>
-        );
-    }
-  };
-
   return (
     <Card className="bg-card text-card-foreground border-border shadow-xl">
       <CardHeader
@@ -215,35 +78,55 @@ const RecentActivities = ({
           </div>
         ) : recentActivities.length > 0 ? (
           <div className="space-y-3 animate-fade-in">
-            {recentActivities.map((activity) => {
-              const hierarchy = getCategoryHierarchy(activity.type);
-              const priorityClasses = getPriorityClasses(hierarchy.priority);
-              
-              return (
-                <div
-                  key={activity.id}
-                  className={`flex items-center justify-between p-4 rounded-lg group cursor-pointer hover:brightness-95 transition-all ${getRecentActivityCardColorClasses(activity.type)} ${priorityClasses} ${hierarchy.spacing.external}`}
-                  onClick={() => onLogCardClick(activity)}
-                >
-                  <div className="flex-1">
-                    {renderActivityContent(activity)}
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className={`flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all ${getRecentActivityCardColorClasses(activity.type)}`}
+                onClick={() => onLogCardClick(activity)}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    {getLogIcon(activity.type)}
+                    <p className="font-medium">{t(activity.type)}</p>
+                    {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {activity.behaviorTags.map((tag: string, index: number) => (
+                          <Badge
+                            key={index}
+                            className="bg-primary text-primary-foreground border-0 text-xs"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : activity.status ? (
+                      <Badge
+                        className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
+                      >
+                        {t(activity.status)}
+                      </Badge>
+                    ) : null}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="opacity-70 hover:opacity-100 hover:text-primary h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditActivity(activity);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
+                  {activity.weight && (
+                    <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
+                  )}
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-70 hover:opacity-100 hover:text-primary h-7 w-7"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditActivity(activity);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="text-center py-4 animate-fade-in">
