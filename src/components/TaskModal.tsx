@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock, MapPin, ArrowLeft, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import TaskSuggestions from "./TaskSuggestions";
@@ -17,18 +17,15 @@ import type { TaskSuggestion } from "@/hooks/useTaskSuggestions";
 import TaskRepeatOptions from "./TaskRepeatOptions";
 import type { RepeatOptions } from "./TaskRepeatOptions";
 import type { Task } from "@/hooks/useTasks";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   task?: Task | null;
   onSave: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'> | Task) => void;
-  onDelete: (taskId: string) => void; // New prop for delete functionality
 }
 
-const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) => {
+const TaskModal = ({ isOpen, onClose, task, onSave }: TaskModalProps) => {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | undefined>();
@@ -45,7 +42,6 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
     endDate: undefined,
     endType: 'never'
   });
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false); // State for delete confirmation dialog
 
   useEffect(() => {
     if (isOpen) {
@@ -134,53 +130,25 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
     onClose();
   };
 
-  const handleDeleteClick = () => {
-    if (task?.id) {
-      onDelete(task.id);
-      setDeleteConfirmOpen(false);
-      onClose(); // Close the task modal after deletion
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto bg-card text-card-foreground border border-border shadow-lg">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={onClose}
-              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              className="text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <DialogTitle className="flex-1 text-center">{task ? t('Edit Task') : t('New Task')}</DialogTitle>
-            {task && ( // Only show delete button if in edit mode
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteConfirmOpen(true)}
-                      className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
-                      aria-label={t("Delete Task")}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t("Delete Task")}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            {!task && <div className="w-10"></div>} {/* Placeholder for alignment if not in edit mode */}
+            <div className="w-10"></div>
           </div>
         </DialogHeader>
         
-        <div className="space-y-4 text-foreground">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">{t("Task Title")}</Label>
             <Input
@@ -188,7 +156,6 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
               value={title}
               onChange={handleTitleChange}
               placeholder={t("Enter task title")}
-              className="bg-input text-foreground border-border"
             />
             <TaskSuggestions
               onSelect={handleSuggestionSelect}
@@ -204,7 +171,6 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("Enter task description")}
               rows={3}
-              className="bg-input text-foreground border-border"
             />
           </div>
 
@@ -216,7 +182,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal bg-input text-foreground border-border hover:bg-accent hover:text-accent-foreground",
+                      "w-full justify-start text-left font-normal",
                       !dueDate && "text-muted-foreground"
                     )}
                   >
@@ -224,13 +190,12 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
                     {dueDate ? format(dueDate, "PPP") : t("Pick a date")}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-popover text-popover-foreground border-border">
+                <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={dueDate}
                     onSelect={setDueDate}
                     initialFocus
-                    className="bg-card text-card-foreground"
                   />
                 </PopoverContent>
               </Popover>
@@ -239,13 +204,13 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
             <div className="space-y-2">
               <Label htmlFor="time">{t("Time")}</Label>
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="time"
                   type="time"
                   value={dueTime}
                   onChange={(e) => setDueTime(e.target.value)}
-                  className="pl-10 bg-input text-foreground border-border"
+                  className="pl-10"
                 />
               </div>
             </div>
@@ -254,10 +219,10 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
           <div className="space-y-2">
             <Label>{t("Priority")}</Label>
             <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
-              <SelectTrigger className="bg-input text-foreground border-border">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-popover text-popover-foreground border-border">
+              <SelectContent>
                 <SelectItem value="low">{t("Low Priority")}</SelectItem>
                 <SelectItem value="medium">{t("Medium Priority")}</SelectItem>
                 <SelectItem value="high">{t("High Priority")}</SelectItem>
@@ -268,13 +233,13 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
           <div className="space-y-2">
             <Label htmlFor="location">{t("Location (Optional)")}</Label>
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder={t("Enter location")}
-                className="pl-10 bg-input text-foreground border-border"
+                className="pl-10"
               />
             </div>
           </div>
@@ -288,7 +253,6 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
                 value={quantity || ""}
                 onChange={(e) => setQuantity(e.target.value ? Number(e.target.value) : undefined)}
                 placeholder={t("Amount")}
-                className="bg-input text-foreground border-border"
               />
             </div>
             <div className="space-y-2">
@@ -298,7 +262,6 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
                 placeholder={t("kg, liters, etc.")}
-                className="bg-input text-foreground border-border"
               />
             </div>
           </div>
@@ -315,22 +278,12 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
           <Button
             onClick={handleSave}
             disabled={!title || !dueDate}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-orange-500 hover:bg-orange-600"
           >
             {task ? t('Update Task') : t('Create Task')}
           </Button>
         </div>
       </DialogContent>
-
-      <ConfirmationDialog
-        isOpen={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={handleDeleteClick}
-        title={t("Delete Task")}
-        description={t("Are you sure you want to delete this task? This action cannot be undone.")}
-        confirmText={t("Delete")}
-        variant="destructive"
-      />
     </Dialog>
   );
 };

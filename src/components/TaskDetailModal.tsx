@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowLeft, Calendar, Clock, MapPin, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import type { Task } from "@/hooks/useTasks";
@@ -47,14 +46,14 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-card text-card-foreground border border-border shadow-lg">
+      <DialogContent className="sm:max-w-md backdrop-blur-md bg-background/80 border-0 shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={onClose}
-              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              className="text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -64,41 +63,33 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
                 {task.priority}
               </Badge>
             </DialogTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(task)}
-                    className="text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <Pencil className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t("Edit")}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(task)}
+              className="bg-white/50 hover:bg-white/70 border-white/30"
+            >
+              <Pencil className="h-4 w-4 mr-1" />
+              {t("Edit")}
+            </Button>
           </div>
         </DialogHeader>
         
-        <div className="space-y-4 text-foreground">
+        <div className="space-y-4">
           {task.description && (
             <div>
-              <h4 className="font-medium text-foreground mb-1">{t("Description")}</h4>
-              <p className="text-muted-foreground">{task.description}</p>
+              <h4 className="font-medium text-gray-700 mb-1">{t("Description")}</h4>
+              <p className="text-gray-600">{task.description}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 text-muted-foreground">
-            <div className="flex items-center gap-2 text-sm">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="h-4 w-4" />
               <span>{format(new Date(task.due_date), "MMM d, yyyy")}</span>
             </div>
             {task.due_time && (
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Clock className="h-4 w-4" />
                 <span>{task.due_time}</span>
               </div>
@@ -107,15 +98,15 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
 
           {task.location && (
             <div>
-              <h4 className="font-medium text-foreground mb-2">{t("Location")}</h4>
+              <h4 className="font-medium text-gray-700 mb-2">{t("Location")}</h4>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground flex-1">{task.location}</span>
+                <MapPin className="h-4 w-4 text-gray-500" />
+                <span className="text-gray-600 flex-1">{task.location}</span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={openInMaps}
-                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90 border-border"
+                  className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
                 >
                   {t("Open in Maps")}
                 </Button>
@@ -125,15 +116,15 @@ const TaskDetailModal = ({ isOpen, onClose, task, onEdit }: TaskDetailModalProps
 
           {(task.quantity || task.unit) && (
             <div>
-              <h4 className="font-medium text-foreground mb-1">{t("Quantity")}</h4>
-              <p className="text-muted-foreground">
+              <h4 className="font-medium text-gray-700 mb-1">{t("Quantity")}</h4>
+              <p className="text-gray-600">
                 {task.quantity || ''} {task.unit || ''}
               </p>
             </div>
           )}
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{t("Status")}:</span>
+            <span className="text-sm font-medium text-gray-700">{t("Status")}:</span>
             <Badge variant={task.completed ? "default" : "outline"}>
               {task.completed ? t("Completed") : t("Pending")}
             </Badge>

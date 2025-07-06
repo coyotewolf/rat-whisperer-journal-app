@@ -19,7 +19,7 @@ import { processRecentActivities } from "@/utils/activityUtils";
 
 const Index = () => {
   const { t } = useTranslation();
-  const { tasks, loading, createTask, updateTask, deleteTask } = useTasks();
+  const { tasks, loading, createTask, updateTask } = useTasks();
   const { logs, loading: logsLoading, initialLoadComplete, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
   const {
@@ -66,16 +66,6 @@ const Index = () => {
       setEditingTask(null);
     } catch (error) {
       console.error(t('Error saving task:'), error);
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    try {
-      await deleteTask(taskId);
-      setIsNewTaskOpen(false);
-      setEditingTask(null);
-    } catch (error) {
-      console.error(t('Error deleting task:'), error);
     }
   };
 
@@ -173,7 +163,6 @@ const Index = () => {
         }}
         onSave={handleTaskSave}
         task={editingTask}
-        onDelete={handleDeleteTask}
       />
       <TaskDetailModal
         isOpen={isTaskDetailOpen}

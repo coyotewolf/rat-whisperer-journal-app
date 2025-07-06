@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, MapPin, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, MapPin, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
@@ -49,19 +49,19 @@ const TasksPage = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/20 text-destructive-foreground border-destructive';
-      case 'medium': return 'bg-yellow-600/20 text-yellow-foreground border-yellow-600';
-      case 'low': return 'bg-green-600/20 text-green-foreground border-green-600';
-      default: return 'bg-muted/20 text-muted-foreground border-muted';
+      case 'high': return 'bg-red-500/20 text-red-100 border-red-300';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-100 border-yellow-300';
+      case 'low': return 'bg-green-500/20 text-green-100 border-green-300';
+      default: return 'bg-gray-500/20 text-gray-100 border-gray-300';
     }
   };
 
   const getTitleColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-destructive';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-green-600';
-      default: return 'text-foreground';
+      case 'high': return 'text-red-200';
+      case 'medium': return 'text-yellow-200';
+      case 'low': return 'text-green-200';
+      default: return 'text-white';
     }
   };
 
@@ -90,40 +90,41 @@ const TasksPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground text-lg">{t("Loading tasks...")}</div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+        <div className="text-white text-lg">{t("Loading tasks...")}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-20" style={{
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
+      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
 
       {/* Header */}
-      <div className="relative backdrop-blur-md bg-card/80 border-b border-border p-4 shadow-lg">
+      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/')}
-              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              className="text-white hover:bg-white/20"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
                 {t("Task Management")}
               </h1>
-              <p className="text-sm text-muted-foreground">{t("Organize your rat care tasks")}</p>
+              <p className="text-sm text-purple-100/80">{t("Organize your rat care tasks")}</p>
             </div>
           </div>
           <Button
             onClick={() => setTaskModalOpen(true)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
             {t("New Task")}
@@ -137,7 +138,7 @@ const TasksPage = () => {
           {sortedTasks.map((task) => (
             <Card
               key={task.id}
-              className={`bg-card text-card-foreground border border-border shadow-md transition-all duration-300 cursor-pointer hover:shadow-lg ${task.completed ? 'opacity-60' : ''}`}
+              className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 cursor-pointer hover:shadow-2xl ${task.completed ? 'opacity-60' : ''}`}
               onClick={() => handleTaskCardClick(task)}
             >
               <CardContent className="p-4">
@@ -147,10 +148,10 @@ const TasksPage = () => {
                       e.stopPropagation();
                       toggleTaskCompletion(task.id);
                     }}
-                    className="mt-1 text-muted-foreground hover:text-primary transition-colors"
+                    className="mt-1 text-white hover:text-green-300 transition-colors"
                   >
                     {task.completed ? (
-                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <CheckCircle className="h-5 w-5 text-green-300" />
                     ) : (
                       <Circle className="h-5 w-5" />
                     )}
@@ -162,7 +163,7 @@ const TasksPage = () => {
                         <h3 className={`font-semibold ${getTitleColor(task.priority)} ${task.completed ? 'line-through' : ''}`}>
                           {task.title}
                         </h3>
-                        <Badge className={`${getPriorityColor(task.priority)} border text-xs`}>
+                        <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm text-xs`}>
                           {t(task.priority)}
                         </Badge>
                       </div>
@@ -175,7 +176,7 @@ const TasksPage = () => {
                             setEditingTask(task);
                             setTaskModalOpen(true);
                           }}
-                          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
+                          className="text-white hover:bg-white/20 h-8 w-8 p-0"
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
@@ -187,18 +188,18 @@ const TasksPage = () => {
                             setTaskToDelete(task.id);
                             setDeleteConfirmOpen(true);
                           }}
-                          className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive h-8 w-8 p-0"
+                          className="text-white hover:bg-white/20 hover:text-red-300 h-8 w-8 p-0"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Pencil className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
 
                     {task.description && (
-                      <p className="text-sm text-muted-foreground">{task.description}</p>
+                      <p className="text-sm text-purple-100/80">{task.description}</p>
                     )}
 
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 text-sm text-blue-100">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         <span>{getDateLabel(new Date(task.due_date))}</span>
@@ -224,14 +225,14 @@ const TasksPage = () => {
 
           {tasks.length === 0 && (
             <div className="text-center py-12">
-              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <Calendar className="h-12 w-12 text-primary" />
+              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
+                <Calendar className="h-12 w-12 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">{t("No tasks yet")}</h3>
-              <p className="text-muted-foreground mb-4">{t("Create your first task to get organized!")}</p>
+              <h3 className="text-xl font-semibold text-white mb-2">{t("No tasks yet")}</h3>
+              <p className="text-purple-100 mb-4">{t("Create your first task to get organized!")}</p>
               <Button
                 onClick={() => setTaskModalOpen(true)}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("Create Your First Task")}
@@ -249,7 +250,6 @@ const TasksPage = () => {
         }}
         task={editingTask}
         onSave={handleSaveTask}
-        onDelete={deleteTask} // Pass the deleteTask function
       />
 
       <TaskDetailModal
