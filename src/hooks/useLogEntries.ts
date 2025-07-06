@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +21,7 @@ export { type LogEntry } from '@/types/logEntry';
 export const useLogEntries = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -58,16 +58,26 @@ export const useLogEntries = () => {
     if (updateQueued.length) await clearOutboxLogUpdates();
   };
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (showLoading = true) => {
+    if (showLoading && !initialLoadComplete) {
+      setLoading(true);
+    }
+
+    // Load cached data immediately to prevent flash
     const cached = await getCachedLogs();
-    if (cached.length) setLogs(cached);
+    if (cached.length && !initialLoadComplete) {
+      setLogs(cached);
+    }
+
     if (!user) {
       setLoading(false);
+      setInitialLoadComplete(true);
       return;
     }
 
     if (!navigator.onLine) {
       setLoading(false);
+      setInitialLoadComplete(true);
       return;
     }
 
@@ -85,6 +95,7 @@ export const useLogEntries = () => {
       });
     } finally {
       setLoading(false);
+      setInitialLoadComplete(true);
     }
   };
 
@@ -136,8 +147,12 @@ export const useLogEntries = () => {
     }
 
     try {
+      // Update local state first to prevent flickering
+      setLogs(prev => prev.map(log => 
+        log.id === logId ? { ...log, ...updates, updated_at: new Date().toISOString() } : log
+      ));
+
       await LogEntryService.updateLog(logId, { ...updates, updated_at: new Date().toISOString() });
-      await fetchLogs();
 
       toast({
         title: t("Success"),
@@ -145,6 +160,8 @@ export const useLogEntries = () => {
       });
     } catch (error) {
       console.error('Error updating log:', error);
+      // Revert local state on error
+      await fetchLogs();
       toast({
         title: t("Error"),
         description: t("Failed to update activity log"),
@@ -181,13 +198,13 @@ export const useLogEntries = () => {
       fetchLogs();
     }
     const onOnline = () => {
-      fetchLogs();
+      fetchLogs(false); // Don't show loading on reconnect
     };
     window.addEventListener('online', onOnline);
     const channel = supabase
       .channel('logs-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'log_entries' }, () => {
-        fetchLogs();
+        fetchLogs(false); // Don't show loading on realtime updates
       })
       .subscribe();
     return () => {
@@ -199,9 +216,10 @@ export const useLogEntries = () => {
   return {
     logs,
     loading,
+    initialLoadComplete,
     addLog,
     updateLog,
     deleteLog,
-    refreshLogs: fetchLogs,
+    refreshLogs: () => fetchLogs(false),
   };
 };
