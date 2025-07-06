@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Pencil } from "lucide-react";
+import { Heart, Pencil, Activity, Scale, Thermometer, Pill, Utensils } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { getRecentActivityCardColorClasses, getActivityStatusClasses } from "@/utils/cardStyleUtils";
@@ -39,6 +39,25 @@ const RecentActivities = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const getLogIcon = (type: string) => {
+    switch (type) {
+      case "behavior":
+        return <Activity className="h-4 w-4" />;
+      case "health":
+        return <Heart className="h-4 w-4" />;
+      case "weight":
+        return <Scale className="h-4 w-4" />;
+      case "environment":
+        return <Thermometer className="h-4 w-4" />;
+      case "medication":
+        return <Pill className="h-4 w-4" />;
+      case "feeding":
+        return <Utensils className="h-4 w-4" />;
+      default:
+        return <Activity className="h-4 w-4" />;
+    }
+  };
+
   return (
     <Card className="bg-card text-card-foreground border-border shadow-xl">
       <CardHeader
@@ -67,6 +86,7 @@ const RecentActivities = ({
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
+                    {getLogIcon(activity.type)}
                     <p className="font-medium">{t(activity.type)}</p>
                     {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
                       <div className="flex flex-wrap gap-1">

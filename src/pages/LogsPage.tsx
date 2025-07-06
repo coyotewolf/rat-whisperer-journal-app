@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil } from "lucide-react";
+import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil, Scale, Pill, Utensils } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
@@ -72,8 +72,14 @@ const LogsPage = () => {
         return <Activity className="h-4 w-4" />;
       case "health":
         return <Heart className="h-4 w-4" />;
+      case "weight":
+        return <Scale className="h-4 w-4" />;
       case "environment":
         return <Thermometer className="h-4 w-4" />;
+      case "medication":
+        return <Pill className="h-4 w-4" />;
+      case "feeding":
+        return <Utensils className="h-4 w-4" />;
       default:
         return <Calendar className="h-4 w-4" />;
     }
