@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Pencil } from "lucide-react";
+import { Calendar, Pencil, CheckCircle, Circle, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import type { Task } from "@/hooks/useTasks";
@@ -14,6 +14,7 @@ interface UpcomingTasksProps {
   onTaskCardClick: (task: Task) => void;
   onEditTask: (task: Task) => void;
   onNewTaskClick: () => void;
+  onToggleTaskCompletion?: (taskId: string) => void;
 }
 
 const UpcomingTasks = ({ 
@@ -21,7 +22,8 @@ const UpcomingTasks = ({
   loading, 
   onTaskCardClick, 
   onEditTask, 
-  onNewTaskClick 
+  onNewTaskClick,
+  onToggleTaskCompletion
 }: UpcomingTasksProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -67,33 +69,80 @@ const UpcomingTasks = ({
           </div>
         ) : upcomingTasks.length > 0 ? (
           upcomingTasks.map((task) => (
-            <div
+            <Card
               key={task.id}
-              className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border cursor-pointer hover:bg-accent/50 transition-colors"
+              className={`bg-card text-card-foreground border-border shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer ${task.completed ? 'opacity-60' : ''}`}
               onClick={() => onTaskCardClick(task)}
             >
-              <div className="flex-1">
-                <p className={`font-medium ${getTitleColor(task.priority)}`}>{task.title}</p>
-                <p className="text-sm text-muted-foreground">{t("Due")}: {getDateLabel(new Date(task.due_date), t)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className={`${getPriorityColor(task.priority)} text-xs`}>
-                  {t(task.priority)}
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditTask(task);
-                  }}
-                  className="text-muted-foreground hover:text-primary h-7 w-7"
-                  aria-label={t("Edit task {{taskTitle}}", { taskTitle: task.title })}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  {onToggleTaskCompletion && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleTaskCompletion(task.id);
+                      }}
+                      className="mt-1 text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                    >
+                      {task.completed ? (
+                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <Circle className="h-5 w-5" />
+                      )}
+                    </button>
+                  )}
+
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2 flex-1">
+                        <h3 className={`font-semibold ${getTitleColor(task.priority)} ${task.completed ? 'line-through' : ''}`}>
+                          {task.title}
+                        </h3>
+                        <Badge className={`${getPriorityColor(task.priority)} text-xs`}>
+                          {t(task.priority)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditTask(task);
+                          }}
+                          className="text-muted-foreground hover:text-accent-foreground h-8 w-8 p-0"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground">{task.description}</p>
+                    )}
+
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{getDateLabel(new Date(task.due_date), t)}</span>
+                      </div>
+                      {task.due_time && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{task.due_time}</span>
+                        </div>
+                      )}
+                      {task.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate max-w-32">{task.location}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))
         ) : (
           <div className="text-center py-4">

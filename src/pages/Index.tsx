@@ -19,7 +19,7 @@ import { processRecentActivities } from "@/utils/activityUtils";
 
 const Index = () => {
   const { t } = useTranslation();
-  const { tasks, loading, createTask, updateTask } = useTasks();
+  const { tasks, loading, createTask, updateTask, toggleTaskCompletion } = useTasks();
   const { logs, loading: logsLoading, initialLoadComplete, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
   const {
@@ -137,6 +137,7 @@ const Index = () => {
           onTaskCardClick={handleTaskCardClick}
           onEditTask={handleEditFromDetail}
           onNewTaskClick={() => setIsNewTaskOpen(true)}
+          onToggleTaskCompletion={toggleTaskCompletion}
         />
 
         <RecentActivities
