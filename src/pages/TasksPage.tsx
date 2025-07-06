@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, MapPin, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Clock, CheckCircle, Circle, MapPin, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TaskModal from "@/components/TaskModal";
 import TaskDetailModal from "@/components/TaskDetailModal";
@@ -49,19 +49,19 @@ const TasksPage = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/20 text-red-100 border-red-300';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-100 border-yellow-300';
-      case 'low': return 'bg-green-500/20 text-green-100 border-green-300';
-      default: return 'bg-gray-500/20 text-gray-100 border-gray-300';
+      case 'high': return 'bg-destructive/10 text-destructive-foreground border border-destructive/30';
+      case 'medium': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30';
+      case 'low': return 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30';
+      default: return 'bg-muted/50 text-muted-foreground border-border';
     }
   };
 
   const getTitleColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-200';
-      case 'medium': return 'text-yellow-200';
-      case 'low': return 'text-green-200';
-      default: return 'text-white';
+      case 'high': return 'text-destructive-foreground';
+      case 'medium': return 'text-yellow-600 dark:text-yellow-400';
+      case 'low': return 'text-green-600 dark:text-green-400';
+      default: return 'text-card-foreground';
     }
   };
 
@@ -89,42 +89,38 @@ const TasksPage = () => {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
-        <div className="text-white text-lg">{t("Loading tasks...")}</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+      <div className="text-foreground">{t("Loading tasks...")}</div>
+    </div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 pb-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-pulse"></div>
-      <div className="absolute top-0 left-0 w-full h-full opacity-40" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
-
+    <div className="min-h-screen bg-background text-foreground pb-20 relative">
       {/* Header */}
-      <div className="relative backdrop-blur-md bg-white/10 border-b border-white/20 p-4 shadow-lg">
+      <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/')}
-              className="text-white hover:bg-white/20"
+              className="text-card-foreground hover:bg-accent/50"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
+            <div className="p-2 rounded-xl bg-primary shadow-lg">
+              <Calendar className="h-6 w-6 text-primary-foreground" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary">
                 {t("Task Management")}
               </h1>
-              <p className="text-sm text-purple-100/80">{t("Organize your rat care tasks")}</p>
+              <p className="text-sm text-muted-foreground">{t("Organize your rat care tasks")}</p>
             </div>
           </div>
           <Button
             onClick={() => setTaskModalOpen(true)}
-            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 shadow-lg"
+            variant="default"
           >
             <Plus className="h-4 w-4 mr-2" />
             {t("New Task")}
@@ -138,7 +134,7 @@ const TasksPage = () => {
           {sortedTasks.map((task) => (
             <Card
               key={task.id}
-              className={`backdrop-blur-md bg-white/10 border-white/20 shadow-xl transition-all duration-300 cursor-pointer hover:shadow-2xl ${task.completed ? 'opacity-60' : ''}`}
+              className={`bg-card text-card-foreground border-border shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer ${task.completed ? 'opacity-60' : ''}`}
               onClick={() => handleTaskCardClick(task)}
             >
               <CardContent className="p-4">
@@ -148,10 +144,10 @@ const TasksPage = () => {
                       e.stopPropagation();
                       toggleTaskCompletion(task.id);
                     }}
-                    className="mt-1 text-white hover:text-green-300 transition-colors"
+                    className="mt-1 text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
                   >
                     {task.completed ? (
-                      <CheckCircle className="h-5 w-5 text-green-300" />
+                      <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                     ) : (
                       <Circle className="h-5 w-5" />
                     )}
@@ -163,7 +159,7 @@ const TasksPage = () => {
                         <h3 className={`font-semibold ${getTitleColor(task.priority)} ${task.completed ? 'line-through' : ''}`}>
                           {task.title}
                         </h3>
-                        <Badge className={`${getPriorityColor(task.priority)} border backdrop-blur-sm text-xs`}>
+                        <Badge className={`${getPriorityColor(task.priority)} text-xs`}>
                           {t(task.priority)}
                         </Badge>
                       </div>
@@ -176,7 +172,7 @@ const TasksPage = () => {
                             setEditingTask(task);
                             setTaskModalOpen(true);
                           }}
-                          className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                          className="text-muted-foreground hover:text-accent-foreground h-8 w-8 p-0"
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
@@ -188,18 +184,18 @@ const TasksPage = () => {
                             setTaskToDelete(task.id);
                             setDeleteConfirmOpen(true);
                           }}
-                          className="text-white hover:bg-white/20 hover:text-red-300 h-8 w-8 p-0"
+                          className="text-muted-foreground hover:text-destructive h-8 w-8 p-0"
                         >
-                          <Pencil className="h-3 w-3" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
 
                     {task.description && (
-                      <p className="text-sm text-purple-100/80">{task.description}</p>
+                      <p className="text-sm text-muted-foreground">{task.description}</p>
                     )}
 
-                    <div className="flex items-center gap-4 text-sm text-blue-100">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         <span>{getDateLabel(new Date(task.due_date))}</span>
@@ -225,14 +221,14 @@ const TasksPage = () => {
 
           {tasks.length === 0 && (
             <div className="text-center py-12">
-              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
-                <Calendar className="h-12 w-12 text-white" />
+              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary flex items-center justify-center">
+                <Calendar className="h-12 w-12 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">{t("No tasks yet")}</h3>
-              <p className="text-purple-100 mb-4">{t("Create your first task to get organized!")}</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{t("No tasks yet")}</h3>
+              <p className="text-muted-foreground mb-4">{t("Create your first task to get organized!")}</p>
               <Button
                 onClick={() => setTaskModalOpen(true)}
-                className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                variant="default"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("Create Your First Task")}
