@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
@@ -110,6 +111,35 @@ const RatsPage = () => {
     return traitColorMap[trait] || "bg-muted/50 text-muted-foreground border-border";
   };
 
+  // Helper function to extract personality traits from rat.personality
+  const getPersonalityTraits = (personality: any): string[] => {
+    if (!personality) return [];
+    
+    // If it's already an array of strings
+    if (Array.isArray(personality)) {
+      return personality.filter(trait => typeof trait === 'string');
+    }
+    
+    // If it's an array of objects with name property
+    if (Array.isArray(personality)) {
+      return personality
+        .filter(trait => trait && typeof trait === 'object' && trait.name)
+        .map(trait => trait.name);
+    }
+    
+    // If it's a single object with name property
+    if (typeof personality === 'object' && personality.name) {
+      return [personality.name];
+    }
+    
+    // If it's a string
+    if (typeof personality === 'string') {
+      return [personality];
+    }
+    
+    return [];
+  };
+
   const handleHealthClick = (rat: any) => {
     setSelectedRat(rat);
     setLogTypes(['health', 'weight', 'medication']);
@@ -210,102 +240,106 @@ const RatsPage = () => {
           <div className="text-center text-muted-foreground py-8">{t("Loading your rats...")}</div>
         ) : (
           <div className="grid gap-4">
-            {rats.map((rat) => (
-              <Card
-                key={rat.id}
-                className={`bg-card text-card-foreground border-border shadow-xl hover:shadow-2xl transition-all duration-300 ${rat.status === 'deceased' ? 'opacity-70 grayscale' : ''}`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    {/* Profile Picture */}
-                    <div className="relative group">
-                      <ProfilePictureUpload
-                        currentImage={rat.profile_picture}
-                        onImageUpdate={(imageUrl) => updateRatPicture(rat.id, imageUrl)}
-                        petName={rat.name}
-                        onImageClick={() => handleImageClick(rat.profile_picture)}
-                        forceOpen={editingRatImageId === rat.id}
-                        onClose={() => setEditingRatImageId(null)}
-                      />
-                      <Button
-                        size="icon"
-                        variant="default" 
-                        className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full shadow-lg border-2 border-background hover:bg-primary/90"
-                        onClick={() => setEditingRatImageId(rat.id)}
-                      >
-                        <Pencil className="h-4 w-4 text-primary-foreground" />
-                      </Button>
-                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full ${getStatusColorClasses(rat.status)} border-2 border-background shadow-sm`}></div>
-                    </div>
+            {rats.map((rat) => {
+              const personalityTraits = getPersonalityTraits(rat.personality);
+              
+              return (
+                <Card
+                  key={rat.id}
+                  className={`bg-card text-card-foreground border-border shadow-xl hover:shadow-2xl transition-all duration-300 ${rat.status === 'deceased' ? 'opacity-70 grayscale' : ''}`}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      {/* Profile Picture */}
+                      <div className="relative group">
+                        <ProfilePictureUpload
+                          currentImage={rat.profile_picture}
+                          onImageUpdate={(imageUrl) => updateRatPicture(rat.id, imageUrl)}
+                          petName={rat.name}
+                          onImageClick={() => handleImageClick(rat.profile_picture)}
+                          forceOpen={editingRatImageId === rat.id}
+                          onClose={() => setEditingRatImageId(null)}
+                        />
+                        <Button
+                          size="icon"
+                          variant="default" 
+                          className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full shadow-lg border-2 border-background hover:bg-primary/90"
+                          onClick={() => setEditingRatImageId(rat.id)}
+                        >
+                          <Pencil className="h-4 w-4 text-primary-foreground" />
+                        </Button>
+                        <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full ${getStatusColorClasses(rat.status)} border-2 border-background shadow-sm`}></div>
+                      </div>
 
-                    {/* Rat Info */}
-                    <div className={`flex-1 space-y-3`}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-xl font-bold text-card-foreground">{rat.name}</h3>
-                          <p className="text-sm text-muted-foreground">{t(rat.sex)} • {calculateAge(rat.birthday)}</p>
+                      {/* Rat Info */}
+                      <div className={`flex-1 space-y-3`}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-xl font-bold text-card-foreground">{rat.name}</h3>
+                            <p className="text-sm text-muted-foreground">{t(rat.sex)} • {calculateAge(rat.birthday)}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              className={`${getStatusColorClasses(rat.status)} text-xs`}
+                            >
+                              {t(rat.status)}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEditClick(rat)}
+                              className="text-muted-foreground hover:text-accent-foreground"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            className={`${getStatusColorClasses(rat.status)} text-xs`}
+
+                        {/* Birthday */}
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span className="text-sm">{t("Born {{date}}", { date: new Date(rat.birthday).toLocaleDateString() })}</span>
+                        </div>
+
+                        {/* Personality Traits */}
+                        {personalityTraits && personalityTraits.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {personalityTraits.map((trait: string, index: number) => (
+                              <Badge 
+                                key={index} 
+                                className={`${getPersonalityColorClasses(trait)} text-xs`}
+                              >
+                                {t(trait)}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Quick Actions */}
+                        <div className="flex gap-2 pt-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleHealthClick(rat)}
                           >
-                            {t(rat.status)}
-                          </Badge>
+                            <Heart className="h-3 w-3 mr-1" />
+                            {t("Health")}
+                          </Button>
                           <Button
                             size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditClick(rat)}
-                            className="text-muted-foreground hover:text-accent-foreground"
+                            variant="outline"
+                            onClick={() => handleTrackClick(rat)}
                           >
-                            <Pencil className="h-4 w-4" />
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {t("Track")}
                           </Button>
                         </div>
                       </div>
-
-                      {/* Birthday */}
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span className="text-sm">{t("Born {{date}}", { date: new Date(rat.birthday).toLocaleDateString() })}</span>
-                      </div>
-
-                      {/* Personality Traits */}
-                      {rat.personality && rat.personality.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {rat.personality.map((trait: string, index: number) => (
-                            <Badge 
-                              key={index} 
-                              className={`${getPersonalityColorClasses(trait)} text-xs`}
-                            >
-                              {t(trait)}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Quick Actions */}
-                      <div className="flex gap-2 pt-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleHealthClick(rat)}
-                        >
-                          <Heart className="h-3 w-3 mr-1" />
-                          {t("Health")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleTrackClick(rat)}
-                        >
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {t("Track")}
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {/* Empty State */}
             {rats.length === 0 && (
