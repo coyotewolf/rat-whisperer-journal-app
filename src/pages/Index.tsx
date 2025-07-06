@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { tasks, loading, createTask, updateTask } = useTasks();
+  const { tasks, loading, createTask, updateTask, deleteTask } = useTasks();
   const { logs, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false);
@@ -410,6 +410,7 @@ const Index = () => {
         }}
         onSave={handleTaskSave}
         task={editingTask}
+        onDelete={deleteTask} // Pass the deleteTask function
       />
       <TaskDetailModal
         isOpen={isTaskDetailOpen}
