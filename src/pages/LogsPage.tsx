@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +7,11 @@ import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil, Scale, 
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
-import LogDetailModal from "@/components/LogDetailModal"; // Import LogDetailModal
+import LogDetailModal from "@/components/LogDetailModal";
 import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
+import { getCategoryHierarchy, getPriorityClasses } from "@/utils/categoryHierarchy";
 
 const LogsPage = () => {
   const { user } = useAuth();
@@ -23,15 +23,13 @@ const LogsPage = () => {
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<any | null>(null);
-  const [selectedLogEntry, setSelectedLogEntry] = useState<any | null>(null); // State for LogDetailModal
-  const [isLogDetailOpen, setIsLogDetailOpen] = useState(false); // State for LogDetailModal
+  const [selectedLogEntry, setSelectedLogEntry] = useState<any | null>(null);
+  const [isLogDetailOpen, setIsLogDetailOpen] = useState(false);
 
-  // Update filtered logs when logs change
   useEffect(() => {
     setFilteredLogs(logs);
   }, [logs]);
 
-  // Get all unique hashtags from logs
   const availableHashtags = Array.from(
     new Set(logs.flatMap(log => log.hashtags || []))
   );
@@ -39,7 +37,6 @@ const LogsPage = () => {
   useEffect(() => {
     let filtered = logs;
 
-    // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter(log =>
         log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -48,7 +45,6 @@ const LogsPage = () => {
       );
     }
 
-    // Filter by hashtags
     if (selectedHashtags.length > 0) {
       filtered = filtered.filter(log =>
         log.hashtags?.some(hashtag => selectedHashtags.includes(hashtag))
@@ -91,13 +87,13 @@ const LogsPage = () => {
         return "border-[hsl(217,70%,65%)] bg-[hsl(217,70%,75%)] text-slate-800";
       case "health":
       case "health check":
-        return "border-[hsl(262,60%,72%)] bg-[hsl(262,60%,82%)] text-slate-800"; // Medication's original color
+        return "border-[hsl(262,60%,72%)] bg-[hsl(262,60%,82%)] text-slate-800";
       case "weight":
         return "border-[hsl(145,50%,65%)] bg-[hsl(145,50%,75%)] text-slate-800";
       case "environment":
         return "border-[hsl(30,70%,70%)] bg-[hsl(30,70%,80%)] text-slate-800";
       case "medication":
-        return "border-[hsl(0,70%,70%)] bg-[hsl(0,70%,80%)] text-slate-800"; // Health's original color
+        return "border-[hsl(0,70%,70%)] bg-[hsl(0,70%,80%)] text-slate-800";
       case "feeding":
         return "border-[hsl(45,75%,70%)] bg-[hsl(45,75%,80%)] text-slate-800";
       default:
@@ -146,80 +142,190 @@ const LogsPage = () => {
     handleEditLog(log);
   };
 
-  const LogCard = ({ log }: { log: any }) => {
+  const renderLogContent = (log: any) => {
+    const hierarchy = getCategoryHierarchy(log.type);
     const { date, time } = formatDateTime(log.timestamp);
+    
+    switch (log.type) {
+      case 'health':
+        return (
+          <div className={hierarchy.spacing.internal}>
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {getLogIcon(log.type)}
+                <span className={`${hierarchy.visualWeight.titleSize} capitalize`}>{t(log.type)}</span>
+              </div>
+              <div className="text-right">
+                <div className={hierarchy.visualWeight.timeSize}>{date}</div>
+                <div className={hierarchy.visualWeight.timeSize}>{time}</div>
+              </div>
+            </div>
+            
+            {log.ratNames && log.ratNames.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-3">
+                {log.ratNames.map((ratName: string, index: number) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {ratName}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {log.behavior && (
+              <p className={`${hierarchy.visualWeight.statusSize} text-card-foreground mb-2`}>
+                {t("Behavior")}: {t(log.behavior)}
+              </p>
+            )}
+            
+            {log.symptoms && log.symptoms.length > 0 && (
+              <div className="mb-2">
+                <p className={`${hierarchy.visualWeight.statusSize} text-card-foreground mb-1`}>
+                  {t("Symptoms")}:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {log.symptoms.map((symptom: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {t(symptom)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {log.notes && (
+              <p className={`${hierarchy.visualWeight.timeSize} text-muted-foreground mt-2`}>
+                {t(log.notes)}
+              </p>
+            )}
+          </div>
+        );
+
+      case 'weight':
+        return (
+          <div className={hierarchy.spacing.internal}>
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {getLogIcon(log.type)}
+                <span className={`${hierarchy.visualWeight.titleSize} capitalize`}>{t(log.type)}</span>
+              </div>
+              <div className="text-right">
+                <div className={hierarchy.visualWeight.timeSize}>{date}</div>
+                <div className={hierarchy.visualWeight.timeSize}>{time}</div>
+              </div>
+            </div>
+            
+            {log.ratNames && log.ratNames.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-3">
+                {log.ratNames.map((ratName: string, index: number) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {ratName}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {log.weight && (
+              <div className="mb-2">
+                <span className={`${hierarchy.visualWeight.valueSize} text-primary`}>
+                  {log.weight}g
+                </span>
+              </div>
+            )}
+            
+            {log.notes && (
+              <p className={`${hierarchy.visualWeight.timeSize} text-muted-foreground mt-2`}>
+                {t(log.notes)}
+              </p>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className={hierarchy.spacing.internal}>
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2 text-card-foreground">
+                {getLogIcon(log.type)}
+                <span className={`${hierarchy.visualWeight.titleSize} capitalize`}>{t(log.type)}</span>
+              </div>
+              <div className="text-right">
+                <div className={hierarchy.visualWeight.timeSize}>{date}</div>
+                <div className={hierarchy.visualWeight.timeSize}>{time}</div>
+              </div>
+            </div>
+            
+            {log.ratNames && log.ratNames.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {log.ratNames.map((ratName: string, index: number) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {ratName}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {log.behavior && (
+              <p className={`${hierarchy.visualWeight.statusSize} text-card-foreground mb-1`}>
+                {t("Behavior")}: {t(log.behavior)}
+              </p>
+            )}
+            
+            {log.weight && (
+              <p className={`${hierarchy.visualWeight.statusSize} text-card-foreground mb-1`}>
+                {t("Weight")}: {log.weight}g
+              </p>
+            )}
+            
+            {log.temperature && (
+              <p className={`${hierarchy.visualWeight.statusSize} text-card-foreground mb-1`}>
+                {t("Temperature")}: {log.temperature}°C
+              </p>
+            )}
+            
+            {log.notes && (
+              <p className={`${hierarchy.visualWeight.timeSize} text-muted-foreground mt-2`}>
+                {t(log.notes)}
+              </p>
+            )}
+
+            {log.hashtags && log.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {log.hashtags.map((hashtag: string, index: number) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    #{t(hashtag)}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+    }
+  };
+
+  const LogCard = ({ log }: { log: any }) => {
+    const hierarchy = getCategoryHierarchy(log.type);
+    const priorityClasses = getPriorityClasses(hierarchy.priority);
     
     return (
       <Card
-        className={`${getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}
+        className={`${getLogColorClasses(log.type)} ${priorityClasses} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer ${hierarchy.spacing.external}`}
         onClick={() => handleLogCardClick(log)}
       >
         <CardContent className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2 text-card-foreground">
-              {getLogIcon(log.type)}
-              <span className="font-medium capitalize">{t(log.type)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="text-right text-sm text-muted-foreground">
-                <div>{date}</div>
-                <div>{time}</div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary h-7 w-7"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditLog(log);
-                }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </div>
+          {renderLogContent(log)}
+          <div className="flex justify-end mt-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-primary h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditLog(log);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
           </div>
-          
-          {log.ratNames && log.ratNames.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {log.ratNames.map((ratName: string, index: number) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {ratName}
-                </Badge>
-              ))}
-            </div>
-          )}
-          
-          {log.behavior && (
-            <p className="text-sm font-medium text-card-foreground mb-1">
-              {t("Behavior")}: {t(log.behavior)}
-            </p>
-          )}
-          
-          {log.weight && (
-            <p className="text-sm font-medium text-card-foreground mb-1">
-              {t("Weight")}: {log.weight}g
-            </p>
-          )}
-          
-          {log.temperature && (
-            <p className="text-sm font-medium text-card-foreground mb-1">
-              {t("Temperature")}: {log.temperature}°C
-            </p>
-          )}
-          
-          {log.notes && (
-            <p className="text-sm text-muted-foreground mt-2">{t(log.notes)}</p>
-          )}
-
-          {log.hashtags && log.hashtags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {log.hashtags.map((hashtag: string, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  #{t(hashtag)}
-                </Badge>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     );
@@ -227,7 +333,6 @@ const LogsPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 relative">
-      {/* Header */}
       <div className="relative bg-card text-card-foreground border-b border-border p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
