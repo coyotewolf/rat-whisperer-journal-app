@@ -115,13 +115,15 @@ const RatsPage = () => {
   const getPersonalityTraits = (personality: any): string[] => {
     if (!personality) return [];
     
-    // If it's already an array of strings
+    // If it's an array
     if (Array.isArray(personality)) {
-      return personality.filter(trait => typeof trait === 'string');
-    }
-    
-    // If it's an array of objects with name property
-    if (Array.isArray(personality)) {
+      // First try to handle array of strings
+      const stringTraits = personality.filter(trait => typeof trait === 'string');
+      if (stringTraits.length > 0) {
+        return stringTraits;
+      }
+      
+      // Then try to handle array of objects with name property
       return personality
         .filter(trait => trait && typeof trait === 'object' && trait.name)
         .map(trait => trait.name);
