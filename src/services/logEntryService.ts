@@ -92,6 +92,17 @@ export class LogEntryService {
   }
 
   static async addLog(userId: string, logData: Omit<LogEntry, 'id' | 'timestamp' | 'rat_id'>) {
+    console.log('LogEntryService.addLog called with:', logData);
+    console.log('LogEntryService: status value:', logData.status);
+    
+    // 特別處理健康日誌的狀態驗證
+    if (logData.type === 'health' && logData.status) {
+      const validStatuses = ['excellent', 'good', 'fair', 'poor', 'sick'];
+      if (!validStatuses.includes(logData.status)) {
+        console.warn('Invalid health status:', logData.status);
+      }
+    }
+    
     const content: LogEntryContent = {
       behavior: logData.behavior,
       weight: logData.weight,
@@ -106,6 +117,8 @@ export class LogEntryService {
       amount: logData.amount,
       status: logData.status,
     };
+    
+    console.log('LogEntryService: final content before database insert:', content);
 
     const { data, error } = await supabase
       .from('log_entries')

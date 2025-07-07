@@ -25,6 +25,7 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
   }, [initialData]);
 
   useEffect(() => {
+    console.log('HealthLogForm: status changed to:', status, 'notes:', notes);
     onDataChange({ status, notes });
   }, [status, notes, onDataChange]);
 
@@ -33,6 +34,7 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
   }, []);
 
   const handleStatusChange = useCallback((value: string) => {
+    console.log('HealthLogForm: handleStatusChange called with:', value);
     setStatus(value);
   }, []);
 
