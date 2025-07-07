@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
@@ -13,13 +12,13 @@ import AddRatModal from "@/components/AddRatModal";
 import EditRatModal from "@/components/EditRatModal";
 import RatLogsModal from "@/components/RatLogsModal";
 import { useAuth } from "@/hooks/useAuth";
-import { usePersonalityTags } from "@/hooks/usePersonalityTags";  // Add this import
+import { usePersonalityTags } from "@/hooks/usePersonalityTags";
 import { supabase } from "@/integrations/supabase/client";
 
 const RatsPage = () => {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
-  const { personalityTags, refetch: refetchPersonalityTags } = usePersonalityTags(); // Add this hook
+  const { personalityTags, refetch: refetchPersonalityTags } = usePersonalityTags();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [addRatModalOpen, setAddRatModalOpen] = useState(false);
   const [editRatModalOpen, setEditRatModalOpen] = useState(false);
@@ -38,10 +37,11 @@ const RatsPage = () => {
     }
   }, [user]);
 
-  // Refresh rats when personality tags are updated
+  // Enhanced effect to refresh rats when personality tags are updated
   useEffect(() => {
-    if (user && personalityTags.length > 0) {
-      fetchRats();
+    if (user && personalityTags.length >= 0) {
+      // Force re-render by updating the rats state to trigger color recalculation
+      setRats(prevRats => [...prevRats]);
     }
   }, [personalityTags, user]);
 
@@ -105,22 +105,17 @@ const RatsPage = () => {
     return "bg-muted text-muted-foreground border-border";
   };
 
-  // Updated function to get personality trait color from database
+  // Updated function to get personality trait color from database with real-time updates
   const getPersonalityTraitColor = (traitName: string) => {
-    const matchingTag = personalityTags.find(tag => tag.name.toLowerCase() === traitName.toLowerCase());
+    // Use current personalityTags state to ensure real-time updates
+    const matchingTag = personalityTags.find(tag => 
+      tag.name.toLowerCase() === traitName.toLowerCase()
+    );
+    console.log('Looking for trait:', traitName, 'Found:', matchingTag); // Debug log
     return matchingTag?.color || '#6B7280'; // Default gray if not found
   };
 
   const getPersonalityColorClasses = (trait: any) => {
-    // If trait is an object with color property, use the actual color with inline style
-    if (typeof trait === 'object' && trait.color) {
-      // Return empty classes as we'll handle styling with inline styles
-      return 'text-xs px-2 py-1 rounded-full border';
-    }
-    
-    // If trait is a string, use database color or fallback
-    const traitName = typeof trait === 'string' ? trait : (trait?.name || '');
-    
     // Return basic classes, color will be handled by inline styles
     return 'text-xs px-2 py-1 rounded-full border';
   };
@@ -183,9 +178,9 @@ const RatsPage = () => {
     setEditRatModalOpen(true);
   };
 
-  const handleRatUpdated = () => {
-    fetchRats();
-    refetchPersonalityTags(); // Refresh personality tags to ensure colors are up to date
+  const handleRatUpdated = async () => {
+    await fetchRats();
+    await refetchPersonalityTags(); // Ensure personality tags are also refreshed
   };
 
   if (authLoading) {
@@ -327,19 +322,19 @@ const RatsPage = () => {
                           <span className="text-sm">{t("Born {{date}}", { date: new Date(rat.birthday).toLocaleDateString() })}</span>
                         </div>
 
-                         {/* Personality Traits */}
+                         {/* Personality Traits with real-time color updates */}
                          {personalityTraits && personalityTraits.length > 0 && (
                            <div className="flex flex-wrap gap-2">
                              {personalityTraits.map((trait: any, index: number) => {
                                const traitName = typeof trait === 'string' ? trait : (trait?.name || '');
-                               // Get color from database or use trait object color
+                               // Always get the latest color from the current personalityTags state
                                const traitColor = typeof trait === 'object' && trait?.color 
                                  ? trait.color 
                                  : getPersonalityTraitColor(traitName);
                                
                                return (
                                  <Badge 
-                                   key={index} 
+                                   key={`${rat.id}-${traitName}-${index}-${traitColor}`}
                                    className={`${getPersonalityColorClasses(trait)} text-xs`}
                                    style={{
                                      backgroundColor: hexToRgba(traitColor, 0.2),
