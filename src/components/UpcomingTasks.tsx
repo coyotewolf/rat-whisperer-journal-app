@@ -30,7 +30,7 @@ const UpcomingTasks = ({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/20 text-destructive border border-destructive/50';
+      case 'high': return 'bg-destructive/40 text-destructive-foreground border-2 border-destructive font-bold';
       case 'medium': return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/50';
       case 'low': return 'bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/50';
       default: return 'bg-muted/50 text-muted-foreground border-border';
@@ -39,7 +39,7 @@ const UpcomingTasks = ({
 
   const getTitleColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-destructive font-semibold';
+      case 'high': return 'text-destructive font-bold';
       case 'medium': return 'text-yellow-700 dark:text-yellow-300';
       case 'low': return 'text-green-700 dark:text-green-300';
       default: return 'text-card-foreground';
