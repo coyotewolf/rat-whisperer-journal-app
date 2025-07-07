@@ -46,6 +46,9 @@ const RatsPage = () => {
     }
   }, [personalityTags, user]);
 
+  // Force re-render when personality tags change by creating a dependency key
+  const personalityTagsKey = personalityTags.map(tag => `${tag.id}-${tag.color}-${tag.name}`).join(',');
+
   const fetchRats = async () => {
     if (!user) return;
     
@@ -145,7 +148,7 @@ const RatsPage = () => {
           <div className="grid gap-4">
             {rats.map((rat) => (
               <RatCard
-                key={rat.id}
+                key={`${rat.id}-${personalityTagsKey}`}
                 rat={rat}
                 personalityTags={personalityTags}
                 onHealthClick={handleHealthClick}
