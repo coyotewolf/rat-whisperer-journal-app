@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Activity, Heart, Scale, Thermometer, Pill, Utensils, ArrowLeft } from "lucide-react";
 import LogEntryModal from "@/components/LogEntryModal";
@@ -97,6 +97,9 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
               <div className="w-10"></div> {/* Placeholder to balance the back button */}
             </div>
           </DialogHeader>
+          <DialogDescription className="sr-only">
+            {t("Select the type of activity you want to log")}
+          </DialogDescription>
           <div className="grid grid-cols-2 gap-4 p-4">
             {logTypes.map((logType) => {
               const Icon = logType.icon;

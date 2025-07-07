@@ -16,25 +16,14 @@ interface HealthLogFormProps {
 
 const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsChange }: HealthLogFormProps) => {
   const { t } = useTranslation();
-  const [status, setStatus] = useState(initialData?.status || "");
-  const [notes, setNotes] = useState(initialData?.notes || "");
-
-  useEffect(() => {
-    setStatus(initialData?.status || "");
-    setNotes(initialData?.notes || "");
-  }, [initialData]);
-
-  useEffect(() => {
-    onDataChange({ status, notes });
-  }, [status, notes, onDataChange]);
 
   const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNotes(e.target.value);
-  }, []);
+    onDataChange({ notes: e.target.value });
+  }, [onDataChange]);
 
   const handleStatusChange = useCallback((value: string) => {
-    setStatus(value);
-  }, []);
+    onDataChange({ status: value });
+  }, [onDataChange]);
 
   const handleTagSelection = (tagName: string) => {
     if (!onTagsChange) return;
@@ -50,7 +39,7 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
     <>
       <div className="space-y-2">
         <Label htmlFor="status">{t("Health Status")}</Label>
-        <Select value={status} onValueChange={handleStatusChange}>
+        <Select value={initialData?.status || ""} onValueChange={handleStatusChange}>
           <SelectTrigger>
             <SelectValue placeholder={t("Select status")} />
           </SelectTrigger>
@@ -79,7 +68,7 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
         <Label htmlFor="notes">{t("Notes")}</Label>
         <Textarea
           id="notes"
-          value={notes}
+          value={initialData?.notes || ""}
           onChange={handleNotesChange}
         />
       </div>

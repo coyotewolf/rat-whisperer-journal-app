@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -125,7 +125,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
 
   const renderLogTypeFields = useMemo(() => {
     const formProps = {
-      initialData: {},
+      initialData: formData,
       onDataChange: handleDataChange,
     };
 
@@ -145,7 +145,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
       default:
         return <p>{t("Unknown log type")}</p>;
     }
-  }, [logType, selectedTags, handleDataChange, handleTagsChange, t]);
+  }, [logType, formData, selectedTags, handleDataChange, handleTagsChange, t]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(openState) => {
@@ -159,10 +159,15 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
             <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground hover:text-foreground mr-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center text-lg">{t("Add {{logType}} Log", { logType: t(logType.charAt(0).toUpperCase() + logType.slice(1)) })}</DialogTitle>
+            <DialogTitle className="flex-1 text-center text-lg capitalize">
+              {t('Add')} {logType ? t(logType) : ''} {t('Log')}
+            </DialogTitle>
             <div className="w-12"></div>
           </div>
         </DialogHeader>
+        <DialogDescription className="sr-only">
+          {t("Add a new log entry for your selected rats.")}
+        </DialogDescription>
         <div className="flex-1 overflow-y-auto px-4">
           <form onSubmit={handleSubmit} className="space-y-4 py-4" id="add-log-form">
             <div className="space-y-2">

@@ -39,6 +39,11 @@ const RecentActivities = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const capitalize = (s: string) => {
+    if (typeof s !== 'string' || !s) return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+
   const getLogIcon = (type: string) => {
     switch (type) {
       case "behavior":
@@ -87,7 +92,7 @@ const RecentActivities = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     {getLogIcon(activity.type)}
-                    <p className="font-medium">{t(activity.type)}</p>
+                    <p className="font-medium">{t(capitalize(activity.type))}</p>
                     {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {activity.behaviorTags.map((tag: string, index: number) => (
@@ -103,7 +108,7 @@ const RecentActivities = ({
                       <Badge
                         className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
                       >
-                        {t(activity.status)}
+                        {t(capitalize(activity.status))}
                       </Badge>
                     ) : null}
                   </div>

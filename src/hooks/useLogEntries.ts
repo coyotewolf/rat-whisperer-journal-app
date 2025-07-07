@@ -196,21 +196,29 @@ export const useLogEntries = () => {
   useEffect(() => {
     if (user && user.id) {
       fetchLogs();
+
+      const onOnline = () => {
+        fetchLogs(false); // Don't show loading on reconnect
+      };
+      window.addEventListener('online', onOnline);
+
+      const channel = supabase
+        .channel('logs-updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'log_entries' }, () => {
+          fetchLogs(false); // Don't show loading on realtime updates
+        })
+        .subscribe();
+
+      return () => {
+        window.removeEventListener('online', onOnline);
+        supabase.removeChannel(channel);
+      };
+    } else {
+      // Clear logs when user logs out
+      setLogs([]);
+      setLoading(false);
+      setInitialLoadComplete(true);
     }
-    const onOnline = () => {
-      fetchLogs(false); // Don't show loading on reconnect
-    };
-    window.addEventListener('online', onOnline);
-    const channel = supabase
-      .channel('logs-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'log_entries' }, () => {
-        fetchLogs(false); // Don't show loading on realtime updates
-      })
-      .subscribe();
-    return () => {
-      window.removeEventListener('online', onOnline);
-      supabase.removeChannel(channel);
-    };
   }, [user?.id]);
  
   return {

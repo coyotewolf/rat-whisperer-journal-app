@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MultiSelectRats from "@/components/MultiSelectRats";
 import LogTagSuggestions from "@/components/LogTagSuggestions";
@@ -172,7 +172,9 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
             </Button>
           </div>
         </DialogHeader>
-        
+        <DialogDescription className="sr-only">
+          {t("Edit your log entry here.")}
+        </DialogDescription>
         <div className="flex-1 overflow-y-auto px-4">
           <form onSubmit={handleSubmit} className={cn("space-y-4 py-4")} id="edit-log-form">
             <div className={cn("space-y-2")}>

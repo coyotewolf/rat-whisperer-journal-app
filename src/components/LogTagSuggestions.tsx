@@ -6,7 +6,7 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLogTagSuggestions } from "@/hooks/useLogTagSuggestions";
 import LogTagSuggestionSettings from "./settings/LogTagSuggestionSettings";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AddLogTagSuggestionForm } from "./settings/AddLogTagSuggestionForm";
 
 interface LogTagSuggestionsProps {
@@ -131,6 +131,9 @@ const LogTagSuggestions = ({ onSelect, selectedTags, placeholder, category = 'be
               <div className="w-10"></div>
             </div>
           </DialogHeader>
+          <DialogDescription className="sr-only">
+            {t("Here you can add, edit, or delete log tag suggestions.")}
+          </DialogDescription>
           <div className="py-4 max-h-[70vh] overflow-y-auto">
             <LogTagSuggestionSettings />
           </div>
