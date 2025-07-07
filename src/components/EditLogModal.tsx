@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Trash2, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,7 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (logToEdit) {
@@ -148,7 +150,12 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn("w-[95vw] max-w-md h-[90vh] max-h-[90vh] bg-card text-card-foreground p-0 overflow-hidden")}>
+      <DialogContent className={cn(
+        "bg-card text-card-foreground p-0 overflow-hidden",
+        isMobile 
+          ? "w-[95vw] max-w-md h-[90vh] max-h-[90vh]" 
+          : "w-auto max-w-2xl h-auto max-h-[85vh]"
+      )}>
         <DialogHeader className={cn("p-4 pb-2 border-b border-border flex-shrink-0")}>
           <div className={cn("flex items-center")}>
             <Button
@@ -172,20 +179,37 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
           </div>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 px-4">
-          <form onSubmit={handleSubmit} className={cn("space-y-4 py-4")} id="edit-log-form">
-            <div className={cn("space-y-2")}>
-              <Label htmlFor="rats">{t("Rats")}</Label>
-              <MultiSelectRats
-                selectedRatIds={selectedRats}
-                onSelectionChange={handleRatSelectionChange}
-                placeholder={t("Select rats")}
-              />
-            </div>
+        {isMobile ? (
+          <ScrollArea className="flex-1 px-4">
+            <form onSubmit={handleSubmit} className={cn("space-y-4 py-4")} id="edit-log-form">
+              <div className={cn("space-y-2")}>
+                <Label htmlFor="rats">{t("Rats")}</Label>
+                <MultiSelectRats
+                  selectedRatIds={selectedRats}
+                  onSelectionChange={handleRatSelectionChange}
+                  placeholder={t("Select rats")}
+                />
+              </div>
 
-            {renderLogTypeFields()}
-          </form>
-        </ScrollArea>
+              {renderLogTypeFields()}
+            </form>
+          </ScrollArea>
+        ) : (
+          <div className="flex-1 px-4 overflow-y-auto">
+            <form onSubmit={handleSubmit} className={cn("space-y-4 py-4")} id="edit-log-form">
+              <div className={cn("space-y-2")}>
+                <Label htmlFor="rats">{t("Rats")}</Label>
+                <MultiSelectRats
+                  selectedRatIds={selectedRats}
+                  onSelectionChange={handleRatSelectionChange}
+                  placeholder={t("Select rats")}
+                />
+              </div>
+
+              {renderLogTypeFields()}
+            </form>
+          </div>
+        )}
 
         <DialogFooter className={cn("p-4 pt-2 border-t border-border flex-shrink-0")}>
           <div className={cn("flex flex-col sm:flex-row sm:justify-end sm:space-x-2 w-full gap-2")}>
