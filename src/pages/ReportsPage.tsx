@@ -59,9 +59,17 @@ const ReportsPage = () => {
         <Tabs defaultValue="daily" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
             {reportTypes.map((type) => (
-              <TabsTrigger key={type.id} value={type.id} className="text-xs">
-                <type.icon className="h-4 w-4 mr-1" />
-                {type.title}
+              <TabsTrigger key={type.id} value={type.id} className="text-xs px-1 py-2 min-w-0">
+                <div className="flex flex-col items-center gap-1 w-full">
+                  <type.icon className="h-3 w-3 flex-shrink-0" />
+                  <span className="hidden sm:block text-center leading-tight">{type.title}</span>
+                  <span className="sm:hidden text-center leading-tight text-[10px]">
+                    {type.id === 'daily' && t('Daily')}
+                    {type.id === 'health' && t('Health')}
+                    {type.id === 'feeding' && t('Feed')}
+                    {type.id === 'behavior' && t('Behavior')}
+                  </span>
+                </div>
               </TabsTrigger>
             ))}
           </TabsList>
