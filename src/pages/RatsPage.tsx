@@ -96,7 +96,15 @@ const RatsPage = () => {
     return "bg-muted text-muted-foreground border-border";
   };
 
-  const getPersonalityColorClasses = (trait: string) => {
+  const getPersonalityColorClasses = (trait: any) => {
+    // If trait is an object with color property, use the actual color with inline style
+    if (typeof trait === 'object' && trait.color) {
+      // Return empty classes as we'll handle styling with inline styles
+      return 'text-xs px-2 py-1 rounded-full border';
+    }
+    
+    // If trait is a string, use fallback color mapping
+    const traitName = typeof trait === 'string' ? trait : (trait?.name || '');
     const traitColorMap: { [key: string]: string } = {
       "Curious": "bg-primary/10 text-primary border border-primary/30",
       "Playful": "bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/30",
@@ -108,38 +116,42 @@ const RatsPage = () => {
       "Leader": "bg-destructive/10 text-destructive-foreground border border-destructive/30",
       "Protective": "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30"
     };
-    return traitColorMap[trait] || "bg-muted/50 text-muted-foreground border-border";
+    return traitColorMap[traitName] || "bg-muted/50 text-muted-foreground border-border";
   };
 
-  // Helper function to extract personality traits from rat.personality
-  const getPersonalityTraits = (personality: any): string[] => {
+  // Helper function to convert hex color to rgba
+  const hexToRgba = (hex: string, alpha: number) => {
+    if (!hex) return undefined;
+    
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Handle 3-digit hex
+    if (hex.length === 3) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    
+    // Handle 6-digit hex
+    if (hex.length === 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    return undefined;
+  };
+  const getPersonalityTraits = (personality: any): any[] => {
     if (!personality) return [];
     
     // If it's an array
     if (Array.isArray(personality)) {
-      // First try to handle array of strings
-      const stringTraits = personality.filter(trait => typeof trait === 'string');
-      if (stringTraits.length > 0) {
-        return stringTraits;
-      }
-      
-      // Then try to handle array of objects with name property
-      return personality
-        .filter(trait => trait && typeof trait === 'object' && trait.name)
-        .map(trait => trait.name);
+      // Return the array as is, whether it contains strings or objects
+      return personality.filter(trait => trait !== null && trait !== undefined);
     }
     
-    // If it's a single object with name property
-    if (typeof personality === 'object' && personality.name) {
-      return [personality.name];
-    }
-    
-    // If it's a string
-    if (typeof personality === 'string') {
-      return [personality];
-    }
-    
-    return [];
+    // If it's a single object or string
+    return [personality];
   };
 
   const handleHealthClick = (rat: any) => {
@@ -303,19 +315,29 @@ const RatsPage = () => {
                           <span className="text-sm">{t("Born {{date}}", { date: new Date(rat.birthday).toLocaleDateString() })}</span>
                         </div>
 
-                        {/* Personality Traits */}
-                        {personalityTraits && personalityTraits.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {personalityTraits.map((trait: string, index: number) => (
-                              <Badge 
-                                key={index} 
-                                className={`${getPersonalityColorClasses(trait)} text-xs`}
-                              >
-                                {t(trait)}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                         {/* Personality Traits */}
+                         {personalityTraits && personalityTraits.length > 0 && (
+                           <div className="flex flex-wrap gap-2">
+                             {personalityTraits.map((trait: any, index: number) => {
+                               const traitName = typeof trait === 'string' ? trait : (trait?.name || '');
+                               const traitColor = typeof trait === 'object' && trait?.color ? trait.color : null;
+                               
+                               return (
+                                 <Badge 
+                                   key={index} 
+                                   className={`${getPersonalityColorClasses(trait)} text-xs`}
+                                    style={traitColor ? {
+                                      backgroundColor: hexToRgba(traitColor, 0.2),
+                                      color: traitColor,
+                                      borderColor: hexToRgba(traitColor, 0.5)
+                                    } : undefined}
+                                 >
+                                   {t(traitName)}
+                                 </Badge>
+                               );
+                             })}
+                           </div>
+                         )}
 
                         {/* Quick Actions */}
                         <div className="flex gap-2 pt-2">
