@@ -2,12 +2,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
+import { cn, dialogContentStyles } from "@/lib/utils";
 import MultiSelectRats from "@/components/MultiSelectRats";
 
 // Import new log form components
@@ -152,37 +153,42 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         onClose(); 
       }
     }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-gray-500 hover:text-gray-700">
+      <DialogContent className={cn(dialogContentStyles)}>
+        <DialogHeader className="p-4 pb-2">
+          <div className="flex items-center">
+            <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground hover:text-foreground mr-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className="flex-1 text-center">{t("Add {{logType}} Log", { logType: t(logType.charAt(0).toUpperCase() + logType.slice(1)) })}</DialogTitle>
-            <div className="w-10"></div>
+            <DialogTitle className="flex-1 text-center text-lg">{t("Add {{logType}} Log", { logType: t(logType.charAt(0).toUpperCase() + logType.slice(1)) })}</DialogTitle>
+            <div className="w-12"></div>
           </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="rats">{t("Select Rats")}</Label>
-            <MultiSelectRats
-              selectedRatIds={selectedRats}
-              onSelectionChange={setSelectedRats}
-              placeholder={t("Select rats")}
-            />
-          </div>
-          
-          {renderLogTypeFields}
-          
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              {t("Cancel")}
-            </Button>
-            <Button type="submit" disabled={loading}>
+        <div className="flex-1 overflow-y-auto px-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-4" id="add-log-form">
+            <div className="space-y-2">
+              <Label htmlFor="rats">{t("Select Rats")}</Label>
+              <MultiSelectRats
+                selectedRatIds={selectedRats}
+                onSelectionChange={setSelectedRats}
+                placeholder={t("Select rats")}
+              />
+            </div>
+            
+            {renderLogTypeFields}
+          </form>
+        </div>
+        <DialogFooter className="p-4 pt-2">
+          <div className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 w-full gap-2">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="w-full sm:w-auto">
+                {t("Cancel")}
+              </Button>
+            </DialogClose>
+            <Button type="submit" form="add-log-form" disabled={loading} className="w-full sm:w-auto">
               {loading ? t("Adding...") : t("Add Log Entry")}
             </Button>
           </div>
-        </form>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

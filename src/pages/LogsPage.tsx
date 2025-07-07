@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 const LogsPage = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { logs, loading, updateLog, deleteLog } = useLogEntries();
+  const { logs, loading, addLog, updateLog, deleteLog } = useLogEntries();
   
   const [filteredLogs, setFilteredLogs] = useState(logs);
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,10 +148,6 @@ const LogsPage = () => {
     handleEditLog(log);
   };
 
-  const handleNewLogEntry = (newLog: any) => {
-    console.log("New log created:", newLog);
-    // The logs will be automatically updated by the useLogEntries hook
-  };
 
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
@@ -339,7 +335,7 @@ const LogsPage = () => {
       <QuickLogModal
         isOpen={isQuickLogOpen}
         onClose={() => setIsQuickLogOpen(false)}
-        onLogCreated={handleNewLogEntry}
+        onLogCreated={addLog}
       />
 
       <BottomNav />

@@ -47,7 +47,6 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
     setLogEntryModalOpen(false); // Close child modal state
     setIsQuickLogVisible(true);  // Ensure parent content is ready for next time
     onClose();                   // Close parent modal (QuickLogModal's main onClose prop)
-    navigate("/");               // Navigate home
   };
 
   // Called when LogEntryModal's internal back button is clicked
