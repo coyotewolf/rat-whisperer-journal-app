@@ -49,7 +49,7 @@ const TasksPage = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/10 text-destructive-foreground border border-destructive/30';
+      case 'high': return 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/50 font-bold';
       case 'medium': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30';
       case 'low': return 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30';
       default: return 'bg-muted/50 text-muted-foreground border-border';
@@ -58,7 +58,7 @@ const TasksPage = () => {
 
   const getTitleColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-destructive-foreground';
+      case 'high': return 'text-red-700 dark:text-red-300 font-bold';
       case 'medium': return 'text-yellow-600 dark:text-yellow-400';
       case 'low': return 'text-green-600 dark:text-green-400';
       default: return 'text-card-foreground';
