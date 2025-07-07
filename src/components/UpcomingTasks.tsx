@@ -30,18 +30,18 @@ const UpcomingTasks = ({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/10 text-destructive-foreground border border-destructive/30';
-      case 'medium': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30';
-      case 'low': return 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30';
+      case 'high': return 'bg-destructive/20 text-destructive border border-destructive/50';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/50';
+      case 'low': return 'bg-green-500/20 text-green-700 dark:text-green-300 border border-green-500/50';
       default: return 'bg-muted/50 text-muted-foreground border-border';
     }
   };
 
   const getTitleColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-destructive-foreground';
-      case 'medium': return 'text-yellow-600 dark:text-yellow-400';
-      case 'low': return 'text-green-600 dark:text-green-400';
+      case 'high': return 'text-destructive font-semibold';
+      case 'medium': return 'text-yellow-700 dark:text-yellow-300';
+      case 'low': return 'text-green-700 dark:text-green-300';
       default: return 'text-card-foreground';
     }
   };
