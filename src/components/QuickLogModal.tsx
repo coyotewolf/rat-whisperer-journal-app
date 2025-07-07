@@ -37,6 +37,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
       setAuthModalOpen(true);
       return;
     }
+    console.log('QuickLogModal: handleLogTypeClick - Setting log type to:', logType);
     setSelectedLogType(logType);
     setLogEntryModalOpen(true);
     setIsQuickLogVisible(false); // Hide QuickLogModal content
@@ -44,6 +45,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
 
   // Called when LogEntryModal's overlay/Esc is triggered, or after successful log addition
   const handleLogEntryOverlayOrSubmitClose = () => {
+    console.log('QuickLogModal: handleLogEntryOverlayOrSubmitClose - Closing LogEntryModal, resetting states.');
     setLogEntryModalOpen(false); // Close child modal state
     setIsQuickLogVisible(true);  // Ensure parent content is ready for next time
     onClose();                   // Close parent modal (QuickLogModal's main onClose prop)
@@ -51,12 +53,14 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
 
   // Called when LogEntryModal's internal back button is clicked
   const handleLogEntryBackNavigation = () => {
+    console.log('QuickLogModal: handleLogEntryBackNavigation - Back navigation from LogEntryModal.');
     setLogEntryModalOpen(false);
     setIsQuickLogVisible(true); // Show QuickLogModal content again
   };
 
   // This is for QuickLogModal's own Dialog (wrapper)
   const handleQuickLogDialogClose = (open: boolean) => {
+    console.log('QuickLogModal: handleQuickLogDialogClose - open:', open);
     if (!open) {
       // If QuickLogModal's overlay is clicked or Esc is pressed
       if (logEntryModalOpen) {
@@ -73,6 +77,7 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
     // When QuickLogModal is told to close (e.g., its `isOpen` prop becomes false),
     // ensure child modal is also closed and visibility is reset.
     if (!isOpen) {
+      console.log('QuickLogModal: useEffect - isOpen changed to false, resetting child modal states.');
       setLogEntryModalOpen(false);
       setIsQuickLogVisible(true);
     }

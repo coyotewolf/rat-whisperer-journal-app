@@ -28,6 +28,7 @@ interface LogEntryModalProps {
 }
 
 const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntryModalProps) => {
+  console.log('LogEntryModal rendered with logType:', logType);
   const [rats, setRats] = useState<any[]>([]);
   const [selectedRats, setSelectedRats] = useState<string[]>([]);
   const [formData, setFormData] = useState<any>({});
@@ -148,7 +149,7 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
   }, [logType, formData, selectedTags, handleDataChange, handleTagsChange, t]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(openState) => {
+    <Dialog open={isOpen && !!logType} onOpenChange={(openState) => {
       if (!openState) {
         onClose(); 
       }
