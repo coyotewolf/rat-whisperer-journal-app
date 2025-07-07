@@ -84,25 +84,9 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
 
     setLoading(true);
     try {
-      console.log('LogEntryModal: formData before submit:', formData);
-      console.log('LogEntryModal: logType:', logType);
-      
       let contentPayload = { ...formData };
       if (logType === 'behavior' || logType === 'health') {
         contentPayload.tags = selectedTags;
-      }
-
-      console.log('LogEntryModal: contentPayload:', contentPayload);
-
-      // 特別檢查健康日誌的狀態值
-      if (logType === 'health' && !contentPayload.status) {
-        console.error('Health log missing status value');
-        toast({ 
-          title: t("Error"), 
-          description: "健康狀態不能為空", 
-          variant: "destructive" 
-        });
-        return;
       }
 
       const logEntryData = {
@@ -122,8 +106,6 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
         amount: contentPayload.amount,
         status: contentPayload.status,
       };
-      
-      console.log('LogEntryModal: final logEntryData:', logEntryData);
       
       await onLogAdded(logEntryData);
       onClose();
