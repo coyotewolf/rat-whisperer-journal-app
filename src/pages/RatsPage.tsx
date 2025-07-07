@@ -40,9 +40,9 @@ const RatsPage = () => {
   // Enhanced effect to refresh rats when personality tags are updated
   useEffect(() => {
     if (user && personalityTags.length >= 0) {
-      // Force re-render by updating the rats state to trigger color recalculation
-      setRats(prevRats => prevRats.map(rat => ({ ...rat })));
-      console.log('Personality tags updated, forcing re-render:', personalityTags);
+      // Force complete refresh of rats data to ensure tags are properly updated
+      fetchRats();
+      console.log('Personality tags updated, refreshing rats data:', personalityTags);
     }
   }, [personalityTags, user]);
 

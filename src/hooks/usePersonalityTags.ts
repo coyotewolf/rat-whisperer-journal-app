@@ -129,6 +129,9 @@ export const usePersonalityTags = () => {
     if (!user) return false;
 
     try {
+      // First get the tag name to filter from rats
+      const tagToDelete = personalityTags.find(tag => tag.id === id);
+      
       const { error } = await supabase
         .from('personality_tags')
         .delete()
@@ -137,7 +140,47 @@ export const usePersonalityTags = () => {
 
       if (error) throw error;
 
+      // Update local state
       setPersonalityTags(prev => prev.filter(tag => tag.id !== id));
+      
+      // Update all rats to remove the deleted tag from their personality arrays
+      if (tagToDelete) {
+        try {
+          const { data: rats, error: fetchError } = await supabase
+            .from('rats')
+            .select('id, personality')
+            .eq('user_id', user.id);
+
+          if (fetchError) throw fetchError;
+          
+          // Filter rats that have the deleted tag
+          const ratsToUpdate = rats?.filter(rat => {
+            if (!rat.personality) return false;
+            const personality = Array.isArray(rat.personality) ? rat.personality : [rat.personality];
+            return personality.some((trait: any) => {
+              const traitName = typeof trait === 'string' ? trait : trait?.name;
+              return traitName === tagToDelete.name;
+            });
+          }) || [];
+
+          // Update each rat's personality to remove the deleted tag
+          for (const rat of ratsToUpdate) {
+            const personality = Array.isArray(rat.personality) ? rat.personality : [rat.personality];
+            const updatedPersonality = personality.filter((trait: any) => {
+              const traitName = typeof trait === 'string' ? trait : trait?.name;
+              return traitName !== tagToDelete.name;
+            });
+
+            await supabase
+              .from('rats')
+              .update({ personality: updatedPersonality })
+              .eq('id', rat.id)
+              .eq('user_id', user.id);
+          }
+        } catch (updateError) {
+          console.error('Error updating rats after tag deletion:', updateError);
+        }
+      }
       
       toast({
         title: t("Success"),
