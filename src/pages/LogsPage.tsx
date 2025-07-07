@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
 import LogDetailModal from "@/components/LogDetailModal"; // Import LogDetailModal
+import QuickLogModal from "@/components/QuickLogModal";
 import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
@@ -25,6 +26,7 @@ const LogsPage = () => {
   const [editingLog, setEditingLog] = useState<any | null>(null);
   const [selectedLogEntry, setSelectedLogEntry] = useState<any | null>(null); // State for LogDetailModal
   const [isLogDetailOpen, setIsLogDetailOpen] = useState(false); // State for LogDetailModal
+  const [isQuickLogOpen, setIsQuickLogOpen] = useState(false); // State for QuickLogModal
 
   // Update filtered logs when logs change
   useEffect(() => {
@@ -146,6 +148,11 @@ const LogsPage = () => {
     handleEditLog(log);
   };
 
+  const handleNewLogEntry = (newLog: any) => {
+    console.log("New log created:", newLog);
+    // The logs will be automatically updated by the useLogEntries hook
+  };
+
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
     
@@ -241,7 +248,7 @@ const LogsPage = () => {
               <p className="text-sm text-muted-foreground">{t("Track your rats' daily activities")}</p>
             </div>
           </div>
-          <Button variant="default">
+          <Button variant="default" onClick={() => setIsQuickLogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             {t("New Log")}
           </Button>
@@ -327,6 +334,12 @@ const LogsPage = () => {
         onClose={() => setIsLogDetailOpen(false)}
         logEntry={selectedLogEntry}
         onEdit={handleEditFromLogDetail}
+      />
+
+      <QuickLogModal
+        isOpen={isQuickLogOpen}
+        onClose={() => setIsQuickLogOpen(false)}
+        onLogCreated={handleNewLogEntry}
       />
 
       <BottomNav />
