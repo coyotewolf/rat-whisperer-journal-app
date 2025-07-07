@@ -13,11 +13,13 @@ import AddRatModal from "@/components/AddRatModal";
 import EditRatModal from "@/components/EditRatModal";
 import RatLogsModal from "@/components/RatLogsModal";
 import { useAuth } from "@/hooks/useAuth";
+import { usePersonalityTags } from "@/hooks/usePersonalityTags";  // Add this import
 import { supabase } from "@/integrations/supabase/client";
 
 const RatsPage = () => {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
+  const { personalityTags, refetch: refetchPersonalityTags } = usePersonalityTags(); // Add this hook
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [addRatModalOpen, setAddRatModalOpen] = useState(false);
   const [editRatModalOpen, setEditRatModalOpen] = useState(false);
@@ -35,6 +37,13 @@ const RatsPage = () => {
       fetchRats();
     }
   }, [user]);
+
+  // Refresh rats when personality tags are updated
+  useEffect(() => {
+    if (user && personalityTags.length > 0) {
+      fetchRats();
+    }
+  }, [personalityTags, user]);
 
   const fetchRats = async () => {
     if (!user) return;
@@ -96,6 +105,12 @@ const RatsPage = () => {
     return "bg-muted text-muted-foreground border-border";
   };
 
+  // Updated function to get personality trait color from database
+  const getPersonalityTraitColor = (traitName: string) => {
+    const matchingTag = personalityTags.find(tag => tag.name.toLowerCase() === traitName.toLowerCase());
+    return matchingTag?.color || '#6B7280'; // Default gray if not found
+  };
+
   const getPersonalityColorClasses = (trait: any) => {
     // If trait is an object with color property, use the actual color with inline style
     if (typeof trait === 'object' && trait.color) {
@@ -103,20 +118,11 @@ const RatsPage = () => {
       return 'text-xs px-2 py-1 rounded-full border';
     }
     
-    // If trait is a string, use fallback color mapping
+    // If trait is a string, use database color or fallback
     const traitName = typeof trait === 'string' ? trait : (trait?.name || '');
-    const traitColorMap: { [key: string]: string } = {
-      "Curious": "bg-primary/10 text-primary border border-primary/30",
-      "Playful": "bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/30",
-      "Social": "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30",
-      "Calm": "bg-accent/10 text-accent-foreground border border-accent/30",
-      "Gentle": "bg-secondary/10 text-secondary-foreground border border-secondary/30",
-      "Sleepy": "bg-muted/50 text-muted-foreground border-border",
-      "Brave": "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30",
-      "Leader": "bg-destructive/10 text-destructive-foreground border border-destructive/30",
-      "Protective": "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30"
-    };
-    return traitColorMap[traitName] || "bg-muted/50 text-muted-foreground border-border";
+    
+    // Return basic classes, color will be handled by inline styles
+    return 'text-xs px-2 py-1 rounded-full border';
   };
 
   // Helper function to convert hex color to rgba
@@ -141,6 +147,7 @@ const RatsPage = () => {
     
     return undefined;
   };
+
   const getPersonalityTraits = (personality: any): any[] => {
     if (!personality) return [];
     
@@ -174,6 +181,11 @@ const RatsPage = () => {
   const handleEditClick = (rat: any) => {
     setSelectedRat(rat);
     setEditRatModalOpen(true);
+  };
+
+  const handleRatUpdated = () => {
+    fetchRats();
+    refetchPersonalityTags(); // Refresh personality tags to ensure colors are up to date
   };
 
   if (authLoading) {
@@ -320,17 +332,20 @@ const RatsPage = () => {
                            <div className="flex flex-wrap gap-2">
                              {personalityTraits.map((trait: any, index: number) => {
                                const traitName = typeof trait === 'string' ? trait : (trait?.name || '');
-                               const traitColor = typeof trait === 'object' && trait?.color ? trait.color : null;
+                               // Get color from database or use trait object color
+                               const traitColor = typeof trait === 'object' && trait?.color 
+                                 ? trait.color 
+                                 : getPersonalityTraitColor(traitName);
                                
                                return (
                                  <Badge 
                                    key={index} 
                                    className={`${getPersonalityColorClasses(trait)} text-xs`}
-                                    style={traitColor ? {
-                                      backgroundColor: hexToRgba(traitColor, 0.2),
-                                      color: traitColor,
-                                      borderColor: hexToRgba(traitColor, 0.5)
-                                    } : undefined}
+                                   style={{
+                                     backgroundColor: hexToRgba(traitColor, 0.2),
+                                     color: traitColor,
+                                     borderColor: hexToRgba(traitColor, 0.5)
+                                   }}
                                  >
                                    {t(traitName)}
                                  </Badge>
@@ -390,12 +405,12 @@ const RatsPage = () => {
       <AddRatModal 
         isOpen={addRatModalOpen} 
         onClose={() => setAddRatModalOpen(false)} 
-        onRatAdded={fetchRats}
+        onRatAdded={handleRatUpdated}
       />
       <EditRatModal 
         isOpen={editRatModalOpen} 
         onClose={() => setEditRatModalOpen(false)} 
-        onRatUpdated={fetchRats}
+        onRatUpdated={handleRatUpdated}
         rat={selectedRat}
       />
       <RatLogsModal

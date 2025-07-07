@@ -37,6 +37,11 @@ const PersonalityTagManager = ({ onSelect, selectedTags, placeholder }: Personal
     refetch();
   };
 
+  // Handle tag updates to refresh the data immediately
+  const handleTagUpdated = () => {
+    refetch();
+  };
+
   if (loading) {
     return <div className="text-sm text-gray-500">{t("Loading personality tags...")}</div>;
   }
@@ -128,7 +133,7 @@ const PersonalityTagManager = ({ onSelect, selectedTags, placeholder }: Personal
             </div>
           </DialogHeader>
           <div className="py-4 max-h-[70vh] overflow-y-auto">
-            <PersonalityTagSettings />
+            <PersonalityTagSettings onTagUpdated={handleTagUpdated} />
           </div>
            <DialogFooter>
             <DialogClose asChild>
