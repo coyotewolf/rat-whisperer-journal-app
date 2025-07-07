@@ -41,7 +41,8 @@ const RatsPage = () => {
   useEffect(() => {
     if (user && personalityTags.length >= 0) {
       // Force re-render by updating the rats state to trigger color recalculation
-      setRats(prevRats => [...prevRats]);
+      setRats(prevRats => prevRats.map(rat => ({ ...rat })));
+      console.log('Personality tags updated, forcing re-render:', personalityTags);
     }
   }, [personalityTags, user]);
 
