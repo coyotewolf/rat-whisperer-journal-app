@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import MultiSelectRats from "@/components/MultiSelectRats";
 import LogTagSuggestions from "@/components/LogTagSuggestions";
 import { Badge } from "@/components/ui/badge";
@@ -147,8 +148,8 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn("sm:max-w-md bg-card text-card-foreground")}>
-        <DialogHeader>
+      <DialogContent className={cn("w-[95vw] max-w-md h-[90vh] max-h-[90vh] bg-card text-card-foreground p-0 overflow-hidden")}>
+        <DialogHeader className={cn("p-4 pb-2 border-b border-border flex-shrink-0")}>
           <div className={cn("flex items-center")}>
             <Button
               variant="ghost"
@@ -158,41 +159,51 @@ const EditLogModal = ({ isOpen, onClose, logToEdit, onLogUpdated, onLogDeleted }
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DialogTitle className={cn("text-center")}>{t("Edit Log Entry")} - {t(logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1))}</DialogTitle>
+            <DialogTitle className={cn("text-center flex-1 text-lg")}>{t("Edit Log Entry")} - {t(logToEdit.type.charAt(0).toUpperCase() + logToEdit.type.slice(1))}</DialogTitle>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowConfirmDelete(true)}
               disabled={loading}
-              className={cn("text-destructive hover:text-destructive/80 ml-auto")}
+              className={cn("text-destructive hover:text-destructive/80 ml-2")}
             >
               <Trash2 className="h-5 w-5" />
             </Button>
           </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className={cn("space-y-4 py-4")}>
-          <div className={cn("space-y-2")}>
-            <Label htmlFor="rats">{t("Rats")}</Label>
-            <MultiSelectRats
-              selectedRatIds={selectedRats}
-              onSelectionChange={handleRatSelectionChange}
-              placeholder={t("Select rats")}
-            />
-          </div>
+        
+        <ScrollArea className="flex-1 px-4">
+          <form onSubmit={handleSubmit} className={cn("space-y-4 py-4")} id="edit-log-form">
+            <div className={cn("space-y-2")}>
+              <Label htmlFor="rats">{t("Rats")}</Label>
+              <MultiSelectRats
+                selectedRatIds={selectedRats}
+                onSelectionChange={handleRatSelectionChange}
+                placeholder={t("Select rats")}
+              />
+            </div>
 
-          {renderLogTypeFields()}
+            {renderLogTypeFields()}
+          </form>
+        </ScrollArea>
 
-          <DialogFooter className={cn("flex flex-col sm:flex-row sm:justify-end sm:space-x-2")}>
+        <DialogFooter className={cn("p-4 pt-2 border-t border-border flex-shrink-0")}>
+          <div className={cn("flex flex-col sm:flex-row sm:justify-end sm:space-x-2 w-full gap-2")}>
             <DialogClose asChild>
-              <Button type="button" variant="outline" className={cn("w-full sm:w-auto mb-2 sm:mb-0")}>
+              <Button type="button" variant="outline" className={cn("w-full sm:w-auto")}>
                 {t("Cancel")}
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={loading} className={cn("w-full sm:w-auto")}>
+            <Button 
+              type="submit" 
+              form="edit-log-form"
+              disabled={loading} 
+              className={cn("w-full sm:w-auto")}
+            >
               {loading ? t("Saving...") : t("Save Changes")}
             </Button>
-          </DialogFooter>
-        </form>
+          </div>
+        </DialogFooter>
       </DialogContent>
 
       <AlertDialog open={showConfirmDelete} onOpenChange={setShowConfirmDelete}>
