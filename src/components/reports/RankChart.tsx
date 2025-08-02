@@ -44,6 +44,12 @@ const RankChart = ({ data, rats }: RankChartProps) => {
 
   const CustomLabel = (props: any) => {
     const { x, y, width, value, payload } = props;
+    
+    // Guard against undefined payload
+    if (!payload || !payload.rat_id) {
+      return null;
+    }
+    
     const profile = getRatProfile(payload.rat_id);
     
     return (
@@ -51,9 +57,9 @@ const RankChart = ({ data, rats }: RankChartProps) => {
         {/* Avatar */}
         <foreignObject x={x + width/2 - 15} y={y - 45} width={30} height={30}>
           <Avatar className="w-8 h-8">
-            <AvatarImage src={profile?.profile_picture} alt={payload.rat_name} />
+            <AvatarImage src={profile?.profile_picture} alt={payload.rat_name || ''} />
             <AvatarFallback className="text-xs">
-              {payload.rat_name.charAt(0)}
+              {payload.rat_name ? payload.rat_name.charAt(0) : '?'}
             </AvatarFallback>
           </Avatar>
         </foreignObject>
@@ -65,7 +71,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
           textAnchor="middle" 
           className="fill-foreground text-sm font-bold"
         >
-          {getRankEmoji(payload.rank)}
+          {getRankEmoji(payload.rank || 0)}
         </text>
         
         {/* Name and nickname */}
@@ -75,7 +81,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
           textAnchor="middle" 
           className="fill-foreground text-xs"
         >
-          {payload.rat_name}
+          {payload.rat_name || 'Unknown'}
         </text>
         {payload.nickname && (
           <text 
