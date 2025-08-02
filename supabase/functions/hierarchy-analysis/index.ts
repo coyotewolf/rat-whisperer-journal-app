@@ -237,7 +237,8 @@ ${JSON.stringify(behaviorData, null, 2)}
       "rank": 排名(1,2,3...),
       "dominant_behaviors": ["支配性行為列表"],
       "submissive_behaviors": ["服從性行為列表"],
-      "analysis": "個別分析說明（可愛貼心語氣）"
+      "analysis": "個別分析說明（可愛貼心語氣）",
+      "nickname": "根據行為特徵取的可愛暱稱，如'邊緣鼠'、'暴躁人'、'和平使者'等"
     }
   ],
   "interaction_patterns": "互動模式分析（可愛貼心語氣）",

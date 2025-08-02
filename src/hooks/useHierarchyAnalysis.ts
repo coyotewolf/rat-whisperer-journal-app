@@ -11,6 +11,7 @@ export interface RatHierarchyData {
   dominant_behaviors: string[];
   submissive_behaviors: string[];
   analysis: string;
+  nickname?: string;
 }
 
 export interface HierarchyAnalysis {

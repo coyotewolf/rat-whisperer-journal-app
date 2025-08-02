@@ -198,6 +198,8 @@
   "Update Rat": "Update Rat",
   "Delete Rat": "Delete Rat",
   "Are you sure you want to delete {{ratName}}? This action cannot be undone and will also delete all associated logs.": "Are you sure you want to delete {{ratName}}? This action cannot be undone and will also delete all associated logs.",
+  "Hierarchy Ranking": "Hierarchy Ranking",
+  "Completed": "Completed",
   "Cancel": "Cancel",
   "{{ratName}} - Logs": "{{ratName}} - Logs",
   "Loading logs...": "Loading logs...",

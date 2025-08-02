@@ -1,20 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Crown, TrendingUp, AlertCircle, RefreshCw, Loader2, Users, MessageSquare } from 'lucide-react';
+import { Crown, TrendingUp, AlertCircle, RefreshCw, Loader2, Users, MessageSquare, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useHierarchyAnalysis } from '@/hooks/useHierarchyAnalysis';
 import { useDailySurvey } from '@/hooks/useDailySurvey';
+import { useRecommendationTracking } from '@/hooks/useRecommendationTracking';
 import DailySurveyModal from '@/components/DailySurveyModal';
+import RankChart from '@/components/reports/RankChart';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState(30);
+  const [rats, setRats] = useState([]);
   const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(timeRange);
   const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey } = useDailySurvey();
+  const { markRecommendationComplete, isRecommendationCompleted, shouldReduceFrequency } = useRecommendationTracking();
+
+  // Fetch rats data
+  useEffect(() => {
+    const fetchRats = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('rats')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (data) {
+        setRats(data);
+      }
+    };
+    
+    fetchRats();
+  }, [user]);
 
   // Trigger daily survey check when component mounts
   useEffect(() => {
@@ -60,11 +85,19 @@ const RatHierarchyReport = () => {
     return t('Highly Submissive');
   };
 
-  const chartData = analysis?.rats_hierarchy?.map(rat => ({
-    name: rat.rat_name,
-    score: rat.dominance_score,
-    rank: rat.rank
-  })) || [];
+  const processRecommendations = (recommendations: string) => {
+    return recommendations.split('\n').filter(line => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return false;
+      
+      // Check if this recommendation should be reduced in frequency
+      if (shouldReduceFrequency(trimmedLine)) {
+        return false;
+      }
+      
+      return true;
+    });
+  };
 
   if (loading) {
     return (
@@ -181,29 +214,13 @@ const RatHierarchyReport = () => {
       )}
 
       {/* Hierarchy Chart */}
-      {chartData.length > 0 && (
+      {analysis?.rats_hierarchy && analysis.rats_hierarchy.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('Dominance Scores')}</CardTitle>
+            <CardTitle>{t('Hierarchy Ranking')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[-100, 100]} />
-                <Tooltip 
-                  formatter={(value) => [value, t('Dominance Score')]}
-                  labelFormatter={(label) => `${label}`}
-                />
-                <Legend />
-                <Bar 
-                  dataKey="score" 
-                  fill="hsl(var(--primary))"
-                  name={t('Dominance Score')}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <RankChart data={analysis.rats_hierarchy} rats={rats} />
           </CardContent>
         </Card>
       )}
@@ -220,6 +237,9 @@ const RatHierarchyReport = () => {
                     <CardTitle className="flex items-center gap-2 text-lg">
                       {index === 0 && <Crown className="h-4 w-4 text-yellow-500" />}
                       {rat.rat_name}
+                      {rat.nickname && (
+                        <span className="text-sm text-muted-foreground italic">({rat.nickname})</span>
+                      )}
                     </CardTitle>
                     <Badge variant="outline">#{rat.rank}</Badge>
                   </div>
@@ -294,19 +314,42 @@ const RatHierarchyReport = () => {
               <CardTitle>{t('Recommendations')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-muted-foreground">
-                {analysis.recommendations.split('\n').map((line, index) => (
-                  <div key={index} className="mb-1">
-                    {line.trim() && (
-                      line.startsWith('•') || line.startsWith('-') || line.startsWith('*') 
-                        ? <div className="flex items-start gap-2">
-                            <span className="text-primary">•</span>
-                            <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
-                          </div>
-                        : <div>{line}</div>
-                    )}
-                  </div>
-                ))}
+              <div className="space-y-3">
+                {processRecommendations(analysis.recommendations).map((line, index) => {
+                  const trimmedLine = line.trim();
+                  if (!trimmedLine) return null;
+                  
+                  const cleanLine = trimmedLine.replace(/^[•\-\*]\s*/, '');
+                  const completedCount = isRecommendationCompleted(cleanLine);
+                  
+                  return (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                      <span className="text-primary mt-1">•</span>
+                      <div className="flex-1">
+                        <div 
+                          className="text-sm"
+                          dangerouslySetInnerHTML={{
+                            __html: cleanLine
+                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                              .replace(/\n/g, '<br />')
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {completedCount > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {t('Completed')} {completedCount}x
+                          </Badge>
+                        )}
+                        <Checkbox
+                          id={`recommendation-${index}`}
+                          checked={completedCount > 0}
+                          onCheckedChange={() => markRecommendationComplete(cleanLine)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
