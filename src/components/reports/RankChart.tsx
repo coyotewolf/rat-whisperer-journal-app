@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { RatHierarchyData } from '@/hooks/useHierarchyAnalysis';
 
 interface RankChartProps {
@@ -24,133 +25,143 @@ const RankChart = ({ data, rats }: RankChartProps) => {
     return rats.find(rat => rat.id === ratId);
   };
 
+  const getRankColor = (rank: number) => {
+    switch (rank) {
+      case 1: return 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950';
+      case 2: return 'border-gray-400 bg-gray-50 dark:bg-gray-950';
+      case 3: return 'border-orange-400 bg-orange-50 dark:bg-orange-950';
+      default: return 'border-border bg-card';
+    }
+  };
+
   // Guard against empty data
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+      <div className="flex items-center justify-center h-[200px] text-muted-foreground">
         {t('No data available')}
       </div>
     );
   }
 
-  const chartData = data.map(rat => {
-    const profile = getRatProfile(rat.rat_id);
-    return {
-      ...rat,
-      displayName: `${getRankEmoji(rat.rank)} ${rat.rat_name}${rat.nickname ? ` (${rat.nickname})` : ''}`,
-      profilePicture: profile?.profile_picture
-    };
-  });
-
-  const CustomLabel = (props: any) => {
-    const { x, y, width, value, payload } = props;
-    
-    // Guard against undefined payload
-    if (!payload || !payload.rat_id) {
-      return null;
-    }
-    
-    const profile = getRatProfile(payload.rat_id);
-    
-    return (
-      <g>
-        {/* Avatar */}
-        <foreignObject x={x + width/2 - 15} y={y - 45} width={30} height={30}>
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={profile?.profile_picture} alt={payload.rat_name || ''} />
-            <AvatarFallback className="text-xs">
-              {payload.rat_name ? payload.rat_name.charAt(0) : '?'}
-            </AvatarFallback>
-          </Avatar>
-        </foreignObject>
-        
-        {/* Rank */}
-        <text 
-          x={x + width/2 - 25} 
-          y={y - 25} 
-          textAnchor="middle" 
-          className="fill-foreground text-sm font-bold"
-        >
-          {getRankEmoji(payload.rank || 0)}
-        </text>
-        
-        {/* Name and nickname */}
-        <text 
-          x={x + width/2} 
-          y={y - 8} 
-          textAnchor="middle" 
-          className="fill-foreground text-xs"
-        >
-          {payload.rat_name || 'Unknown'}
-        </text>
-        {payload.nickname && (
-          <text 
-            x={x + width/2} 
-            y={y + 5} 
-            textAnchor="middle" 
-            className="fill-muted-foreground text-xs italic"
-          >
-            ({payload.nickname})
-          </text>
-        )}
-      </g>
-    );
-  };
+  // Sort data by rank
+  const sortedData = [...data].sort((a, b) => a.rank - b.rank);
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <BarChart data={chartData} margin={{ top: 60, right: 30, left: 20, bottom: 60 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis 
-          dataKey="displayName" 
-          tick={false}
-          axisLine={false}
-        />
-        <YAxis 
-          domain={[1, data.length]} 
-          tickFormatter={(value) => `#${value}`}
-          label={{ value: t('Rank'), angle: -90, position: 'insideLeft' }}
-          reversed
-        />
-        <Tooltip 
-          formatter={(value, name, props) => [
-            `#${value}`,
-            t('Rank')
-          ]}
-          labelFormatter={(label, payload) => {
-            if (payload && payload[0]) {
-              const data = payload[0].payload;
-              return `${data.rat_name}${data.nickname ? ` (${data.nickname})` : ''}`;
-            }
-            return label;
-          }}
-          contentStyle={{
-            backgroundColor: 'hsl(var(--background))',
-            border: '1px solid hsl(var(--border))',
-            borderRadius: '8px'
-          }}
-        />
-        <Legend />
-        <Bar 
-          dataKey="rank" 
-          fill="hsl(var(--primary))"
-          name={t('Rank')}
-          label={<CustomLabel />}
-        >
-          {chartData.map((entry, index) => (
-            <Cell 
-              key={`cell-${index}`} 
-              fill={
-                entry.rank === 1 ? '#FFD700' : // Gold
-                entry.rank === 2 ? '#C0C0C0' : // Silver  
-                entry.rank === 3 ? '#CD7F32' : // Bronze
-                'hsl(var(--primary))'
-              }
-            />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="space-y-3">
+      {sortedData.map((rat) => {
+        const profile = getRatProfile(rat.rat_id);
+        
+        return (
+          <Card 
+            key={rat.rat_id} 
+            className={`transition-all hover:shadow-md ${getRankColor(rat.rank)}`}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                {/* Rank */}
+                <div className="flex-shrink-0 text-2xl font-bold">
+                  {getRankEmoji(rat.rank)}
+                </div>
+                
+                {/* Avatar */}
+                <Avatar className="w-12 h-12 flex-shrink-0">
+                  <AvatarImage 
+                    src={profile?.profile_picture} 
+                    alt={rat.rat_name || 'Unknown'} 
+                  />
+                  <AvatarFallback className="text-sm font-medium">
+                    {rat.rat_name ? rat.rat_name.charAt(0) : '?'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {/* Name and Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-semibold truncate">
+                      {rat.rat_name || 'Unknown'}
+                    </h3>
+                    {rat.nickname && (
+                      <Badge variant="secondary" className="text-xs">
+                        {rat.nickname}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>#{rat.rank}</span>
+                    <span>•</span>
+                    <span>{t('Dominance Score')}: {rat.dominance_score}</span>
+                  </div>
+                  
+                  {rat.analysis && (
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                      {rat.analysis}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Dominance Score Badge */}
+                <div className="flex-shrink-0">
+                  <Badge 
+                    variant={rat.dominance_score >= 0 ? "destructive" : "secondary"}
+                    className="text-sm font-bold"
+                  >
+                    {rat.dominance_score > 0 ? '+' : ''}{rat.dominance_score}
+                  </Badge>
+                </div>
+              </div>
+              
+              {/* Behaviors */}
+              {(rat.dominant_behaviors?.length > 0 || rat.submissive_behaviors?.length > 0) && (
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {rat.dominant_behaviors && rat.dominant_behaviors.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1">
+                          {t('Dominant Behaviors')}
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {rat.dominant_behaviors.slice(0, 3).map((behavior, idx) => (
+                            <Badge key={idx} variant="destructive" className="text-xs">
+                              {behavior}
+                            </Badge>
+                          ))}
+                          {rat.dominant_behaviors.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{rat.dominant_behaviors.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {rat.submissive_behaviors && rat.submissive_behaviors.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1">
+                          {t('Submissive Behaviors')}
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {rat.submissive_behaviors.slice(0, 3).map((behavior, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {behavior}
+                            </Badge>
+                          ))}
+                          {rat.submissive_behaviors.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{rat.submissive_behaviors.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 };
 
