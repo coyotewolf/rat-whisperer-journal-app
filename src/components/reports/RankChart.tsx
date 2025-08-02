@@ -61,15 +61,15 @@ const RankChart = ({ data, rats }: RankChartProps) => {
               className={`transition-all hover:shadow-md cursor-pointer ${getRankColor(rat.rank)}`}
               onClick={() => setSelectedRat(rat)}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
                   {/* Rank */}
-                  <div className="flex-shrink-0 text-2xl font-bold">
+                  <div className="flex-shrink-0 text-xl font-bold">
                     {getRankEmoji(rat.rank)}
                   </div>
                   
                   {/* Avatar */}
-                  <Avatar className="w-12 h-12 flex-shrink-0">
+                  <Avatar className="w-10 h-10 flex-shrink-0">
                     <AvatarImage 
                       src={profile?.profile_picture} 
                       alt={rat.rat_name || 'Unknown'} 
@@ -82,9 +82,9 @@ const RankChart = ({ data, rats }: RankChartProps) => {
                   {/* Name and Nickname */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold truncate">
+                      <span className="font-medium truncate">
                         {rat.rat_name || 'Unknown'}
-                      </h3>
+                      </span>
                       {rat.nickname && (
                         <Badge variant="secondary" className="text-xs">
                           {rat.nickname}
