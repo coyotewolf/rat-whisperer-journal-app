@@ -18,6 +18,8 @@ export interface HierarchyAnalysis {
   rats_hierarchy: RatHierarchyData[];
   interaction_patterns: string;
   recommendations: string;
+  api_cost?: string;
+  model_used?: string;
 }
 
 export const useHierarchyAnalysis = (timeRange: number = 30) => {

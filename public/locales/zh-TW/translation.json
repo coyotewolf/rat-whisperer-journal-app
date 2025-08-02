@@ -372,5 +372,8 @@
   "Progress Summary": "進度摘要",
   "Last 7 days": "過去 7 天",
   "Last 30 days": "過去 30 天",
-  "Last 90 days": "過去 90 天"
+  "Last 90 days": "過去 90 天",
+  "或者手動輸入": "或者手動輸入",
+  "輸入其他選項...": "輸入其他選項...",
+  "API Cost": "API 費用"
 }

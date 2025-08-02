@@ -56,7 +56,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
   const canSubmit = survey?.questions.every(q => 
     answers.some(a => 
       a.questionId === q.id && 
-      (a.selectedOption || a.textAnswer?.trim())
+      (a.selectedOption || a.selectedOptions?.length || a.customInput?.trim() || a.textAnswer?.trim())
     )
   );
 
@@ -163,24 +163,53 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
                     </CardHeader>
                     <CardContent>
                       {question.type === 'multiple_choice' && question.options && (
-                        <RadioGroup
-                          value={answers.find(a => a.questionId === question.id)?.selectedOption || ''}
-                          onValueChange={(value) => 
-                            handleAnswerChange(question.id, {
-                              type: 'multiple_choice',
-                              question: question.question,
-                              category: question.category,
-                              selectedOption: value
-                            })
-                          }
-                        >
-                          {question.options.map((option, optionIndex) => (
-                            <div key={optionIndex} className="flex items-center space-x-2">
-                              <RadioGroupItem value={option} id={`q${question.id}-${optionIndex}`} />
-                              <Label htmlFor={`q${question.id}-${optionIndex}`}>{option}</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-2">
+                            {question.options.map((option, optionIndex) => (
+                              <div key={optionIndex} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`q${question.id}-${optionIndex}`}
+                                  className="rounded border-border"
+                                  checked={answers.find(a => a.questionId === question.id)?.selectedOptions?.includes(option) || false}
+                                  onChange={(e) => {
+                                    const currentAnswer = answers.find(a => a.questionId === question.id);
+                                    const currentOptions = currentAnswer?.selectedOptions || [];
+                                    const newOptions = e.target.checked
+                                      ? [...currentOptions, option]
+                                      : currentOptions.filter(o => o !== option);
+                                    
+                                    handleAnswerChange(question.id, {
+                                      type: 'multiple_choice',
+                                      question: question.question,
+                                      category: question.category,
+                                      selectedOptions: newOptions
+                                    });
+                                  }}
+                                />
+                                <Label htmlFor={`q${question.id}-${optionIndex}`}>{option}</Label>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`q${question.id}-custom`}>{t('或者手動輸入')}</Label>
+                            <input
+                              type="text"
+                              id={`q${question.id}-custom`}
+                              className="w-full px-3 py-2 border rounded-md border-border bg-background"
+                              placeholder={t('輸入其他選項...')}
+                              value={answers.find(a => a.questionId === question.id)?.customInput || ''}
+                              onChange={(e) => {
+                                handleAnswerChange(question.id, {
+                                  type: 'multiple_choice',
+                                  question: question.question,
+                                  category: question.category,
+                                  customInput: e.target.value
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
                       )}
 
                       {question.type === 'text' && (
@@ -221,7 +250,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
                       className={`w-3 h-3 rounded-full transition-all ${
                         index === currentQuestionIndex 
                           ? 'bg-primary' 
-                          : answers.some(a => a.questionId === survey.questions[index].id && (a.selectedOption || a.textAnswer?.trim()))
+                          : answers.some(a => a.questionId === survey.questions[index].id && (a.selectedOption || a.selectedOptions?.length || a.customInput?.trim() || a.textAnswer?.trim()))
                             ? 'bg-green-500'
                             : 'bg-muted'
                       }`}
@@ -254,7 +283,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
                 <div className="flex flex-wrap gap-2">
                   {survey.questions.map((question, index) => {
                     const answer = answers.find(a => a.questionId === question.id);
-                    const isAnswered = answer && (answer.selectedOption || answer.textAnswer?.trim());
+                    const isAnswered = answer && (answer.selectedOption || answer.selectedOptions?.length || answer.customInput?.trim() || answer.textAnswer?.trim());
                     
                     return (
                       <Badge 

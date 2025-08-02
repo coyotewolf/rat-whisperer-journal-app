@@ -221,14 +221,14 @@ async function callGeminiForHierarchyAnalysis(behaviorData: any[]) {
   }
 
   const prompt = `
-請分析以下鼠類行為數據，基於動物行為學原理計算每隻鼠的社會地位：
+請以可愛貼心的語氣分析以下鼠類行為數據，基於動物行為學原理計算每隻鼠的社會地位：
 
 行為資料：
 ${JSON.stringify(behaviorData, null, 2)}
 
 請返回 JSON 格式：
 {
-  "analysis_summary": "整體分析摘要",
+  "analysis_summary": "整體分析摘要（可愛貼心語氣）",
   "rats_hierarchy": [
     {
       "rat_name": "鼠名",
@@ -237,11 +237,13 @@ ${JSON.stringify(behaviorData, null, 2)}
       "rank": 排名(1,2,3...),
       "dominant_behaviors": ["支配性行為列表"],
       "submissive_behaviors": ["服從性行為列表"],
-      "analysis": "個別分析說明"
+      "analysis": "個別分析說明（可愛貼心語氣）"
     }
   ],
-  "interaction_patterns": "互動模式分析",
-  "recommendations": "建議事項"
+  "interaction_patterns": "互動模式分析（可愛貼心語氣）",
+  "recommendations": "建議事項（可愛貼心語氣）",
+  "api_cost": "估算費用（美金）",
+  "model_used": "gemini-2.0-flash-exp"
 }
 
 分析重點：
@@ -250,8 +252,11 @@ ${JSON.stringify(behaviorData, null, 2)}
 3. 考慮行為頻率、強度和背景情況
 4. 提供實用的飼養建議
 5. 支配分數範圍：-100(極度服從)到+100(極度支配)，0為中性
+6. 使用可愛、溫柔、貼心的語氣，像是在和鼠奴聊天
+7. 避免過於學術性的語言，多用親切的詞彙
 `;
 
+  const startTime = Date.now();
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
     method: 'POST',
     headers: {
@@ -278,6 +283,16 @@ ${JSON.stringify(behaviorData, null, 2)}
 
   const result = await response.json();
   const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+  const endTime = Date.now();
+  
+  // 計算估算費用（根據 Gemini 定價）
+  const inputTokens = prompt.length / 4; // 粗略估算
+  const outputTokens = generatedText?.length / 4 || 0;
+  const estimatedCost = calculateGeminiCost(inputTokens, outputTokens);
+  
+  console.log(`Gemini API call completed in ${endTime - startTime}ms`);
+  console.log(`Estimated cost: $${estimatedCost}`);
+  console.log(`Input tokens: ~${inputTokens}, Output tokens: ~${outputTokens}`);
   
   if (!generatedText) {
     throw new Error('No response from Gemini API');
@@ -290,11 +305,29 @@ ${JSON.stringify(behaviorData, null, 2)}
       throw new Error('No JSON found in Gemini response');
     }
     
-    return JSON.parse(jsonMatch[0]);
+    const parsedResult = JSON.parse(jsonMatch[0]);
+    
+    // 添加實際費用信息
+    parsedResult.api_cost = `$${estimatedCost}`;
+    parsedResult.model_used = 'gemini-2.0-flash-exp';
+    
+    return parsedResult;
   } catch (parseError) {
     console.error('Failed to parse Gemini response:', generatedText);
     throw new Error('Failed to parse Gemini analysis result');
   }
+}
+
+function calculateGeminiCost(inputTokens: number, outputTokens: number): string {
+  // Gemini 2.0 Flash 定價（每1M tokens）
+  const inputCostPer1M = 0.075; // $0.075 per 1M input tokens
+  const outputCostPer1M = 0.30;  // $0.30 per 1M output tokens
+  
+  const inputCost = (inputTokens / 1000000) * inputCostPer1M;
+  const outputCost = (outputTokens / 1000000) * outputCostPer1M;
+  const totalCost = inputCost + outputCost;
+  
+  return totalCost.toFixed(6);
 }
 
 async function updateAnalysisCache(supabase: any, userId: string, timeRange: number, analysisResult: any, behaviorStats: any) {

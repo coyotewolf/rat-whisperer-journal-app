@@ -303,15 +303,42 @@ async function processAnswersToBehaviors(answers: any[]) {
   const behaviors = [];
   
   for (const answer of answers) {
-    if (answer.type === 'multiple_choice' && answer.selectedOption && answer.selectedOption !== '沒有觀察到') {
+    if (answer.type === 'multiple_choice') {
       const behaviorTag = getBehaviorTagFromCategory(answer.category);
       if (behaviorTag) {
-        behaviors.push({
-          rat_name: answer.selectedOption,
-          behavior_tag: behaviorTag,
-          category: answer.category,
-          context: `來自每日調查問題：${answer.question}`
-        });
+        // 處理多選選項
+        if (answer.selectedOptions && answer.selectedOptions.length > 0) {
+          for (const option of answer.selectedOptions) {
+            if (option !== '沒有觀察到') {
+              behaviors.push({
+                rat_name: option,
+                behavior_tag: behaviorTag,
+                category: answer.category,
+                context: `來自每日調查問題：${answer.question}`
+              });
+            }
+          }
+        }
+        
+        // 處理手動輸入
+        if (answer.customInput && answer.customInput.trim()) {
+          behaviors.push({
+            rat_name: answer.customInput.trim(),
+            behavior_tag: behaviorTag,
+            category: answer.category,
+            context: `來自每日調查問題：${answer.question}（手動輸入）`
+          });
+        }
+        
+        // 處理單選（向後兼容）
+        if (answer.selectedOption && answer.selectedOption !== '沒有觀察到') {
+          behaviors.push({
+            rat_name: answer.selectedOption,
+            behavior_tag: behaviorTag,
+            category: answer.category,
+            context: `來自每日調查問題：${answer.question}`
+          });
+        }
       }
     } else if (answer.type === 'text' && answer.textAnswer && answer.textAnswer.trim()) {
       behaviors.push({

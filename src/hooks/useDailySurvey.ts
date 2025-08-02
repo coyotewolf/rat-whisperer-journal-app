@@ -16,6 +16,8 @@ export interface SurveyAnswer {
   type: 'multiple_choice' | 'text';
   question: string;
   selectedOption?: string;
+  selectedOptions?: string[];
+  customInput?: string;
   textAnswer?: string;
   category: string;
 }
@@ -140,6 +142,9 @@ export const useDailySurvey = () => {
       setSurvey(prev => prev ? { ...prev, completed: true } : null);
       setShouldShowModal(false);
       toast.success('每日調查提交成功！行為數據已更新。');
+      
+      // Auto trigger hierarchy analysis refresh
+      window.dispatchEvent(new CustomEvent('refreshHierarchyAnalysis'));
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit survey';

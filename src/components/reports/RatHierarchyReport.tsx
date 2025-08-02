@@ -31,6 +31,15 @@ const RatHierarchyReport = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      refetch();
+    };
+    
+    window.addEventListener('refreshHierarchyAnalysis', handleRefresh);
+    return () => window.removeEventListener('refreshHierarchyAnalysis', handleRefresh);
+  }, [refetch]);
+
   const handleTimeRangeChange = (value: string) => {
     setTimeRange(parseInt(value));
   };
@@ -159,6 +168,11 @@ const RatHierarchyReport = () => {
               <TrendingUp className="h-5 w-5" />
               {t('Analysis Summary')}
             </CardTitle>
+            {analysis.api_cost && (
+              <div className="text-xs text-muted-foreground">
+                {t('API Cost')}: {analysis.api_cost} ({analysis.model_used})
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{analysis.analysis_summary}</p>
