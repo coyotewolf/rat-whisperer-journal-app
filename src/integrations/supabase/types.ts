@@ -35,6 +35,42 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_interaction_surveys: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          processed_behaviors: Json | null
+          questions: Json
+          survey_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          processed_behaviors?: Json | null
+          questions: Json
+          survey_date: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          processed_behaviors?: Json | null
+          questions?: Json
+          survey_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       default_personality_tags: {
         Row: {
           color: string

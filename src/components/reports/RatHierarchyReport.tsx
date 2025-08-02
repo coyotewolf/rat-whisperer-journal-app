@@ -1,17 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Crown, TrendingUp, AlertCircle, RefreshCw, Loader2, Users } from 'lucide-react';
+import { Crown, TrendingUp, AlertCircle, RefreshCw, Loader2, Users, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useHierarchyAnalysis } from '@/hooks/useHierarchyAnalysis';
+import { useDailySurvey } from '@/hooks/useDailySurvey';
+import DailySurveyModal from '@/components/DailySurveyModal';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
   const [timeRange, setTimeRange] = useState(30);
   const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(timeRange);
+  const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey } = useDailySurvey();
+
+  // Trigger daily survey check when component mounts
+  useEffect(() => {
+    // Only check for daily survey when user first visits hierarchy page
+    const hasCheckedToday = localStorage.getItem(`dailySurveyChecked-${new Date().toDateString()}`);
+    if (!hasCheckedToday) {
+      localStorage.setItem(`dailySurveyChecked-${new Date().toDateString()}`, 'true');
+      // Small delay to allow component to render first
+      setTimeout(() => {
+        if (!survey) {
+          generateTodaySurvey();
+        }
+      }, 1000);
+    }
+  }, []);
 
   const handleTimeRangeChange = (value: string) => {
     setTimeRange(parseInt(value));
@@ -111,6 +129,15 @@ const RatHierarchyReport = () => {
                   <SelectItem value="90">{t('Last 90 days')}</SelectItem>
                 </SelectContent>
               </Select>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={generateTodaySurvey}
+                className="flex items-center gap-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {t('Daily Survey')}
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -258,6 +285,12 @@ const RatHierarchyReport = () => {
           </Card>
         )}
       </div>
+
+      {/* Daily Survey Modal */}
+      <DailySurveyModal 
+        open={shouldShowModal} 
+        onClose={dismissSurvey}
+      />
     </div>
   );
 };

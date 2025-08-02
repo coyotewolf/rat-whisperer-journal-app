@@ -375,5 +375,20 @@
   "Deleting...": "Deleting...",
   "Activity log deleted successfully": "Activity log deleted successfully",
   "Activity deleted from Supabase:": "Activity deleted from Supabase:",
-  "Quick behavior suggestions": "Quick behavior suggestions"
+  "Quick behavior suggestions": "Quick behavior suggestions",
+  "Daily Survey": "Daily Survey",
+  "Daily Interaction Survey": "Daily Interaction Survey",
+  "Generate Today's Survey": "Generate Today's Survey",
+  "Help us understand your rats' social dynamics with a quick daily survey. The AI will generate personalized questions based on your rat family.": "Help us understand your rats' social dynamics with a quick daily survey. The AI will generate personalized questions based on your rat family.",
+  "Generate Survey Questions": "Generate Survey Questions",
+  "Generating...": "Generating...",
+  "Describe what you observed...": "Describe what you observed...",
+  "Previous": "Previous",
+  "Next": "Next",
+  "Submit Survey": "Submit Survey",
+  "Submitting...": "Submitting...",
+  "Progress Summary": "Progress Summary",
+  "Last 7 days": "Last 7 days",
+  "Last 30 days": "Last 30 days",
+  "Last 90 days": "Last 90 days"
 }

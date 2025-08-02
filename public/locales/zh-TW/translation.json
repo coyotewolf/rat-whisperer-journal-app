@@ -357,5 +357,20 @@
   "Deleting Account...": "正在刪除帳號...",
   "Incorrect password. Please try again.": "密碼不正確。請再試一次。",
   "Account deleted successfully!": "帳號刪除成功！",
-  "An unexpected error occurred during account deletion.": "帳號刪除時發生未預期的錯誤。"
+  "An unexpected error occurred during account deletion.": "帳號刪除時發生未預期的錯誤。",
+  "Daily Survey": "每日調查",
+  "Daily Interaction Survey": "每日互動調查",
+  "Generate Today's Survey": "生成今日調查",
+  "Help us understand your rats' social dynamics with a quick daily survey. The AI will generate personalized questions based on your rat family.": "透過簡短的每日調查，幫助我們了解您的鼠寶社交動態。AI 將根據您的鼠群產生個人化問題。",
+  "Generate Survey Questions": "生成調查問題",
+  "Generating...": "生成中...",
+  "Describe what you observed...": "描述您觀察到的情況...",
+  "Previous": "上一題",
+  "Next": "下一題",
+  "Submit Survey": "提交調查",
+  "Submitting...": "提交中...",
+  "Progress Summary": "進度摘要",
+  "Last 7 days": "過去 7 天",
+  "Last 30 days": "過去 30 天",
+  "Last 90 days": "過去 90 天"
 }

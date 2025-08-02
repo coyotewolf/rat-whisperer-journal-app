@@ -1,0 +1,367 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Get auth header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    // Verify user
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+    
+    if (authError || !user) {
+      throw new Error('Authentication failed');
+    }
+
+    const { action, surveyId, answers } = await req.json();
+    
+    if (action === 'generate') {
+      // Generate daily survey questions
+      const questions = await generateDailyQuestions(supabase, user.id);
+      
+      // Create or update today's survey
+      const today = new Date().toISOString().split('T')[0];
+      const { data: survey, error: surveyError } = await supabase
+        .from('daily_interaction_surveys')
+        .upsert({
+          user_id: user.id,
+          survey_date: today,
+          questions: questions,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,survey_date'
+        })
+        .select()
+        .single();
+
+      if (surveyError) {
+        throw new Error(`Failed to create survey: ${surveyError.message}`);
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        data: {
+          surveyId: survey.id,
+          questions: questions,
+          surveyDate: today
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+
+    } else if (action === 'submit') {
+      // Submit survey answers
+      if (!surveyId || !answers) {
+        throw new Error('Survey ID and answers are required');
+      }
+
+      // Process answers into behavior data
+      const processedBehaviors = await processAnswersToBehaviors(answers);
+
+      // Update survey with answers
+      const { error: updateError } = await supabase
+        .from('daily_interaction_surveys')
+        .update({
+          answers: answers,
+          processed_behaviors: processedBehaviors,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', surveyId)
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        throw new Error(`Failed to submit survey: ${updateError.message}`);
+      }
+
+      // Convert processed behaviors to log entries
+      if (processedBehaviors && processedBehaviors.length > 0) {
+        await createBehaviorLogs(supabase, user.id, processedBehaviors);
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Survey submitted successfully'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+
+    } else if (action === 'check') {
+      // Check if survey exists for today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: survey } = await supabase
+        .from('daily_interaction_surveys')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('survey_date', today)
+        .single();
+
+      return new Response(JSON.stringify({
+        success: true,
+        data: {
+          exists: !!survey,
+          completed: !!survey?.completed_at,
+          survey: survey
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+
+    } else {
+      throw new Error('Invalid action');
+    }
+
+  } catch (error) {
+    console.error('Error in daily-interaction-survey function:', error);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      success: false 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+async function generateDailyQuestions(supabase: any, userId: string) {
+  if (!geminiApiKey) {
+    // Fallback questions when Gemini is not available
+    return [
+      {
+        id: 1,
+        type: 'multiple_choice',
+        question: '今天誰通常第一個接近食物？',
+        options: ['需要獲取老鼠列表'],
+        category: 'feeding'
+      },
+      {
+        id: 2,
+        type: 'multiple_choice',
+        question: '在玩耍時，誰比較主動？',
+        options: ['需要獲取老鼠列表'],
+        category: 'play'
+      },
+      {
+        id: 3,
+        type: 'multiple_choice',
+        question: '誰通常占據最高的位置？',
+        options: ['需要獲取老鼠列表'],
+        category: 'territory'
+      },
+      {
+        id: 4,
+        type: 'text',
+        question: '今天有觀察到任何特殊的互動行為嗎？',
+        category: 'interaction'
+      }
+    ];
+  }
+
+  // Get user's rats
+  const { data: rats } = await supabase
+    .from('rats')
+    .select('id, name')
+    .eq('user_id', userId)
+    .eq('status', 'active');
+
+  if (!rats || rats.length === 0) {
+    return [];
+  }
+
+  const ratNames = rats.map(rat => rat.name);
+
+  const prompt = `
+請為鼠類社會互動觀察生成 4-5 個問題，基於以下鼠群資訊：
+
+鼠群成員：${ratNames.join(', ')}
+
+生成規則：
+1. 包含多選題和開放題
+2. 重點關注：食物競爭、空間占據、社交互動、遊戲行為
+3. 問題要簡單易懂，適合日常觀察
+4. 多選題的選項包含所有鼠名稱加上 "沒有觀察到" 選項
+
+請返回 JSON 格式：
+{
+  "questions": [
+    {
+      "id": 1,
+      "type": "multiple_choice",
+      "question": "問題內容",
+      "options": ["選項1", "選項2", ...],
+      "category": "feeding/play/territory/interaction"
+    },
+    {
+      "id": 2,
+      "type": "text", 
+      "question": "開放性問題",
+      "category": "interaction"
+    }
+  ]
+}
+`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!generatedText) {
+      throw new Error('No response from Gemini API');
+    }
+
+    // Extract JSON from the response
+    const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in Gemini response');
+    }
+    
+    const parsedResult = JSON.parse(jsonMatch[0]);
+    return parsedResult.questions || [];
+
+  } catch (error) {
+    console.error('Failed to generate questions with Gemini:', error);
+    
+    // Fallback questions with actual rat names
+    return [
+      {
+        id: 1,
+        type: 'multiple_choice',
+        question: '今天誰通常第一個接近食物？',
+        options: [...ratNames, '沒有觀察到'],
+        category: 'feeding'
+      },
+      {
+        id: 2,
+        type: 'multiple_choice',
+        question: '在玩耍時，誰比較主動？',
+        options: [...ratNames, '沒有觀察到'],
+        category: 'play'
+      },
+      {
+        id: 3,
+        type: 'multiple_choice',
+        question: '誰通常占據最高的位置？',
+        options: [...ratNames, '沒有觀察到'],
+        category: 'territory'
+      },
+      {
+        id: 4,
+        type: 'text',
+        question: '今天有觀察到任何特殊的互動行為嗎？',
+        category: 'interaction'
+      }
+    ];
+  }
+}
+
+async function processAnswersToBehaviors(answers: any[]) {
+  const behaviors = [];
+  
+  for (const answer of answers) {
+    if (answer.type === 'multiple_choice' && answer.selectedOption && answer.selectedOption !== '沒有觀察到') {
+      const behaviorTag = getBehaviorTagFromCategory(answer.category);
+      if (behaviorTag) {
+        behaviors.push({
+          rat_name: answer.selectedOption,
+          behavior_tag: behaviorTag,
+          category: answer.category,
+          context: `來自每日調查問題：${answer.question}`
+        });
+      }
+    } else if (answer.type === 'text' && answer.textAnswer && answer.textAnswer.trim()) {
+      behaviors.push({
+        behavior_tag: 'general_interaction',
+        category: 'interaction',
+        notes: answer.textAnswer,
+        context: `來自每日調查問題：${answer.question}`
+      });
+    }
+  }
+  
+  return behaviors;
+}
+
+function getBehaviorTagFromCategory(category: string): string | null {
+  const categoryMap: { [key: string]: string } = {
+    'feeding': 'resource_dominance',
+    'play': 'social_play',
+    'territory': 'territory_claiming',
+    'interaction': 'social_interaction'
+  };
+  
+  return categoryMap[category] || null;
+}
+
+async function createBehaviorLogs(supabase: any, userId: string, processedBehaviors: any[]) {
+  const { data: rats } = await supabase
+    .from('rats')
+    .select('id, name')
+    .eq('user_id', userId);
+
+  const ratMap = new Map(rats?.map((rat: any) => [rat.name, rat.id]) || []);
+
+  for (const behavior of processedBehaviors) {
+    const ratIds = behavior.rat_name ? [ratMap.get(behavior.rat_name)].filter(Boolean) : [];
+    
+    const logContent = {
+      behavior: behavior.behavior_tag,
+      notes: behavior.notes || behavior.context,
+      tags: [behavior.behavior_tag]
+    };
+
+    await supabase
+      .from('log_entries')
+      .insert({
+        user_id: userId,
+        type: 'behavior',
+        rat_ids: ratIds,
+        content: logContent,
+        created_at: new Date().toISOString()
+      });
+  }
+}
