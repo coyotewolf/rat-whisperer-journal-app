@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, FileText, Utensils, Activity, Heart } from 'lucide-react';
+import { Calendar, FileText, Utensils, Activity, Heart, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import DailySummaryReport from '@/components/reports/DailySummaryReport';
 import FeedingEnvironmentReport from '@/components/reports/FeedingEnvironmentReport';
 import BehaviorAnalysisReport from '@/components/reports/BehaviorAnalysisReport';
 import HealthReport from '@/components/reports/HealthReport';
+import RatHierarchyReport from '@/components/reports/RatHierarchyReport';
 
 const ReportsPage = () => {
   const { t } = useTranslation();
@@ -43,6 +44,13 @@ const ReportsPage = () => {
       description: t('Activity patterns and behavioral insights'),
       icon: Activity,
       color: 'text-purple-600'
+    },
+    {
+      id: 'hierarchy',
+      title: t('Hierarchy Map'),
+      description: t('Social ranking based on behaviors and interactions'),
+      icon: Users,
+      color: 'text-yellow-600'
     }
   ];
 
@@ -57,7 +65,7 @@ const ReportsPage = () => {
         </div>
 
         <Tabs defaultValue="daily" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             {reportTypes.map((type) => (
               <TabsTrigger key={type.id} value={type.id} className="text-xs px-1 py-2 min-w-0">
                 <div className="flex flex-col items-center gap-1 w-full">
@@ -68,6 +76,7 @@ const ReportsPage = () => {
                     {type.id === 'health' && t('Health')}
                     {type.id === 'feeding' && t('Feed')}
                     {type.id === 'behavior' && t('Behavior')}
+                    {type.id === 'hierarchy' && t('Hierarchy')}
                   </span>
                 </div>
               </TabsTrigger>
@@ -88,6 +97,10 @@ const ReportsPage = () => {
 
           <TabsContent value="behavior">
             <BehaviorAnalysisReport />
+          </TabsContent>
+
+          <TabsContent value="hierarchy">
+            <RatHierarchyReport />
           </TabsContent>
         </Tabs>
       </div>

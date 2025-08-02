@@ -114,6 +114,12 @@ export const useLogEntries = () => {
     try {
       const now = new Date().toISOString();
       const data = await LogEntryService.addLog(user.id, { ...logData, updated_at: now });
+      
+      // Invalidate hierarchy cache if this is a behavior log
+      if (logData.type === 'behavior') {
+        await invalidateHierarchyCache('behavior_log_added');
+      }
+      
       await fetchLogs();
 
       toast({
@@ -153,6 +159,11 @@ export const useLogEntries = () => {
       ));
 
       await LogEntryService.updateLog(logId, { ...updates, updated_at: new Date().toISOString() });
+      
+      // Invalidate hierarchy cache if this is a behavior log update
+      if (updates.type === 'behavior') {
+        await invalidateHierarchyCache('behavior_log_updated', logId);
+      }
 
       toast({
         title: t("Success"),
@@ -175,7 +186,17 @@ export const useLogEntries = () => {
     if (!user) return;
 
     try {
+      // Get the log to check if it's a behavior log before deletion
+      const logToDelete = logs.find(log => log.id === logId);
+      const isBehaviorLog = logToDelete?.type === 'behavior';
+      
       await LogEntryService.deleteLog(logId);
+      
+      // Invalidate hierarchy cache if this was a behavior log
+      if (isBehaviorLog) {
+        await invalidateHierarchyCache('behavior_log_deleted', logId);
+      }
+      
       await fetchLogs();
 
       toast({
@@ -221,6 +242,28 @@ export const useLogEntries = () => {
     }
   }, [user?.id]);
  
+  // Function to invalidate hierarchy cache
+  const invalidateHierarchyCache = async (triggerType: string, logEntryId?: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('hierarchy_invalidation_triggers')
+        .insert({
+          user_id: user.id,
+          trigger_type: triggerType,
+          log_entry_id: logEntryId,
+          created_at: new Date().toISOString()
+        });
+      
+      if (error) {
+        console.error('Error invalidating hierarchy cache:', error);
+      }
+    } catch (error) {
+      console.error('Error recording hierarchy invalidation:', error);
+    }
+  };
+
   return {
     logs,
     loading,
