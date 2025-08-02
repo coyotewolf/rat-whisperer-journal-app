@@ -85,7 +85,12 @@ const RatHierarchyReport = () => {
     return t('Highly Submissive');
   };
 
-  const processRecommendations = (recommendations: string) => {
+  const processRecommendations = (recommendations: string | null | undefined) => {
+    // Handle cases where recommendations is not a string
+    if (!recommendations || typeof recommendations !== 'string') {
+      return [];
+    }
+    
     return recommendations.split('\n').filter(line => {
       const trimmedLine = line.trim();
       if (!trimmedLine) return false;
