@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Pencil, Calendar, User, FileText, Activity } from "lucide-react";
 import { format } from "date-fns";
+import { getHealthStatusEmoji } from "@/utils/cardStyleUtils";
 
 interface LogDetailModalProps {
   isOpen: boolean;
@@ -63,8 +64,11 @@ const LogDetailModal = ({ isOpen, onClose, logEntry, onEdit }: LogDetailModalPro
             {logEntry.status && (
               <div>
                 <h4 className="font-medium text-sm text-muted-foreground mb-1">{t("Health Status")}</h4>
-                <Badge variant="outline" className="text-sm">
+                <Badge variant="outline" className="text-sm flex items-center gap-1">
                   {t(logEntry.status)}
+                  {getHealthStatusEmoji(logEntry.status) && (
+                    <span>{getHealthStatusEmoji(logEntry.status)}</span>
+                  )}
                 </Badge>
               </div>
             )}
