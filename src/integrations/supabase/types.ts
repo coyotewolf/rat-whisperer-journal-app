@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
@@ -56,6 +56,63 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+        }
+        Relationships: []
+      }
+      hierarchy_analysis_cache: {
+        Row: {
+          analysis_data: Json
+          behavior_log_count: number
+          created_at: string | null
+          id: string
+          last_behavior_log_timestamp: string
+          time_range: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_data: Json
+          behavior_log_count: number
+          created_at?: string | null
+          id?: string
+          last_behavior_log_timestamp: string
+          time_range: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json
+          behavior_log_count?: number
+          created_at?: string | null
+          id?: string
+          last_behavior_log_timestamp?: string
+          time_range?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hierarchy_invalidation_triggers: {
+        Row: {
+          created_at: string | null
+          id: string
+          log_entry_id: string | null
+          trigger_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          log_entry_id?: string | null
+          trigger_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          log_entry_id?: string | null
+          trigger_type?: string
+          user_id?: string
         }
         Relationships: []
       }
