@@ -6,15 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BottomNav from '@/components/BottomNav';
+import UnauthenticatedReportsView from '@/components/UnauthenticatedReportsView';
 import DailySummaryReport from '@/components/reports/DailySummaryReport';
 import FeedingEnvironmentReport from '@/components/reports/FeedingEnvironmentReport';
 import BehaviorAnalysisReport from '@/components/reports/BehaviorAnalysisReport';
 import HealthReport from '@/components/reports/HealthReport';
 import RatHierarchyReport from '@/components/reports/RatHierarchyReport';
+import { useAuth } from '@/hooks/useAuth';
+import AuthModal from '@/components/AuthModal';
 
 const ReportsPage = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // If user is not authenticated, show login prompt
+  if (!user) {
+    return <UnauthenticatedReportsView authModalOpen={authModalOpen} setAuthModalOpen={setAuthModalOpen} />;
+  }
 
   const reportTypes = [
     {

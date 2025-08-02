@@ -24,6 +24,15 @@ const RankChart = ({ data, rats }: RankChartProps) => {
     return rats.find(rat => rat.id === ratId);
   };
 
+  // Guard against empty data
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+        {t('No data available')}
+      </div>
+    );
+  }
+
   const chartData = data.map(rat => {
     const profile = getRatProfile(rat.rat_id);
     return {

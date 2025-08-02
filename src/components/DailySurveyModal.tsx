@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Clock, X, Send } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -127,6 +127,9 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
               <X className="h-4 w-4" />
             </Button>
           </div>
+          <DialogDescription>
+            {t('Help us understand your rats\' social dynamics with a quick daily survey')}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
