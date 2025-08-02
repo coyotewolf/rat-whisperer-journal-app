@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Pencil, Activity, Scale, Thermometer, Pill, Utensils } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { getRecentActivityCardColorClasses, getActivityStatusClasses } from "@/utils/cardStyleUtils";
+import { getRecentActivityCardColorClasses, getActivityStatusClasses, getHealthStatusEmoji } from "@/utils/cardStyleUtils";
 
 interface RecentActivitiesProps {
   recentActivities: any[];
@@ -109,6 +109,9 @@ const RecentActivities = ({
                         className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
                       >
                         {t(capitalize(activity.status))}
+                        {getHealthStatusEmoji(activity.status) && (
+                          <span className="ml-1">{getHealthStatusEmoji(activity.status)}</span>
+                        )}
                       </Badge>
                     ) : null}
                   </div>

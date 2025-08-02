@@ -59,3 +59,20 @@ export const getActivityStatusClasses = (status: string) => {
       return 'bg-secondary text-secondary-foreground border-secondary';
   }
 };
+
+export const getHealthStatusEmoji = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'excellent':
+      return '😊';
+    case 'good':
+      return '🙂';
+    case 'fair':
+      return '😐';
+    case 'poor':
+      return '😕';
+    case 'sick':
+      return '😷';
+    default:
+      return '';
+  }
+};
