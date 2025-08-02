@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
 import LogTagSuggestions from "@/components/LogTagSuggestions";
+import { getHealthStatusEmoji } from "@/utils/cardStyleUtils";
 
 interface HealthLogFormProps {
   initialData?: any;
@@ -44,11 +45,36 @@ const HealthLogForm = ({ initialData, onDataChange, selectedTags = [], onTagsCha
             <SelectValue placeholder={t("Select status")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="excellent">{t("Excellent")}</SelectItem>
-            <SelectItem value="good">{t("Good")}</SelectItem>
-            <SelectItem value="fair">{t("Fair")}</SelectItem>
-            <SelectItem value="poor">{t("Poor")}</SelectItem>
-            <SelectItem value="sick">{t("Sick")}</SelectItem>
+            <SelectItem value="excellent">
+              <div className="flex items-center gap-2">
+                <span>{getHealthStatusEmoji("excellent")}</span>
+                <span>{t("Excellent")}</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="good">
+              <div className="flex items-center gap-2">
+                <span>{getHealthStatusEmoji("good")}</span>
+                <span>{t("Good")}</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="fair">
+              <div className="flex items-center gap-2">
+                <span>{getHealthStatusEmoji("fair")}</span>
+                <span>{t("Fair")}</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="poor">
+              <div className="flex items-center gap-2">
+                <span>{getHealthStatusEmoji("poor")}</span>
+                <span>{t("Poor")}</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="sick">
+              <div className="flex items-center gap-2">
+                <span>{getHealthStatusEmoji("sick")}</span>
+                <span>{t("Sick")}</span>
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

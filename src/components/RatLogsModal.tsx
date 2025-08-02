@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { getHealthStatusEmoji } from "@/utils/cardStyleUtils";
 
 // Simplified interface to avoid type complexity
 interface RatLogEntry {
@@ -31,7 +31,74 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  // Separate the fetchLogs function to avoid dependency issues
+  const formatLogContent = (log: RatLogEntry) => {
+    const content = log.content || {};
+    
+    switch (log.type) {
+      case 'behavior':
+        return (
+          <div>
+            {content.tags && Array.isArray(content.tags) && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {content.tags.map((tag: string, index: number) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            {content.notes && <p className="text-sm">{content.notes}</p>}
+          </div>
+        );
+      case 'weight':
+        return <p className="text-sm">{t("Weight")}: {content.weight}g</p>;
+      case 'health':
+        return (
+          <div>
+            <p className="text-sm font-medium">
+              {t("Status")}: {t(content.status || '')}
+              {getHealthStatusEmoji(content.status) && (
+                <span className="ml-1">{getHealthStatusEmoji(content.status)}</span>
+              )}
+            </p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
+          </div>
+        );
+      case 'medication':
+        return (
+          <div>
+            <p className="text-sm font-medium">{content.medication}</p>
+            <p className="text-sm">{t("Dose")}: {content.dose}</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
+          </div>
+        );
+      case 'feeding':
+        return (
+          <div>
+            <p className="text-sm font-medium">{content.food}</p>
+            <p className="text-sm">{t("Amount")}: {content.amount}</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
+          </div>
+        );
+      case 'environment':
+        return (
+          <div>
+            <p className="text-sm font-medium">{t("Temperature")}: {content.temperature}°C</p>
+            <p className="text-sm">{t("Humidity")}: {content.humidity}%</p>
+            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
+          </div>
+        );
+      default:
+        return <p className="text-sm">{JSON.stringify(content)}</p>;
+    }
+  };
+
+  useEffect(() => {
+    if (ratId && user?.id && isOpen) {
+      fetchLogs();
+    }
+  }, [ratId, user?.id, isOpen]);
+
   const fetchLogs = async () => {
     if (!ratId || !user) return;
 
@@ -62,69 +129,6 @@ const RatLogsModal = ({ isOpen, onClose, ratId, ratName, logTypes }: RatLogsModa
       console.error('Error fetching logs:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (ratId && user?.id && isOpen) {
-      fetchLogs();
-    }
-  }, [ratId, user?.id, isOpen]);
-
-  const formatLogContent = (log: RatLogEntry) => {
-    const content = log.content || {};
-    
-    switch (log.type) {
-      case 'behavior':
-        return (
-          <div>
-            {content.tags && Array.isArray(content.tags) && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {content.tags.map((tag: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            {content.notes && <p className="text-sm">{content.notes}</p>}
-          </div>
-        );
-      case 'weight':
-        return <p className="text-sm">{t("Weight")}: {content.weight}g</p>;
-      case 'health':
-        return (
-          <div>
-            <p className="text-sm font-medium">{t("Status")}: {t(content.status || '')}</p>
-            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
-          </div>
-        );
-      case 'medication':
-        return (
-          <div>
-            <p className="text-sm font-medium">{content.medication}</p>
-            <p className="text-sm">{t("Dose")}: {content.dose}</p>
-            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
-          </div>
-        );
-      case 'feeding':
-        return (
-          <div>
-            <p className="text-sm font-medium">{content.food}</p>
-            <p className="text-sm">{t("Amount")}: {content.amount}</p>
-            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
-          </div>
-        );
-      case 'environment':
-        return (
-          <div>
-            <p className="text-sm font-medium">{t("Temperature")}: {content.temperature}°C</p>
-            <p className="text-sm">{t("Humidity")}: {content.humidity}%</p>
-            {content.notes && <p className="text-sm mt-1">{content.notes}</p>}
-          </div>
-        );
-      default:
-        return <p className="text-sm">{JSON.stringify(content)}</p>;
     }
   };
 
