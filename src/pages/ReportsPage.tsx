@@ -21,11 +21,6 @@ const ReportsPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
-  // If user is not authenticated, show login prompt
-  if (!user) {
-    return <UnauthenticatedReportsView authModalOpen={authModalOpen} setAuthModalOpen={setAuthModalOpen} />;
-  }
-
   const reportTypes = [
     {
       id: 'daily',
@@ -63,6 +58,11 @@ const ReportsPage = () => {
       color: 'text-yellow-600'
     }
   ];
+
+  // If user is not authenticated, show login prompt
+  if (!user) {
+    return <UnauthenticatedReportsView authModalOpen={authModalOpen} setAuthModalOpen={setAuthModalOpen} />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
