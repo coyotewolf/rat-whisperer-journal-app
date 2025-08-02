@@ -13,6 +13,7 @@ import QuickLogModal from "@/components/QuickLogModal";
 import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
+import { getHealthStatusEmoji } from "@/utils/cardStyleUtils";
 
 const LogsPage = () => {
   const { user } = useAuth();
@@ -201,6 +202,15 @@ const LogsPage = () => {
           {log.weight && (
             <p className="text-sm font-medium text-card-foreground mb-1">
               {t("Weight")}: {log.weight}g
+            </p>
+          )}
+          
+          {log.status && (
+            <p className="text-sm font-medium text-card-foreground mb-1 flex items-center gap-1">
+              {t("Status")}: {t(log.status)}
+              {getHealthStatusEmoji(log.status) && (
+                <span>{getHealthStatusEmoji(log.status)}</span>
+              )}
             </p>
           )}
           
