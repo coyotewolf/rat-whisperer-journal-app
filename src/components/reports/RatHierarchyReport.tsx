@@ -22,11 +22,6 @@ const RatHierarchyReport = () => {
   const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(timeRange);
   const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey } = useDailySurvey();
   const { markRecommendationComplete, isRecommendationCompleted, shouldReduceFrequency } = useRecommendationTracking();
-  
-  // If user is not authenticated, don't show content
-  if (!user) {
-    return null;
-  }
 
   // Fetch rats data
   useEffect(() => {
