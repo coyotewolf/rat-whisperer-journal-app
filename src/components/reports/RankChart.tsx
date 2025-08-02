@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RatHierarchyData } from '@/hooks/useHierarchyAnalysis';
 
 interface RankChartProps {
@@ -11,6 +13,7 @@ interface RankChartProps {
 
 const RankChart = ({ data, rats }: RankChartProps) => {
   const { t } = useTranslation();
+  const [selectedRat, setSelectedRat] = useState<RatHierarchyData | null>(null);
 
   const getRankEmoji = (rank: number) => {
     switch (rank) {
@@ -47,121 +50,141 @@ const RankChart = ({ data, rats }: RankChartProps) => {
   const sortedData = [...data].sort((a, b) => a.rank - b.rank);
 
   return (
-    <div className="space-y-3">
-      {sortedData.map((rat) => {
-        const profile = getRatProfile(rat.rat_id);
-        
-        return (
-          <Card 
-            key={rat.rat_id} 
-            className={`transition-all hover:shadow-md ${getRankColor(rat.rank)}`}
-          >
-            <CardContent className="p-4">
+    <>
+      <div className="space-y-3">
+        {sortedData.map((rat) => {
+          const profile = getRatProfile(rat.rat_id);
+          
+          return (
+            <Card 
+              key={rat.rat_id} 
+              className={`transition-all hover:shadow-md cursor-pointer ${getRankColor(rat.rank)}`}
+              onClick={() => setSelectedRat(rat)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  {/* Rank */}
+                  <div className="flex-shrink-0 text-2xl font-bold">
+                    {getRankEmoji(rat.rank)}
+                  </div>
+                  
+                  {/* Avatar */}
+                  <Avatar className="w-12 h-12 flex-shrink-0">
+                    <AvatarImage 
+                      src={profile?.profile_picture} 
+                      alt={rat.rat_name || 'Unknown'} 
+                    />
+                    <AvatarFallback className="text-sm font-medium">
+                      {rat.rat_name ? rat.rat_name.charAt(0) : '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  {/* Name and Nickname */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold truncate">
+                        {rat.rat_name || 'Unknown'}
+                      </h3>
+                      {rat.nickname && (
+                        <Badge variant="secondary" className="text-xs">
+                          {rat.nickname}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Detail Modal */}
+      <Dialog open={!!selectedRat} onOpenChange={(open) => !open && setSelectedRat(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <span className="text-2xl">{selectedRat && getRankEmoji(selectedRat.rank)}</span>
+              <Avatar className="w-8 h-8">
+                <AvatarImage 
+                  src={getRatProfile(selectedRat?.rat_id || '')?.profile_picture} 
+                  alt={selectedRat?.rat_name || 'Unknown'} 
+                />
+                <AvatarFallback className="text-sm">
+                  {selectedRat?.rat_name ? selectedRat.rat_name.charAt(0) : '?'}
+                </AvatarFallback>
+              </Avatar>
+              {selectedRat?.rat_name || 'Unknown'}
+              {selectedRat?.nickname && (
+                <Badge variant="secondary" className="text-xs">
+                  {selectedRat.nickname}
+                </Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedRat && (
+            <div className="space-y-4">
+              {/* Rank and Score */}
               <div className="flex items-center gap-4">
-                {/* Rank */}
-                <div className="flex-shrink-0 text-2xl font-bold">
-                  {getRankEmoji(rat.rank)}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">排名:</span>
+                  <span className="font-bold">#{selectedRat.rank}</span>
                 </div>
-                
-                {/* Avatar */}
-                <Avatar className="w-12 h-12 flex-shrink-0">
-                  <AvatarImage 
-                    src={profile?.profile_picture} 
-                    alt={rat.rat_name || 'Unknown'} 
-                  />
-                  <AvatarFallback className="text-sm font-medium">
-                    {rat.rat_name ? rat.rat_name.charAt(0) : '?'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                {/* Name and Details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold truncate">
-                      {rat.rat_name || 'Unknown'}
-                    </h3>
-                    {rat.nickname && (
-                      <Badge variant="secondary" className="text-xs">
-                        {rat.nickname}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>#{rat.rank}</span>
-                    <span>•</span>
-                    <span>{t('Dominance Score')}: {rat.dominance_score}</span>
-                  </div>
-                  
-                  {rat.analysis && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      {rat.analysis}
-                    </p>
-                  )}
-                </div>
-                
-                {/* Dominance Score Badge */}
-                <div className="flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">{t('Dominance Score')}:</span>
                   <Badge 
-                    variant={rat.dominance_score >= 0 ? "destructive" : "secondary"}
-                    className="text-sm font-bold"
+                    variant={selectedRat.dominance_score >= 0 ? "destructive" : "secondary"}
+                    className="font-bold"
                   >
-                    {rat.dominance_score > 0 ? '+' : ''}{rat.dominance_score}
+                    {selectedRat.dominance_score > 0 ? '+' : ''}{selectedRat.dominance_score}
                   </Badge>
                 </div>
               </div>
               
-              {/* Behaviors */}
-              {(rat.dominant_behaviors?.length > 0 || rat.submissive_behaviors?.length > 0) && (
-                <div className="mt-3 pt-3 border-t border-border/50">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {rat.dominant_behaviors && rat.dominant_behaviors.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-1">
-                          {t('Dominant Behaviors')}
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {rat.dominant_behaviors.slice(0, 3).map((behavior, idx) => (
-                            <Badge key={idx} variant="destructive" className="text-xs">
-                              {behavior}
-                            </Badge>
-                          ))}
-                          {rat.dominant_behaviors.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{rat.dominant_behaviors.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {rat.submissive_behaviors && rat.submissive_behaviors.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-1">
-                          {t('Submissive Behaviors')}
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {rat.submissive_behaviors.slice(0, 3).map((behavior, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {behavior}
-                            </Badge>
-                          ))}
-                          {rat.submissive_behaviors.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{rat.submissive_behaviors.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              {/* Analysis */}
+              {selectedRat.analysis && (
+                <div>
+                  <h4 className="font-medium mb-2">AI 分析</h4>
+                  <p className="text-sm text-muted-foreground">{selectedRat.analysis}</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+              
+              {/* Behaviors */}
+              {(selectedRat.dominant_behaviors?.length > 0 || selectedRat.submissive_behaviors?.length > 0) && (
+                <div className="space-y-3">
+                  {selectedRat.dominant_behaviors && selectedRat.dominant_behaviors.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">{t('Dominant Behaviors')}</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedRat.dominant_behaviors.map((behavior, idx) => (
+                          <Badge key={idx} variant="destructive" className="text-xs">
+                            {behavior}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedRat.submissive_behaviors && selectedRat.submissive_behaviors.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">{t('Submissive Behaviors')}</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedRat.submissive_behaviors.map((behavior, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {behavior}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
