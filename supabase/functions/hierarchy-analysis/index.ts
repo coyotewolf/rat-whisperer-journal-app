@@ -241,7 +241,7 @@ ${JSON.stringify(behaviorData, null, 2)}
     }
   ],
   "interaction_patterns": "互動模式分析（可愛貼心語氣）",
-  "recommendations": "建議事項（可愛貼心語氣）",
+  "recommendations": "建議事項（可愛貼心語氣，只在發現異常行為或社會關係問題時提供，用條列方式呈現）",
   "api_cost": "估算費用（美金）",
   "model_used": "gemini-2.0-flash-exp"
 }

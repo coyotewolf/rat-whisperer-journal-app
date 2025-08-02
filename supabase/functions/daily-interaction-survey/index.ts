@@ -306,14 +306,44 @@ async function processAnswersToBehaviors(answers: any[]) {
     if (answer.type === 'multiple_choice') {
       const behaviorTag = getBehaviorTagFromCategory(answer.category);
       if (behaviorTag) {
-        // 處理多選選項
+        // 處理多選選項 - 保持組合記錄
         if (answer.selectedOptions && answer.selectedOptions.length > 0) {
-          for (const option of answer.selectedOptions) {
-            if (option !== '沒有觀察到') {
+          const validOptions = answer.selectedOptions.filter((option: string) => option !== '沒有觀察到');
+          if (validOptions.length > 0) {
+            // 分離主動和被動行為
+            const activeOptions = validOptions.filter((opt: string) => opt.includes('(主動)'));
+            const passiveOptions = validOptions.filter((opt: string) => opt.includes('(被動)'));
+            const neutralOptions = validOptions.filter((opt: string) => !opt.includes('(主動)') && !opt.includes('(被動)'));
+            
+            // 記錄主動行為
+            if (activeOptions.length > 0) {
               behaviors.push({
-                rat_name: option,
+                rat_names: activeOptions.map((opt: string) => opt.replace('(主動)', '')),
+                behavior_tag: behaviorTag + '_active',
+                category: answer.category,
+                behavior_type: 'active',
+                context: `來自每日調查問題：${answer.question} - 主動行為`
+              });
+            }
+            
+            // 記錄被動行為
+            if (passiveOptions.length > 0) {
+              behaviors.push({
+                rat_names: passiveOptions.map((opt: string) => opt.replace('(被動)', '')),
+                behavior_tag: behaviorTag + '_passive',
+                category: answer.category,
+                behavior_type: 'passive',
+                context: `來自每日調查問題：${answer.question} - 被動行為`
+              });
+            }
+            
+            // 記錄中性行為
+            if (neutralOptions.length > 0) {
+              behaviors.push({
+                rat_names: neutralOptions,
                 behavior_tag: behaviorTag,
                 category: answer.category,
+                behavior_type: 'neutral',
                 context: `來自每日調查問題：${answer.question}`
               });
             }
@@ -323,20 +353,11 @@ async function processAnswersToBehaviors(answers: any[]) {
         // 處理手動輸入
         if (answer.customInput && answer.customInput.trim()) {
           behaviors.push({
-            rat_name: answer.customInput.trim(),
+            rat_names: [answer.customInput.trim()],
             behavior_tag: behaviorTag,
             category: answer.category,
+            behavior_type: 'neutral',
             context: `來自每日調查問題：${answer.question}（手動輸入）`
-          });
-        }
-        
-        // 處理單選（向後兼容）
-        if (answer.selectedOption && answer.selectedOption !== '沒有觀察到') {
-          behaviors.push({
-            rat_name: answer.selectedOption,
-            behavior_tag: behaviorTag,
-            category: answer.category,
-            context: `來自每日調查問題：${answer.question}`
           });
         }
       }
@@ -373,12 +394,20 @@ async function createBehaviorLogs(supabase: any, userId: string, processedBehavi
   const ratMap = new Map(rats?.map((rat: any) => [rat.name, rat.id]) || []);
 
   for (const behavior of processedBehaviors) {
-    const ratIds = behavior.rat_name ? [ratMap.get(behavior.rat_name)].filter(Boolean) : [];
+    // 支持多選鼠類記錄
+    let ratIds = [];
+    if (behavior.rat_names && Array.isArray(behavior.rat_names)) {
+      ratIds = behavior.rat_names.map((name: string) => ratMap.get(name)).filter(Boolean);
+    } else if (behavior.rat_name) {
+      const ratId = ratMap.get(behavior.rat_name);
+      if (ratId) ratIds = [ratId];
+    }
     
     const logContent = {
       behavior: behavior.behavior_tag,
       notes: behavior.notes || behavior.context,
-      tags: [behavior.behavior_tag]
+      tags: [behavior.behavior_tag],
+      behavior_type: behavior.behavior_type || 'neutral'
     };
 
     await supabase
@@ -386,7 +415,7 @@ async function createBehaviorLogs(supabase: any, userId: string, processedBehavi
       .insert({
         user_id: userId,
         type: 'behavior',
-        rat_ids: ratIds,
+        rat_ids: ratIds, // 保持多選格式
         content: logContent,
         created_at: new Date().toISOString()
       });

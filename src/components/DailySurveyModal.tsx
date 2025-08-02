@@ -20,6 +20,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
   const { survey, loading, generateTodaySurvey, submitSurveyAnswers } = useDailySurvey();
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [skippedQuestions, setSkippedQuestions] = useState<Set<number>>(new Set());
 
   const handleGenerateSurvey = async () => {
     await generateTodaySurvey();
@@ -47,13 +48,20 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!survey || answers.length === 0) return;
+    if (!survey) return;
     
-    await submitSurveyAnswers(answers);
+    // 只提交有回答的問題（排除跳過的問題）
+    const validAnswers = answers.filter(answer => 
+      !skippedQuestions.has(answer.questionId) &&
+      (answer.selectedOption || answer.selectedOptions?.length || answer.customInput?.trim() || answer.textAnswer?.trim())
+    );
+    
+    await submitSurveyAnswers(validAnswers);
     onClose();
   };
 
   const canSubmit = survey?.questions.every(q => 
+    skippedQuestions.has(q.id) || // 跳過的問題算作已完成
     answers.some(a => 
       a.questionId === q.id && 
       (a.selectedOption || a.selectedOptions?.length || a.customInput?.trim() || a.textAnswer?.trim())
@@ -69,6 +77,20 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
   const prevQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+
+  const skipQuestion = () => {
+    if (!survey) return;
+    const currentQuestion = survey.questions[currentQuestionIndex];
+    setSkippedQuestions(prev => new Set([...prev, currentQuestion.id]));
+    
+    // 移除該問題的答案
+    setAnswers(prev => prev.filter(a => a.questionId !== currentQuestion.id));
+    
+    // 跳到下一題
+    if (currentQuestionIndex < survey.questions.length - 1) {
+      nextQuestion();
     }
   };
 
@@ -164,33 +186,103 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
                     <CardContent>
                       {question.type === 'multiple_choice' && question.options && (
                         <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-2">
-                            {question.options.map((option, optionIndex) => (
-                              <div key={optionIndex} className="flex items-center space-x-2">
-                                <input
-                                  type="checkbox"
-                                  id={`q${question.id}-${optionIndex}`}
-                                  className="rounded border-border"
-                                  checked={answers.find(a => a.questionId === question.id)?.selectedOptions?.includes(option) || false}
-                                  onChange={(e) => {
-                                    const currentAnswer = answers.find(a => a.questionId === question.id);
-                                    const currentOptions = currentAnswer?.selectedOptions || [];
-                                    const newOptions = e.target.checked
-                                      ? [...currentOptions, option]
-                                      : currentOptions.filter(o => o !== option);
-                                    
-                                    handleAnswerChange(question.id, {
-                                      type: 'multiple_choice',
-                                      question: question.question,
-                                      category: question.category,
-                                      selectedOptions: newOptions
-                                    });
-                                  }}
-                                />
-                                <Label htmlFor={`q${question.id}-${optionIndex}`}>{option}</Label>
+                          {/* 檢查是否為互動行為問題，需要區分主動/被動 */}
+                          {(question.question.includes('追逐') || question.question.includes('壓制') || question.question.includes('理毛') || question.question.includes('互動')) ? (
+                            <div className="space-y-4">
+                              <div className="border rounded-lg p-3">
+                                <h4 className="font-medium mb-2">{t('主動行為者')}</h4>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {question.options.filter(opt => opt !== '沒有觀察到').map((option, optionIndex) => (
+                                    <div key={`active-${optionIndex}`} className="flex items-center space-x-2">
+                                      <input
+                                        type="checkbox"
+                                        id={`q${question.id}-active-${optionIndex}`}
+                                        className="rounded border-border"
+                                        checked={answers.find(a => a.questionId === question.id)?.selectedOptions?.includes(`${option}(主動)`) || false}
+                                        onChange={(e) => {
+                                          const currentAnswer = answers.find(a => a.questionId === question.id);
+                                          const currentOptions = currentAnswer?.selectedOptions || [];
+                                          const activeOption = `${option}(主動)`;
+                                          const newOptions = e.target.checked
+                                            ? [...currentOptions, activeOption]
+                                            : currentOptions.filter(o => o !== activeOption);
+                                          
+                                          handleAnswerChange(question.id, {
+                                            type: 'multiple_choice',
+                                            question: question.question,
+                                            category: question.category,
+                                            selectedOptions: newOptions
+                                          });
+                                        }}
+                                      />
+                                      <Label htmlFor={`q${question.id}-active-${optionIndex}`}>{option}</Label>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                              
+                              <div className="border rounded-lg p-3">
+                                <h4 className="font-medium mb-2">{t('被動行為者')}</h4>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {question.options.filter(opt => opt !== '沒有觀察到').map((option, optionIndex) => (
+                                    <div key={`passive-${optionIndex}`} className="flex items-center space-x-2">
+                                      <input
+                                        type="checkbox"
+                                        id={`q${question.id}-passive-${optionIndex}`}
+                                        className="rounded border-border"
+                                        checked={answers.find(a => a.questionId === question.id)?.selectedOptions?.includes(`${option}(被動)`) || false}
+                                        onChange={(e) => {
+                                          const currentAnswer = answers.find(a => a.questionId === question.id);
+                                          const currentOptions = currentAnswer?.selectedOptions || [];
+                                          const passiveOption = `${option}(被動)`;
+                                          const newOptions = e.target.checked
+                                            ? [...currentOptions, passiveOption]
+                                            : currentOptions.filter(o => o !== passiveOption);
+                                          
+                                          handleAnswerChange(question.id, {
+                                            type: 'multiple_choice',
+                                            question: question.question,
+                                            category: question.category,
+                                            selectedOptions: newOptions
+                                          });
+                                        }}
+                                      />
+                                      <Label htmlFor={`q${question.id}-passive-${optionIndex}`}>{option}</Label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 gap-2">
+                              {question.options.map((option, optionIndex) => (
+                                <div key={optionIndex} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`q${question.id}-${optionIndex}`}
+                                    className="rounded border-border"
+                                    checked={answers.find(a => a.questionId === question.id)?.selectedOptions?.includes(option) || false}
+                                    onChange={(e) => {
+                                      const currentAnswer = answers.find(a => a.questionId === question.id);
+                                      const currentOptions = currentAnswer?.selectedOptions || [];
+                                      const newOptions = e.target.checked
+                                        ? [...currentOptions, option]
+                                        : currentOptions.filter(o => o !== option);
+                                      
+                                      handleAnswerChange(question.id, {
+                                        type: 'multiple_choice',
+                                        question: question.question,
+                                        category: question.category,
+                                        selectedOptions: newOptions
+                                      });
+                                    }}
+                                  />
+                                  <Label htmlFor={`q${question.id}-${optionIndex}`}>{option}</Label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
                           <div className="space-y-2">
                             <Label htmlFor={`q${question.id}-custom`}>{t('或者手動輸入')}</Label>
                             <input
@@ -234,13 +326,22 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
 
               {/* Navigation buttons */}
               <div className="flex items-center justify-between gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={prevQuestion}
-                  disabled={currentQuestionIndex === 0}
-                >
-                  {t('Previous')}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={prevQuestion}
+                    disabled={currentQuestionIndex === 0}
+                  >
+                    {t('Previous')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={skipQuestion}
+                    className="text-muted-foreground"
+                  >
+                    {t('Skip')}
+                  </Button>
+                </div>
 
                 <div className="flex items-center gap-2">
                   {survey.questions.map((_, index) => (
@@ -250,9 +351,11 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
                       className={`w-3 h-3 rounded-full transition-all ${
                         index === currentQuestionIndex 
                           ? 'bg-primary' 
-                          : answers.some(a => a.questionId === survey.questions[index].id && (a.selectedOption || a.selectedOptions?.length || a.customInput?.trim() || a.textAnswer?.trim()))
-                            ? 'bg-green-500'
-                            : 'bg-muted'
+                          : skippedQuestions.has(survey.questions[index].id)
+                            ? 'bg-orange-500'
+                            : answers.some(a => a.questionId === survey.questions[index].id && (a.selectedOption || a.selectedOptions?.length || a.customInput?.trim() || a.textAnswer?.trim()))
+                              ? 'bg-green-500'
+                              : 'bg-muted'
                       }`}
                     />
                   ))}
@@ -284,15 +387,17 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
                   {survey.questions.map((question, index) => {
                     const answer = answers.find(a => a.questionId === question.id);
                     const isAnswered = answer && (answer.selectedOption || answer.selectedOptions?.length || answer.customInput?.trim() || answer.textAnswer?.trim());
+                    const isSkipped = skippedQuestions.has(question.id);
                     
                     return (
                       <Badge 
                         key={question.id}
-                        variant={isAnswered ? "default" : "outline"}
+                        variant={isAnswered ? "default" : isSkipped ? "secondary" : "outline"}
                         className="text-xs"
                       >
                         {index + 1}. {question.category}
                         {isAnswered && " ✓"}
+                        {isSkipped && " ⏭"}
                       </Badge>
                     );
                   })}

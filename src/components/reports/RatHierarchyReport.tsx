@@ -288,13 +288,26 @@ const RatHierarchyReport = () => {
           </Card>
         )}
 
-        {analysis?.recommendations && (
+        {analysis?.recommendations && analysis.recommendations !== '目前沒有發現需要特別注意的問題' && (
           <Card>
             <CardHeader>
               <CardTitle>{t('Recommendations')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">{analysis.recommendations}</p>
+              <div className="text-sm text-muted-foreground">
+                {analysis.recommendations.split('\n').map((line, index) => (
+                  <div key={index} className="mb-1">
+                    {line.trim() && (
+                      line.startsWith('•') || line.startsWith('-') || line.startsWith('*') 
+                        ? <div className="flex items-start gap-2">
+                            <span className="text-primary">•</span>
+                            <span>{line.replace(/^[•\-\*]\s*/, '')}</span>
+                          </div>
+                        : <div>{line}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
