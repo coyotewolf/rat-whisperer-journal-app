@@ -119,6 +119,26 @@ serve(async (req) => {
     
     // Update cache
     await updateAnalysisCache(supabase, user.id, timeRange, analysisResult, cacheValidation.currentStats);
+
+    // Persist per-rat rank snapshot for long-term trend
+    try {
+      const nowIso = new Date().toISOString();
+      const rows = (analysisResult?.rats_hierarchy || []).map((r: any) => ({
+        user_id: user.id,
+        analysis_time: nowIso,
+        rat_id: r.rat_id,
+        rat_name: r.rat_name,
+        rank: r.rank,
+        dominance_score: r.dominance_score,
+        time_range: timeRange,
+      }));
+      if (rows.length > 0) {
+        const { error: histErr } = await supabase.from('rat_rank_history').insert(rows);
+        if (histErr) console.error('Failed to insert rank history:', histErr.message);
+      }
+    } catch (e) {
+      console.error('Error while saving rank history:', e);
+    }
     
     console.log('Analysis completed and cached');
     
@@ -238,7 +258,7 @@ ${JSON.stringify(behaviorData, null, 2)}
       "dominant_behaviors": ["支配性行為列表"],
       "submissive_behaviors": ["服從性行為列表"],
       "analysis": "個別分析說明（可愛貼心語氣）",
-      "nickname": "根據行為特徵取的可愛暱稱，如'邊緣鼠'、'暴躁人'、'和平使者'等"
+      "nickname": "根據行為特徵取的可愛暱稱，並在末尾附上最貼切的 emoji（例如：'和平使者🕊️'、'暴躁將軍😠'、'邊緣探險家🧭'）"
     }
   ],
   "interaction_patterns": "互動模式分析（可愛貼心語氣）",

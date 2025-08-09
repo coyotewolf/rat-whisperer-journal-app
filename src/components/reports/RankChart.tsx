@@ -24,6 +24,22 @@ const RankChart = ({ data, rats }: RankChartProps) => {
     }
   };
 
+  const nicknameEmoji = (nickname?: string) => {
+    if (!nickname) return '';
+    const n = nickname.toLowerCase();
+    if (/[和平|peace|和事佬]/.test(n)) return '🕊️';
+    if (/[暴躁|aggressive|怒|霸道]/.test(n)) return '😠';
+    if (/[邊緣|loner|獨行]/.test(n)) return '🫥';
+    if (/[探索|探險|explorer|冒險]/.test(n)) return '🧭';
+    if (/[領袖|leader|老大|王]/.test(n)) return '👑';
+    if (/[溫柔|gentle|柔]/.test(n)) return '🌷';
+    if (/[好奇|curious]/.test(n)) return '🧐';
+    if (/[愛玩|playful|調皮]/.test(n)) return '🎉';
+    if (/[友善|social|friendly|社交]/.test(n)) return '🤝';
+    if (/[貪吃|吃貨|foodie]/.test(n)) return '🍽️';
+    return '✨';
+  };
+
   const getRatProfile = (ratId: string) => {
     return rats.find(rat => rat.id === ratId);
   };
@@ -87,7 +103,11 @@ const RankChart = ({ data, rats }: RankChartProps) => {
                       </span>
                       {rat.nickname && (
                         <Badge variant="secondary" className="text-xs">
-                          {`${rat.nickname} 🐭`}
+                          {(() => {
+                            const n = rat.nickname;
+                            const hasEmoji = /[\u{1F300}-\u{1FAFF}\u{1F900}-\u{1F9FF}\u2600-\u26FF\u2700-\u27BF]/u.test(n);
+                            return hasEmoji ? n : `${n} ${nicknameEmoji(n)}`;
+                          })()}
                         </Badge>
                       )}
                     </div>

@@ -311,8 +311,8 @@ const RatHierarchyReport = () => {
 
       {/* Daily Survey Modal */}
       <DailySurveyModal 
-        open={shouldShowModal} 
-        onClose={dismissSurvey}
+        open={shouldShowModal || openSurvey} 
+        onClose={() => { setOpenSurvey(false); dismissSurvey(); }}
       />
     </div>
   );
