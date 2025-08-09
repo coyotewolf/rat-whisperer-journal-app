@@ -17,8 +17,25 @@ export const useRecommendationTracking = () => {
     }
   }, []);
 
+  // Safe base64 encoder for Unicode strings
+  const toBase64 = (str: string) => {
+    try {
+      const bytes = new TextEncoder().encode(str);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    } catch (e) {
+      // Fallback for older browsers
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+  };
+
+  const idFromText = (text: string) => toBase64(text).slice(0, 16);
+
   const markRecommendationComplete = (recommendationText: string) => {
-    const id = btoa(recommendationText).slice(0, 16);
+    const id = idFromText(recommendationText);
     const existing = completedRecommendations.find(r => r.id === id);
     
     const updated = existing 
@@ -39,7 +56,7 @@ export const useRecommendationTracking = () => {
   };
 
   const isRecommendationCompleted = (recommendationText: string) => {
-    const id = btoa(recommendationText).slice(0, 16);
+    const id = idFromText(recommendationText);
     const completed = completedRecommendations.find(r => r.id === id);
     return completed ? completed.completedCount : 0;
   };
