@@ -404,6 +404,7 @@
   "Historical Hierarchy Trend": "Historical Hierarchy Trend",
   "See how ranks have shifted over time.": "See how ranks have shifted over time.",
   "Ranking": "Ranking",
+  "Rank": "Rank",
   "7 days": "7 days",
   "30 days": "30 days",
   "daily_survey_submitted": "Daily survey submitted! Behavior data has been updated.",
@@ -431,5 +432,6 @@
   "Start logging to see your daily summary": "Start logging to see your daily summary",
   "Sign in to view reports": "Sign in to view reports",
   "Create an account or sign in to access detailed analytics and insights about your rats!": "Create an account or sign in to access detailed analytics and insights about your rats!",
-  "View detailed analytics and insights": "View detailed analytics and insights"
+  "View detailed analytics and insights": "View detailed analytics and insights",
+  "Refresh": "Refresh"
 }

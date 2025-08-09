@@ -34,12 +34,12 @@ serve(async (req) => {
       throw new Error('Authentication failed');
     }
 
-    const { timeRange = 30, language = 'en' } = await req.json();
+    const { timeRange = 30, language = 'en', force = false } = await req.json();
     
     console.log(`Starting hierarchy analysis for user ${user.id} with timeRange ${timeRange}`);
     
     // Check cache validity
-    const cacheValidation = await checkCacheValidity(supabase, user.id, timeRange);
+    const cacheValidation = await checkCacheValidity(supabase, user.id, timeRange, language, force);
     
     if (cacheValidation.isValid && cacheValidation.cache) {
       console.log('Returning cached analysis');
@@ -92,10 +92,12 @@ serve(async (req) => {
           rank: index + 1,
           dominant_behaviors: [],
           submissive_behaviors: [],
-          analysis: isZh ? "需要更多行為觀察資料" : "More behavior observations are needed."
+          analysis: isZh ? "需要更多行為觀察資料" : "More behavior observations are needed.",
+          nickname: undefined
         })) || []),
         interaction_patterns: isZh ? "無互動資料" : "No interaction data",
-        recommendations: isZh ? "建議記錄更多行為觀察" : "Try recording more behavior observations to unlock insights."
+        recommendations: isZh ? "建議記錄更多行為觀察" : "Try recording more behavior observations to unlock insights.",
+        output_language: language
       };
 
       await updateAnalysisCache(supabase, user.id, timeRange, emptyAnalysis, {
@@ -163,7 +165,10 @@ serve(async (req) => {
   }
 });
 
-async function checkCacheValidity(supabase: any, userId: string, timeRange: number) {
+async function checkCacheValidity(supabase: any, userId: string, timeRange: number, language: string, force: boolean) {
+  if (force) {
+    return { isValid: false, currentStats: await getCurrentBehaviorStats(supabase, userId, timeRange) };
+  }
   // Get existing cache
   const { data: cache } = await supabase
     .from('hierarchy_analysis_cache')
@@ -173,6 +178,12 @@ async function checkCacheValidity(supabase: any, userId: string, timeRange: numb
     .single();
 
   if (!cache) return { isValid: false, currentStats: await getCurrentBehaviorStats(supabase, userId, timeRange) };
+
+  // Language mismatch invalidates cache
+  const cacheLang = cache.analysis_data?.output_language || cache.analysis_data?.language || null;
+  if (cacheLang && cacheLang !== language) {
+    return { isValid: false, currentStats: await getCurrentBehaviorStats(supabase, userId, timeRange) };
+  }
 
   // Get current behavior stats
   const currentStats = await getCurrentBehaviorStats(supabase, userId, timeRange);
@@ -331,9 +342,10 @@ Guidelines:
     
     const parsedResult = JSON.parse(jsonMatch[0]);
     
-    // 添加實際費用信息
+    // 添加實際費用與語言信息
     parsedResult.api_cost = `$${estimatedCost}`;
     parsedResult.model_used = 'gemini-2.0-flash-exp';
+    parsedResult.output_language = language;
     
     return parsedResult;
   } catch (parseError) {

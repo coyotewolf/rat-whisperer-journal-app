@@ -122,7 +122,7 @@ const RatHierarchyReport = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-8 gap-3">
-              <img src={pixelRat} alt="rat pixel" className="h-16 w-16" style={{ imageRendering: 'pixelated' }} />
+              <img src={pixelRat} alt="rat pixel" className="h-16 w-16 pulse" style={{ imageRendering: 'pixelated' }} />
               <span className="text-sm text-muted-foreground">{t('Analyzing behaviors...')}</span>
             </div>
           </CardContent>
@@ -191,7 +191,7 @@ const RatHierarchyReport = () => {
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 {loading && (
-                  <img src={pixelRat} alt="rat pixel" className="h-4 w-4" style={{ imageRendering: 'pixelated' }} />
+                  <img src={pixelRat} alt="rat pixel" className="h-4 w-4 pulse" style={{ imageRendering: 'pixelated' }} />
                 )}
               </Button>
             </div>
