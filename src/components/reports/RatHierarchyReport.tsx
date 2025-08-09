@@ -19,14 +19,10 @@ const RatHierarchyReport = () => {
   const { user } = useAuth();
   const [openSurvey, setOpenSurvey] = useState(false);
   const [rats, setRats] = useState([]);
-  const numericRange = Number.isNaN(parseInt(timeRange)) ? 30 : parseInt(timeRange);
-  const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(numericRange);
-  const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey, lastApiCost } = useDailySurvey();
+  const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(30);
+  const { shouldShowModal, dismissSurvey, lastApiCost } = useDailySurvey();
   const { markRecommendationComplete, isRecommendationCompleted, shouldReduceFrequency } = useRecommendationTracking();
-  // Preload for trend view
-  const trend7 = useHierarchyAnalysis(7);
-  const trend30 = useHierarchyAnalysis(30);
-  const trend90 = useHierarchyAnalysis(90);
+  const [history, setHistory] = useState<any[]>([]);
 
   // Fetch rats data
   useEffect(() => {
@@ -46,39 +42,30 @@ const RatHierarchyReport = () => {
     fetchRats();
   }, [user]);
 
-  // Trigger daily survey check when component mounts
-  useEffect(() => {
-    // Only check for daily survey when user first visits hierarchy page
-    const hasCheckedToday = localStorage.getItem(`dailySurveyChecked-${new Date().toDateString()}`);
-    if (!hasCheckedToday) {
-      localStorage.setItem(`dailySurveyChecked-${new Date().toDateString()}`, 'true');
-      // Small delay to allow component to render first
-      setTimeout(() => {
-        if (!survey) {
-          generateTodaySurvey();
-        }
-      }, 1000);
-    }
-  }, []);
-
+  // Refresh analysis when other parts of app request it
   useEffect(() => {
     const handleRefresh = () => {
       refetch();
     };
-    
     window.addEventListener('refreshHierarchyAnalysis', handleRefresh);
     return () => window.removeEventListener('refreshHierarchyAnalysis', handleRefresh);
   }, [refetch]);
 
-  const handleTimeRangeChange = (value: string) => {
-    setTimeRange(value);
-  };
-
+  // Load rat rank history for long-term trend
   useEffect(() => {
-    try {
-      localStorage.setItem('hierarchyTimeRange', timeRange);
-    } catch {}
-  }, [timeRange]);
+    const loadHistory = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('rat_rank_history')
+        .select('analysis_time, rat_id, rat_name, rank, dominance_score')
+        .eq('user_id', user.id)
+        .order('analysis_time', { ascending: true });
+      if (!error && data) setHistory(data);
+    };
+    loadHistory();
+  }, [user]);
+
+// Removed legacy timeRange handling
 
   const getDominanceColor = (score: number) => {
     if (score >= 50) return 'bg-red-500';
@@ -176,23 +163,12 @@ const RatHierarchyReport = () => {
                 </Badge>
               )}
             </CardTitle>
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-popover">
-                  <SelectItem value="7">{t('Last 7 days')}</SelectItem>
-                  <SelectItem value="30">{t('Last 30 days')}</SelectItem>
-                  <SelectItem value="90">{t('Last 90 days')}</SelectItem>
-                  <SelectItem value="trend">{t('Hierarchy Evolution')}</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={generateTodaySurvey}
-                className="flex items-center gap-2 w-full sm:w-auto"
+                onClick={() => setOpenSurvey(true)}
+                className="flex items-center gap-2"
               >
                 <MessageSquare className="h-4 w-4" />
                 {t('Daily Survey')}
@@ -202,7 +178,7 @@ const RatHierarchyReport = () => {
                 size="sm" 
                 onClick={forceRefresh}
                 disabled={loading}
-                className="w-full sm:w-auto"
+                aria-label={t('Refresh')}
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
@@ -212,7 +188,7 @@ const RatHierarchyReport = () => {
       </Card>
 
       {/* Analysis Summary */}
-      {timeRange !== 'trend' && analysis?.analysis_summary && (
+      {analysis?.analysis_summary && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -220,13 +196,12 @@ const RatHierarchyReport = () => {
               {t('Analysis Summary')}
             </CardTitle>
             {(() => {
-              const parseCost = (c?: string) => c ? parseFloat(String(c).replace(/[^0-9.]/g, '')) || 0 : 0;
+              const parseCost = (c?: string) => (c ? parseFloat(String(c).replace(/[^0-9.]/g, '')) || 0 : 0);
               const analysisCost = parseCost(analysis?.api_cost);
-              const trendCosts = timeRange === 'trend' ? (parseCost(trend7.analysis?.api_cost) + parseCost(trend30.analysis?.api_cost) + parseCost(trend90.analysis?.api_cost)) : 0;
-              const totalCost = analysisCost + trendCosts + (lastApiCost || 0);
+              const totalCost = analysisCost + (lastApiCost || 0);
               return (
                 <div className="text-xs text-muted-foreground">
-                  {t('Total API Cost')}: ${'{'}totalCost.toFixed(6){'}'} {analysis?.model_used ? `(${analysis.model_used})` : ''}
+                  {t('Total API Cost')}: ${totalCost.toFixed(6)} {analysis?.model_used ? `(${analysis.model_used})` : ''}
                 </div>
               );
             })()}
@@ -238,7 +213,7 @@ const RatHierarchyReport = () => {
       )}
 
       {/* Hierarchy Chart */}
-      {timeRange !== 'trend' && analysis?.rats_hierarchy && analysis.rats_hierarchy.length > 0 && (
+      {analysis?.rats_hierarchy && analysis.rats_hierarchy.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>{t('Hierarchy Ranking')}</CardTitle>
@@ -249,28 +224,21 @@ const RatHierarchyReport = () => {
         </Card>
       )}
 
-      {timeRange === 'trend' && (
-        <Card>
-          <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                {t('Hierarchy Evolution')}
-              </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">📈 {t('See how ranks have shifted over different time windows.')}</p>
-            <HierarchyTrendChart
-              rats={rats}
-              data7={trend7.analysis?.rats_hierarchy || []}
-              data30={trend30.analysis?.rats_hierarchy || []}
-              data90={trend90.analysis?.rats_hierarchy || []}
-            />
-          </CardContent>
-        </Card>
-      )}
+      {/* Long-term Trend */}
+      <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              {t('Historical Hierarchy Trend')}
+            </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">📈 {t('See how ranks have shifted over time.')}</p>
+          <HierarchyLongTermChart rats={rats} history={history} />
+        </CardContent>
+      </Card>
 
       {/* Interaction Patterns & Recommendations */}
-      {timeRange !== 'trend' && (
       <div className="grid gap-6 md:grid-cols-2">
         {analysis?.interaction_patterns && (
           <Card>
@@ -340,7 +308,6 @@ const RatHierarchyReport = () => {
           </CardContent>
         </Card>
       </div>
-      )}
 
       {/* Daily Survey Modal */}
       <DailySurveyModal 

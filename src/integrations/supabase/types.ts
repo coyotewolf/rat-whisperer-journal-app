@@ -277,6 +277,39 @@ export type Database = {
         }
         Relationships: []
       }
+      rat_rank_history: {
+        Row: {
+          analysis_time: string
+          dominance_score: number
+          id: string
+          rank: number
+          rat_id: string
+          rat_name: string
+          time_range: number | null
+          user_id: string
+        }
+        Insert: {
+          analysis_time?: string
+          dominance_score: number
+          id?: string
+          rank: number
+          rat_id: string
+          rat_name: string
+          time_range?: number | null
+          user_id: string
+        }
+        Update: {
+          analysis_time?: string
+          dominance_score?: number
+          id?: string
+          rank?: number
+          rat_id?: string
+          rat_name?: string
+          time_range?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       rats: {
         Row: {
           birthday: string
