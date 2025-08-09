@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import pixelRat from '@/assets/pixel-rat.png';
+import { getCache, setCache } from '@/lib/cache';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
@@ -26,21 +27,26 @@ const RatHierarchyReport = () => {
   const { markRecommendationComplete, isRecommendationCompleted, shouldReduceFrequency } = useRecommendationTracking();
   const [history, setHistory] = useState<any[]>([]);
 
-  // Fetch rats data
   useEffect(() => {
     const fetchRats = async () => {
       if (!user) return;
-      
+
+      // try cache first
+      const cacheKey = `rats:${user.id}`;
+      const cached = getCache<any[]>(cacheKey);
+      if (cached) setRats(cached);
+
       const { data } = await supabase
         .from('rats')
         .select('*')
         .eq('user_id', user.id);
-      
+
       if (data) {
         setRats(data);
+        setCache(cacheKey, data, 1000 * 60 * 10); // 10 minutes
       }
     };
-    
+
     fetchRats();
   }, [user]);
 
@@ -53,16 +59,24 @@ const RatHierarchyReport = () => {
     return () => window.removeEventListener('refreshHierarchyAnalysis', handleRefresh);
   }, [refetch]);
 
-  // Load rat rank history for long-term trend
   useEffect(() => {
     const loadHistory = async () => {
       if (!user) return;
+
+      // try cache first
+      const cacheKey = `rat_rank_history:${user.id}`;
+      const cached = getCache<any[]>(cacheKey);
+      if (cached) setHistory(cached);
+
       const { data, error } = await supabase
         .from('rat_rank_history')
         .select('analysis_time, rat_id, rat_name, rank, dominance_score')
         .eq('user_id', user.id)
         .order('analysis_time', { ascending: true });
-      if (!error && data) setHistory(data);
+      if (!error && data) {
+        setHistory(data);
+        setCache(cacheKey, data, 1000 * 60 * 10);
+      }
     };
     loadHistory();
   }, [user]);
@@ -231,24 +245,34 @@ const RatHierarchyReport = () => {
             <CardTitle>{t('Hierarchy Ranking')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="ranking" className="w-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="ranking">{t('Ranking')}</TabsTrigger>
-                <TabsTrigger value="7d">{t('7 days')}</TabsTrigger>
-                <TabsTrigger value="30d">{t('30 days')}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="ranking">
-                <RankChart data={analysis.rats_hierarchy} rats={rats} />
-              </TabsContent>
-              <TabsContent value="7d">
-                <p className="text-sm text-muted-foreground mb-3">📈 {t('Historical Hierarchy Trend')} — {t('See how ranks have shifted over time.')}</p>
-                <HierarchyLongTermChart rats={rats} history={history7} />
-              </TabsContent>
-              <TabsContent value="30d">
-                <p className="text-sm text-muted-foreground mb-3">📈 {t('Historical Hierarchy Trend')} — {t('See how ranks have shifted over time.')}</p>
-                <HierarchyLongTermChart rats={rats} history={history30} />
-              </TabsContent>
-            </Tabs>
+            <div className="relative">
+              {/* Loading overlay with pixel rat */}
+              {loading && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 rounded-md">
+                  <img src={pixelRat} alt="rat pixel" className="h-10 w-10 pulse" style={{ imageRendering: 'pixelated' }} />
+                  <span className="mt-2 text-xs text-muted-foreground">{t('Analyzing behaviors...')}</span>
+                </div>
+              )}
+
+              <Tabs defaultValue="ranking" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="ranking">{t('Ranking')}</TabsTrigger>
+                  <TabsTrigger value="7d">{t('7 days')}</TabsTrigger>
+                  <TabsTrigger value="30d">{t('30 days')}</TabsTrigger>
+                </TabsList>
+                <TabsContent value="ranking">
+                  <RankChart data={analysis.rats_hierarchy} rats={rats} />
+                </TabsContent>
+                <TabsContent value="7d">
+                  <p className="text-sm text-muted-foreground mb-3">📈 {t('Historical Hierarchy Trend')} — {t('See how ranks have shifted over time.')}</p>
+                  <HierarchyLongTermChart rats={rats} history={history7} />
+                </TabsContent>
+                <TabsContent value="30d">
+                  <p className="text-sm text-muted-foreground mb-3">📈 {t('Historical Hierarchy Trend')} — {t('See how ranks have shifted over time.')}</p>
+                  <HierarchyLongTermChart rats={rats} history={history30} />
+                </TabsContent>
+              </Tabs>
+            </div>
           </CardContent>
         </Card>
       )}

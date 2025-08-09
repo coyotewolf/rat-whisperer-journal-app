@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import i18n from '@/i18n';
+import { getCache, setCache } from '@/lib/cache';
 export interface SurveyQuestion {
   id: number;
   type: 'multiple_choice' | 'text';
@@ -36,6 +37,12 @@ export const useDailySurvey = () => {
   const [error, setError] = useState<string | null>(null);
   const [shouldShowModal, setShouldShowModal] = useState(false);
   const [lastApiCost, setLastApiCost] = useState<number>(0);
+
+  const todayKey = () => {
+    const d = new Date();
+    const ymd = d.toISOString().slice(0, 10);
+    return user ? `daily_survey:${user.id}:${ymd}:${i18n.language}` : '';
+  };
 
   const checkTodaySurvey = async () => {
     if (!user) return;
