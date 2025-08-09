@@ -118,26 +118,26 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
 
 
   const NavigationControls = ({ large = false }: { large?: boolean }) => (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex gap-2">
+    <div className={`flex flex-wrap items-center gap-3 sm:justify-between min-w-0`}>
+      <div className="flex gap-2 w-full sm:w-auto">
         <Button
           variant="outline"
           onClick={prevQuestion}
           disabled={currentQuestionIndex === 0}
-          className={large ? "h-12 px-5 text-base" : undefined}
+          className={large ? "h-12 px-5 text-base flex-1 sm:flex-none" : "flex-1 sm:flex-none"}
         >
           {t('Previous')}
         </Button>
         <Button
           variant="ghost"
           onClick={skipQuestion}
-          className={"text-muted-foreground " + (large ? "h-12 px-5 text-base" : "")}
+          className={(large ? "h-12 px-5 text-base " : "") + "text-muted-foreground flex-1 sm:flex-none"}
         >
           {t('Skip')}
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="hidden sm:flex items-center gap-2 flex-1 justify-center min-w-0">
         {survey?.questions.map((_, index) => (
           <button
             key={index}
@@ -156,24 +156,26 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
         ))}
       </div>
 
-      {currentQuestionIndex === (survey?.questions.length || 0) - 1 ? (
-        <Button
-          onClick={handleSubmit}
-          disabled={!canSubmit || loading}
-          className={"flex items-center gap-2 " + (large ? "h-12 px-5 text-base" : "")}
-        >
-          <Send className="h-4 w-4" />
-          {loading ? t('Submitting...') : t('Submit Survey')}
-        </Button>
-      ) : (
-        <Button
-          onClick={nextQuestion}
-          disabled={currentQuestionIndex === (survey?.questions.length || 0) - 1}
-          className={large ? "h-12 px-5 text-base" : undefined}
-        >
-          {t('Next')}
-        </Button>
-      )}
+      <div className="w-full sm:w-auto">
+        {currentQuestionIndex === (survey?.questions.length || 0) - 1 ? (
+          <Button
+            onClick={handleSubmit}
+            disabled={!canSubmit || loading}
+            className={(large ? "h-12 px-5 text-base " : "") + "w-full sm:w-auto"}
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {loading ? t('Submitting...') : t('Submit Survey')}
+          </Button>
+        ) : (
+          <Button
+            onClick={nextQuestion}
+            disabled={currentQuestionIndex === (survey?.questions.length || 0) - 1}
+            className={(large ? "h-12 px-5 text-base " : "") + "w-full sm:w-auto"}
+          >
+            {t('Next')}
+          </Button>
+        )}
+      </div>
     </div>
   );
 
@@ -429,7 +431,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
             <SurveyBody showNav={false} />
           </div>
 
-          <DrawerFooter className="sticky bottom-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4">
+          <DrawerFooter className="sticky bottom-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4 [padding-bottom:calc(1rem+env(safe-area-inset-bottom))]">
             <NavigationControls large />
           </DrawerFooter>
         </DrawerContent>

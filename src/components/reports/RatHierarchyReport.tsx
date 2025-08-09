@@ -11,17 +11,23 @@ import { useDailySurvey } from '@/hooks/useDailySurvey';
 import { useRecommendationTracking } from '@/hooks/useRecommendationTracking';
 import DailySurveyModal from '@/components/DailySurveyModal';
 import RankChart from '@/components/reports/RankChart';
+import HierarchyTrendChart from '@/components/reports/HierarchyTrendChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [timeRange, setTimeRange] = useState(30);
+  const [timeRange, setTimeRange] = useState<string>(() => localStorage.getItem('hierarchyTimeRange') || '30');
   const [rats, setRats] = useState([]);
-  const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(timeRange);
+  const numericRange = Number.isNaN(parseInt(timeRange)) ? 30 : parseInt(timeRange);
+  const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(numericRange);
   const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey } = useDailySurvey();
   const { markRecommendationComplete, isRecommendationCompleted, shouldReduceFrequency } = useRecommendationTracking();
+  // Preload for trend view
+  const trend7 = useHierarchyAnalysis(7);
+  const trend30 = useHierarchyAnalysis(30);
+  const trend90 = useHierarchyAnalysis(90);
 
   // Fetch rats data
   useEffect(() => {
@@ -66,8 +72,14 @@ const RatHierarchyReport = () => {
   }, [refetch]);
 
   const handleTimeRangeChange = (value: string) => {
-    setTimeRange(parseInt(value));
+    setTimeRange(value);
   };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('hierarchyTimeRange', timeRange);
+    } catch {}
+  }, [timeRange]);
 
   const getDominanceColor = (score: number) => {
     if (score >= 50) return 'bg-red-500';
@@ -166,14 +178,15 @@ const RatHierarchyReport = () => {
               )}
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Select value={timeRange.toString()} onValueChange={handleTimeRangeChange}>
-                <SelectTrigger className="w-32">
+              <Select value={timeRange} onValueChange={handleTimeRangeChange}>
+                <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-50 bg-popover">
                   <SelectItem value="7">{t('Last 7 days')}</SelectItem>
                   <SelectItem value="30">{t('Last 30 days')}</SelectItem>
                   <SelectItem value="90">{t('Last 90 days')}</SelectItem>
+                  <SelectItem value="trend">{t('Long-term Trend')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button 
@@ -199,7 +212,7 @@ const RatHierarchyReport = () => {
       </Card>
 
       {/* Analysis Summary */}
-      {analysis?.analysis_summary && (
+      {timeRange !== 'trend' && analysis?.analysis_summary && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -213,13 +226,13 @@ const RatHierarchyReport = () => {
             )}
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{analysis.analysis_summary}</p>
+            <p className="text-sm text-muted-foreground">🧠 {analysis.analysis_summary}</p>
           </CardContent>
         </Card>
       )}
 
       {/* Hierarchy Chart */}
-      {analysis?.rats_hierarchy && analysis.rats_hierarchy.length > 0 && (
+      {timeRange !== 'trend' && analysis?.rats_hierarchy && analysis.rats_hierarchy.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>{t('Hierarchy Ranking')}</CardTitle>
@@ -230,8 +243,28 @@ const RatHierarchyReport = () => {
         </Card>
       )}
 
+      {timeRange === 'trend' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              {t('Long-term Trend')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">📈 {t('See how ranks have shifted over different time windows.')}</p>
+            <HierarchyTrendChart
+              rats={rats}
+              data7={trend7.analysis?.rats_hierarchy || []}
+              data30={trend30.analysis?.rats_hierarchy || []}
+              data90={trend90.analysis?.rats_hierarchy || []}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Interaction Patterns & Recommendations */}
+      {timeRange !== 'trend' && (
       <div className="grid gap-6 md:grid-cols-2">
         {analysis?.interaction_patterns && (
           <Card>
@@ -239,58 +272,69 @@ const RatHierarchyReport = () => {
               <CardTitle>{t('Interaction Patterns')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">{analysis.interaction_patterns}</p>
+              <p className="text-sm text-muted-foreground">🔍 {analysis.interaction_patterns}</p>
             </CardContent>
           </Card>
         )}
 
-        {analysis?.recommendations && analysis.recommendations !== '目前沒有發現需要特別注意的問題' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('Recommendations')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {processRecommendations(analysis.recommendations).map((line, index) => {
-                  const trimmedLine = line.trim();
-                  if (!trimmedLine) return null;
-                  
-                  const cleanLine = trimmedLine.replace(/^[•\-\*]\s*/, '');
-                  const completedCount = isRecommendationCompleted(cleanLine);
-                  
-                  return (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-                      <span className="text-primary mt-1">•</span>
-                      <div className="flex-1">
-                        <div 
-                          className="text-sm"
-                          dangerouslySetInnerHTML={{
-                            __html: cleanLine
-                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                              .replace(/\n/g, '<br />')
-                          }}
-                        />
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('Recommendations')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const recs = processRecommendations(analysis?.recommendations);
+              if (!recs || recs.length === 0) {
+                return (
+                  <div className="p-4 rounded-lg border bg-card text-sm text-muted-foreground">
+                    🎉 {t('No special recommendations at the moment.')}<br />
+                    😊 {t('Interactions look stable recently, so AI has nothing urgent to suggest. We\'ll keep monitoring and notify you if anything stands out.')} 🐭✨
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-3">
+                  {recs.map((line, index) => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) return null;
+                    const cleanLine = trimmedLine.replace(/^[•\-\*]\s*/, '');
+                    const completedCount = isRecommendationCompleted(cleanLine);
+                    return (
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                        <span className="text-primary mt-1">•</span>
+                        <div className="flex-1">
+                          <div
+                            className="text-sm"
+                            dangerouslySetInnerHTML={{
+                              __html: cleanLine
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                .replace(/\n/g, '<br />')
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {completedCount > 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              {t('Completed')} {completedCount}x
+                            </Badge>
+                          )}
+                          <Checkbox
+                            id={`recommendation-${index}`}
+                            checked={completedCount > 0}
+                            onCheckedChange={() => markRecommendationComplete(cleanLine)}
+                          />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {completedCount > 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            {t('Completed')} {completedCount}x
-                          </Badge>
-                        )}
-                        <Checkbox
-                          id={`recommendation-${index}`}
-                          checked={completedCount > 0}
-                          onCheckedChange={() => markRecommendationComplete(cleanLine)}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
       </div>
+      )}
 
       {/* Daily Survey Modal */}
       <DailySurveyModal 
