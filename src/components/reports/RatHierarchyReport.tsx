@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Crown, TrendingUp, AlertCircle, RefreshCw, Loader2, Users, MessageSquare, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useHierarchyAnalysis } from '@/hooks/useHierarchyAnalysis';
@@ -11,14 +10,14 @@ import { useDailySurvey } from '@/hooks/useDailySurvey';
 import { useRecommendationTracking } from '@/hooks/useRecommendationTracking';
 import DailySurveyModal from '@/components/DailySurveyModal';
 import RankChart from '@/components/reports/RankChart';
-import HierarchyTrendChart from '@/components/reports/HierarchyTrendChart';
+import HierarchyLongTermChart from '@/components/reports/HierarchyLongTermChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [timeRange, setTimeRange] = useState<string>(() => localStorage.getItem('hierarchyTimeRange') || '30');
+  const [openSurvey, setOpenSurvey] = useState(false);
   const [rats, setRats] = useState([]);
   const numericRange = Number.isNaN(parseInt(timeRange)) ? 30 : parseInt(timeRange);
   const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(numericRange);
