@@ -219,7 +219,7 @@ const RatHierarchyReport = () => {
             })()}
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">🧠 {analysis.analysis_summary}</p>
+            <p className="text-sm text-muted-foreground">{analysis.analysis_summary}</p>
           </CardContent>
         </Card>
       )}

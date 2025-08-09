@@ -414,5 +414,48 @@
   "View detailed analytics and insights": "查看詳細的分析和洞察",
   "Dominance Score": "支配分數",
   "Dominant Behaviors": "支配行為",
-  "Submissive Behaviors": "順從行為"
+  "Submissive Behaviors": "順從行為",
+
+  "breathing_difficulty": "呼吸困難",
+  "loss_of_appetite": "食慾不振",
+  "weight_loss": "體重下降",
+  "lethargy": "倦怠",
+  "diarrhea": "腹瀉",
+  "constipation": "便秘",
+  "eye_discharge": "眼部分泌物",
+  "nasal_discharge": "鼻分泌物",
+  "skin_redness": "皮膚發紅",
+  "hair_loss": "掉毛",
+  "trembling": "發抖",
+  "abnormal_gait": "步態異常",
+
+  "foraging": "覓食",
+  "drinking": "喝水",
+  "grooming": "梳理",
+  "resting": "休息",
+  "sleeping": "睡覺",
+  "playing": "玩耍",
+  "exploring": "探索",
+
+  "rearing": "直立",
+  "chasing": "追逐",
+  "pinning": "壓制",
+  "resource_guarding": "資源守衛",
+  "claiming_high_ground": "佔領高處",
+
+  "huddling": "蜷縮",
+  "fleeing": "逃離",
+  "yielding_resources": "讓出資源",
+  "lying_flat": "貼地趴伏",
+  "submitting": "屈服",
+
+  "allogrooming": "互相梳理",
+  "communal_feeding": "共同進食",
+  "huddling_together": "擁擠在一起",
+  "physical_contact": "身體接觸",
+
+  "biting": "咬",
+  "threatening": "威嚇",
+  "arching_back": "拱背",
+  "tail_up": "尾巴豎起"
 }
