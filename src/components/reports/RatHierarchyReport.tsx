@@ -13,6 +13,7 @@ import RankChart from '@/components/reports/RankChart';
 import HierarchyLongTermChart from '@/components/reports/HierarchyLongTermChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
@@ -65,7 +66,13 @@ const RatHierarchyReport = () => {
     loadHistory();
   }, [user]);
 
-// Removed legacy timeRange handling
+  // Compute filtered histories for tabs
+  const now = Date.now();
+  const cutoff7 = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const cutoff30 = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const history7 = history.filter(h => h.analysis_time >= cutoff7);
+  const history30 = history.filter(h => h.analysis_time >= cutoff30);
+
 
   const getDominanceColor = (score: number) => {
     if (score >= 50) return 'bg-red-500';
@@ -212,31 +219,36 @@ const RatHierarchyReport = () => {
         </Card>
       )}
 
-      {/* Hierarchy Chart */}
+      {/* Hierarchy Chart with sub-tabs */}
       {analysis?.rats_hierarchy && analysis.rats_hierarchy.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>{t('Hierarchy Ranking')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <RankChart data={analysis.rats_hierarchy} rats={rats} />
+            <Tabs defaultValue="ranking" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="ranking">{t('Ranking')}</TabsTrigger>
+                <TabsTrigger value="7d">{t('7 days')}</TabsTrigger>
+                <TabsTrigger value="30d">{t('30 days')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="ranking">
+                <RankChart data={analysis.rats_hierarchy} rats={rats} />
+              </TabsContent>
+              <TabsContent value="7d">
+                <p className="text-sm text-muted-foreground mb-3">📈 {t('Historical Hierarchy Trend')} — {t('See how ranks have shifted over time.')}</p>
+                <HierarchyLongTermChart rats={rats} history={history7} />
+              </TabsContent>
+              <TabsContent value="30d">
+                <p className="text-sm text-muted-foreground mb-3">📈 {t('Historical Hierarchy Trend')} — {t('See how ranks have shifted over time.')}</p>
+                <HierarchyLongTermChart rats={rats} history={history30} />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       )}
 
-      {/* Long-term Trend */}
-      <Card>
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              {t('Historical Hierarchy Trend')}
-            </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">📈 {t('See how ranks have shifted over time.')}</p>
-          <HierarchyLongTermChart rats={rats} history={history} />
-        </CardContent>
-      </Card>
+
 
       {/* Interaction Patterns & Recommendations */}
       <div className="grid gap-6 md:grid-cols-2">

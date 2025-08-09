@@ -86,13 +86,13 @@ const RecentActivities = ({
             {recentActivities.map((activity) => (
               <div
                 key={activity.id}
-                className={`relative flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary/40 ${activity.type === 'behavior' ? 'border-primary/30 bg-primary/10' : getRecentActivityCardColorClasses(activity.type)}`}
+                className="relative flex items-center justify-between p-3 rounded-lg group cursor-pointer transition-colors border bg-card hover:bg-accent/50 overflow-hidden before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary/40"
                 onClick={() => onLogCardClick(activity)}
               >
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {getLogIcon(activity.type)}
-                    <p className="font-medium">{t(capitalize(activity.type))}</p>
+                    <p className="font-medium truncate">{t(capitalize(activity.type))}</p>
                     {activity.behaviorTags && activity.behaviorTags.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {activity.behaviorTags.map((tag: string, index: number) => (
@@ -115,9 +115,9 @@ const RecentActivities = ({
                       </Badge>
                     ) : null}
                   </div>
-                  <p className="text-sm opacity-80">{activity.rat} • {activity.time}</p>
+                  <p className="text-sm opacity-80 truncate">{activity.rat} • {activity.time}</p>
                   {activity.weight && (
-                    <p className="text-xs opacity-70">{t("Weight")}: {activity.weight}g</p>
+                    <p className="text-xs opacity-70 truncate">{t("Weight")}: {activity.weight}g</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">

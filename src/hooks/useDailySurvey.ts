@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-
+import i18n from '@/i18n';
 export interface SurveyQuestion {
   id: number;
   type: 'multiple_choice' | 'text';
@@ -141,7 +141,7 @@ export const useDailySurvey = () => {
 
       setSurvey(prev => prev ? { ...prev, completed: true } : null);
       setShouldShowModal(false);
-      toast.success('✅ ' + 'Daily survey submitted! Behavior data has been updated.');
+      toast.success('✅ ' + i18n.t('daily_survey_submitted'));
       
       // Auto trigger hierarchy analysis refresh
       window.dispatchEvent(new CustomEvent('refreshHierarchyAnalysis'));

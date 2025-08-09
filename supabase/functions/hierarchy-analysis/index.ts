@@ -34,7 +34,7 @@ serve(async (req) => {
       throw new Error('Authentication failed');
     }
 
-    const { timeRange = 30 } = await req.json();
+    const { timeRange = 30, language = 'en' } = await req.json();
     
     console.log(`Starting hierarchy analysis for user ${user.id} with timeRange ${timeRange}`);
     
@@ -82,19 +82,20 @@ serve(async (req) => {
     }
 
     if (!behaviorLogs || behaviorLogs.length === 0) {
+      const isZh = language.toLowerCase().startsWith('zh');
       const emptyAnalysis = {
-        analysis_summary: "目前沒有足夠的行為資料進行分析",
-        rats_hierarchy: rats?.map((rat, index) => ({
+        analysis_summary: isZh ? "目前沒有足夠的行為資料進行分析" : "There isn't enough behavior data to analyze yet.",
+        rats_hierarchy: (rats?.map((rat, index) => ({
           rat_name: rat.name,
           rat_id: rat.id,
           dominance_score: 0,
           rank: index + 1,
           dominant_behaviors: [],
           submissive_behaviors: [],
-          analysis: "需要更多行為觀察資料"
-        })) || [],
-        interaction_patterns: "無互動資料",
-        recommendations: "建議記錄更多行為觀察"
+          analysis: isZh ? "需要更多行為觀察資料" : "More behavior observations are needed."
+        })) || []),
+        interaction_patterns: isZh ? "無互動資料" : "No interaction data",
+        recommendations: isZh ? "建議記錄更多行為觀察" : "Try recording more behavior observations to unlock insights."
       };
 
       await updateAnalysisCache(supabase, user.id, timeRange, emptyAnalysis, {
@@ -112,10 +113,10 @@ serve(async (req) => {
     }
 
     // Prepare data for Gemini analysis
-    const behaviorData = prepareBehaviorDataForAnalysis(behaviorLogs, rats || []);
+    const behaviorData = prepareBehaviorDataForAnalysis(behaviorLogs, rats || [], language);
     
     // Call Gemini API for analysis
-    const analysisResult = await callGeminiForHierarchyAnalysis(behaviorData);
+    const analysisResult = await callGeminiForHierarchyAnalysis(behaviorData, language);
     
     // Update cache
     await updateAnalysisCache(supabase, user.id, timeRange, analysisResult, cacheValidation.currentStats);
@@ -220,11 +221,12 @@ function getDateRange(timeRange: number): string {
   return date.toISOString();
 }
 
-function prepareBehaviorDataForAnalysis(behaviorLogs: any[], rats: any[]) {
+function prepareBehaviorDataForAnalysis(behaviorLogs: any[], rats: any[], language: string) {
   const ratMap = new Map(rats.map(rat => [rat.id, rat.name]));
+  const unknown = language.toLowerCase().startsWith('zh') ? '未知鼠名' : 'Unknown rat name';
   
   return behaviorLogs.map(log => {
-    const ratNames = log.rat_ids?.map((id: string) => ratMap.get(id) || '未知鼠名') || [];
+    const ratNames = log.rat_ids?.map((id: string) => ratMap.get(id) || unknown) || [];
     return {
       date: log.created_at,
       rats: ratNames,
@@ -235,46 +237,47 @@ function prepareBehaviorDataForAnalysis(behaviorLogs: any[], rats: any[]) {
   });
 }
 
-async function callGeminiForHierarchyAnalysis(behaviorData: any[]) {
+async function callGeminiForHierarchyAnalysis(behaviorData: any[], language: string) {
   if (!geminiApiKey) {
     throw new Error('Gemini API key not configured');
   }
 
-  const prompt = `
-請以可愛貼心的語氣分析以下鼠類行為數據，基於動物行為學原理計算每隻鼠的社會地位：
+  const isZh = language.toLowerCase().startsWith('zh');
+  const prompt = `You are an expert in animal behavior. Analyze the following rat behavior logs and infer social hierarchy.
 
-行為資料：
+Output language: ${language}
+Tone: friendly, supportive, addressing a single owner, with varied, context-appropriate emojis (do not overuse, avoid repeating the same emoji).
+
+Behavior data:
 ${JSON.stringify(behaviorData, null, 2)}
 
-請返回 JSON 格式：
+Return STRICT JSON only with this schema:
 {
-  "analysis_summary": "整體分析摘要（可愛貼心語氣）",
+  "analysis_summary": "A concise, meaningful summary for the owner with helpful, non-generic insights and friendly tone with appropriate emojis",
   "rats_hierarchy": [
     {
-      "rat_name": "鼠名",
-      "rat_id": "鼠ID", 
-      "dominance_score": 數值(-100到100),
-      "rank": 排名(1,2,3...),
-      "dominant_behaviors": ["支配性行為列表"],
-      "submissive_behaviors": ["服從性行為列表"],
-      "analysis": "個別分析說明（可愛貼心語氣）",
-      "nickname": "根據行為特徵取的可愛暱稱，並在末尾附上最貼切的 emoji（例如：'和平使者🕊️'、'暴躁將軍😠'、'邊緣探險家🧭'）"
+      "rat_name": "Name",
+      "rat_id": "ID",
+      "dominance_score": number between -100 and 100,
+      "rank": integer rank (1,2,3...),
+      "dominant_behaviors": ["list"],
+      "submissive_behaviors": ["list"],
+      "analysis": "Short per-rat explanation with friendly tone and varied emojis",
+      "nickname": "Cute nickname that matches behavior, ensure a fitting emoji is included at the end (e.g., 'Peacekeeper 🕊️', 'Bold Explorer 🧭')"
     }
   ],
-  "interaction_patterns": "互動模式分析（可愛貼心語氣）",
-  "recommendations": "建議事項（可愛貼心語氣，只在發現異常行為或社會關係問題時提供，用條列方式呈現）",
-  "api_cost": "估算費用（美金）",
+  "interaction_patterns": "Patterns and relationships in the same output language",
+  "recommendations": "Actionable recommendations in bullet points, only if needed; otherwise keep it empty or a short reassurance",
+  "api_cost": "Estimated cost in USD (string)",
   "model_used": "gemini-2.0-flash-exp"
 }
 
-分析重點：
-1. 支配性行為：追逐、壓制、搶奪資源、占據高地、威脅姿態
-2. 服從性行為：躲避、逃跑、讓出資源、服從姿態、尋求安慰
-3. 考慮行為頻率、強度和背景情況
-4. 提供實用的飼養建議
-5. 支配分數範圍：-100(極度服從)到+100(極度支配)，0為中性
-6. 使用可愛、溫柔、貼心的語氣，像是在和鼠奴聊天
-7. 避免過於學術性的語言，多用親切的詞彙
+Guidelines:
+1. Consider frequency, intensity, and context.
+2. Dominance score scale: -100 (very submissive) to +100 (very dominant), 0 is neutral.
+3. Prefer practical husbandry tips over generic statements.
+4. Keep it concise but meaningful; avoid filler.
+5. Always respond in ${isZh ? '繁體中文' : 'the specified language'}.
 `;
 
   const startTime = Date.now();

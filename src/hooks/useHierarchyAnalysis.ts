@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import i18n from '@/i18n';
 
 export interface RatHierarchyData {
   rat_name: string;
@@ -38,7 +39,7 @@ export const useHierarchyAnalysis = (timeRange: number = 30) => {
 
     try {
       const { data, error: functionError } = await supabase.functions.invoke('hierarchy-analysis', {
-        body: { timeRange, force }
+        body: { timeRange, force, language: i18n.language }
       });
 
       if (functionError) {
