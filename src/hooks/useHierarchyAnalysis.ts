@@ -30,6 +30,8 @@ export const useHierarchyAnalysis = (timeRange: number = 30) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cached, setCached] = useState(false);
+  const lang = i18n.language;
+  const getCacheKey = (uid: string, range: number, l: string) => `hierarchy_analysis_cache:${uid}:${range}:${l}`;
 
   const fetchAnalysis = async (force = false) => {
     if (!user) return;
@@ -53,6 +55,13 @@ export const useHierarchyAnalysis = (timeRange: number = 30) => {
       setAnalysis(data.data);
       setCached(data.cached);
       
+      try {
+        const key = getCacheKey(user.id, timeRange, i18n.language);
+        localStorage.setItem(key, JSON.stringify({ analysis: data.data, cachedAt: Date.now() }));
+      } catch (e) {
+        console.warn('Failed to save analysis cache', e);
+      }
+      
       if (data.cached) {
         console.log('Loaded hierarchy analysis from cache');
       } else {
@@ -73,9 +82,24 @@ export const useHierarchyAnalysis = (timeRange: number = 30) => {
 
   useEffect(() => {
     if (user) {
-      fetchAnalysis();
+      // Load from local cache for instant render
+      try {
+        const key = getCacheKey(user.id, timeRange, lang);
+        const cachedStr = localStorage.getItem(key);
+        if (cachedStr) {
+          const parsed = JSON.parse(cachedStr);
+          if (parsed?.analysis) {
+            setAnalysis(parsed.analysis);
+            setCached(true);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse local analysis cache', e);
+      }
+      // Force refresh to ensure correct language and fresh data
+      fetchAnalysis(true);
     }
-  }, [user, timeRange]);
+  }, [user, timeRange, lang]);
 
   return {
     analysis,

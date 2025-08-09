@@ -169,7 +169,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
               {/* Analysis */}
               {selectedRat.analysis && (
                 <div>
-                  <h4 className="font-medium mb-2">AI 分析</h4>
+                  <h4 className="font-medium mb-2">{t('Analysis Summary')}</h4>
                   <p className="text-sm text-muted-foreground">{selectedRat.analysis}</p>
                 </div>
               )}
@@ -183,7 +183,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
                       <div className="flex flex-wrap gap-2">
                         {selectedRat.dominant_behaviors.map((behavior, idx) => (
                           <Badge key={idx} variant="destructive" className="text-xs">
-                            {behavior}
+                            {t(behavior)}
                           </Badge>
                         ))}
                       </div>
@@ -196,7 +196,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
                       <div className="flex flex-wrap gap-2">
                         {selectedRat.submissive_behaviors.map((behavior, idx) => (
                           <Badge key={idx} variant="secondary" className="text-xs">
-                            {behavior}
+                            {t(behavior)}
                           </Badge>
                         ))}
                       </div>

@@ -14,6 +14,7 @@ import HierarchyLongTermChart from '@/components/reports/HierarchyLongTermChart'
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import pixelRat from '@/assets/pixel-rat.png';
 
 const RatHierarchyReport = () => {
   const { t } = useTranslation();
@@ -109,7 +110,7 @@ const RatHierarchyReport = () => {
     });
   };
 
-  if (loading) {
+  if (loading && !analysis) {
     return (
       <div className="space-y-6">
         <Card>
@@ -120,9 +121,9 @@ const RatHierarchyReport = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">{t('Analyzing behaviors...')}</span>
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <img src={pixelRat} alt="rat pixel" className="h-16 w-16" style={{ imageRendering: 'pixelated' }} />
+              <span className="text-sm text-muted-foreground">{t('Analyzing behaviors...')}</span>
             </div>
           </CardContent>
         </Card>
@@ -186,8 +187,12 @@ const RatHierarchyReport = () => {
                 onClick={forceRefresh}
                 disabled={loading}
                 aria-label={t('Refresh')}
+                className="flex items-center gap-2"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                {loading && (
+                  <img src={pixelRat} alt="rat pixel" className="h-4 w-4" style={{ imageRendering: 'pixelated' }} />
+                )}
               </Button>
             </div>
           </div>

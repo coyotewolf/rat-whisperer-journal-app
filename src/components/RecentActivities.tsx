@@ -97,25 +97,23 @@ const RecentActivities = ({
                       <Badge
                         className={`${getActivityStatusClasses(activity.status)} border-0 text-xs`}
                       >
-                        {t(capitalize(activity.status))}
+                        {t(activity.status)}
                         {getHealthStatusEmoji(activity.status) && (
                           <span className="ml-1">{getHealthStatusEmoji(activity.status)}</span>
                         )}
                       </Badge>
                     ) : null}
                   </div>
-                  {activity.behaviorTags && activity.behaviorTags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {activity.behaviorTags.map((tag: string, index: number) => (
                         <Badge
                           key={index}
                           className="bg-primary text-primary-foreground border-0 text-xs"
                         >
-                          {tag}
+                          {t(tag)}
                         </Badge>
                       ))}
                     </div>
-                  )}
                   <p className="text-sm opacity-80 truncate">{activity.rat} • {activity.time}</p>
                   {activity.weight && (
                     <p className="text-xs opacity-70 truncate">{t("Weight")}: {activity.weight}g</p>
