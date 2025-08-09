@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useDailySurvey, SurveyQuestion, SurveyAnswer } from '@/hooks/useDailySurvey';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DailySurveyModalProps {
   open: boolean;
@@ -21,7 +23,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [skippedQuestions, setSkippedQuestions] = useState<Set<number>>(new Set());
-
+  const isMobile = useIsMobile();
   const handleGenerateSurvey = async () => {
     await generateTodaySurvey();
   };
