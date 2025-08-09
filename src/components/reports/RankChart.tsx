@@ -137,7 +137,11 @@ const RankChart = ({ data, rats }: RankChartProps) => {
               {selectedRat?.rat_name || 'Unknown'}
               {selectedRat?.nickname && (
                 <Badge variant="secondary" className="text-xs">
-                  {`${selectedRat.nickname} 🐭`}
+                  {(() => {
+                    const n = selectedRat.nickname;
+                    const hasEmoji = /[\u{1F300}-\u{1FAFF}\u{1F900}-\u{1F9FF}\u2600-\u26FF\u2700-\u27BF]/u.test(n);
+                    return hasEmoji ? n : `${n} ${nicknameEmoji(n)}`;
+                  })()}
                 </Badge>
               )}
             </DialogTitle>
