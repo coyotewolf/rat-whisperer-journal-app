@@ -22,7 +22,7 @@ const RatHierarchyReport = () => {
   const [rats, setRats] = useState([]);
   const numericRange = Number.isNaN(parseInt(timeRange)) ? 30 : parseInt(timeRange);
   const { analysis, loading, error, cached, refetch, forceRefresh } = useHierarchyAnalysis(numericRange);
-  const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey } = useDailySurvey();
+  const { shouldShowModal, survey, generateTodaySurvey, dismissSurvey, lastApiCost } = useDailySurvey();
   const { markRecommendationComplete, isRecommendationCompleted, shouldReduceFrequency } = useRecommendationTracking();
   // Preload for trend view
   const trend7 = useHierarchyAnalysis(7);
@@ -177,23 +177,23 @@ const RatHierarchyReport = () => {
                 </Badge>
               )}
             </CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-popover">
                   <SelectItem value="7">{t('Last 7 days')}</SelectItem>
                   <SelectItem value="30">{t('Last 30 days')}</SelectItem>
                   <SelectItem value="90">{t('Last 90 days')}</SelectItem>
-                  <SelectItem value="trend">{t('Long-term Trend')}</SelectItem>
+                  <SelectItem value="trend">{t('Hierarchy Evolution')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={generateTodaySurvey}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 <MessageSquare className="h-4 w-4" />
                 {t('Daily Survey')}
@@ -203,6 +203,7 @@ const RatHierarchyReport = () => {
                 size="sm" 
                 onClick={forceRefresh}
                 disabled={loading}
+                className="w-full sm:w-auto"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
@@ -219,11 +220,17 @@ const RatHierarchyReport = () => {
               <TrendingUp className="h-5 w-5" />
               {t('Analysis Summary')}
             </CardTitle>
-            {analysis.api_cost && (
-              <div className="text-xs text-muted-foreground">
-                {t('API Cost')}: {analysis.api_cost} ({analysis.model_used})
-              </div>
-            )}
+            {(() => {
+              const parseCost = (c?: string) => c ? parseFloat(String(c).replace(/[^0-9.]/g, '')) || 0 : 0;
+              const analysisCost = parseCost(analysis?.api_cost);
+              const trendCosts = timeRange === 'trend' ? (parseCost(trend7.analysis?.api_cost) + parseCost(trend30.analysis?.api_cost) + parseCost(trend90.analysis?.api_cost)) : 0;
+              const totalCost = analysisCost + trendCosts + (lastApiCost || 0);
+              return (
+                <div className="text-xs text-muted-foreground">
+                  {t('Total API Cost')}: ${'{'}totalCost.toFixed(6){'}'} {analysis?.model_used ? `(${analysis.model_used})` : ''}
+                </div>
+              );
+            })()}
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">🧠 {analysis.analysis_summary}</p>
@@ -246,10 +253,10 @@ const RatHierarchyReport = () => {
       {timeRange === 'trend' && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              {t('Long-term Trend')}
-            </CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                {t('Hierarchy Evolution')}
+              </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">📈 {t('See how ranks have shifted over different time windows.')}</p>
@@ -288,7 +295,7 @@ const RatHierarchyReport = () => {
                 return (
                   <div className="p-4 rounded-lg border bg-card text-sm text-muted-foreground">
                     🎉 {t('No special recommendations at the moment.')}<br />
-                    😊 {t('Interactions look stable recently, so AI has nothing urgent to suggest. We\'ll keep monitoring and notify you if anything stands out.')} 🐭✨
+                    🤖 {t("AI analysis indicates interactions have been stable recently, so there are no urgent recommendations this time. We'll keep monitoring and notify you if anything stands out.")} 🐭✨
                   </div>
                 );
               }

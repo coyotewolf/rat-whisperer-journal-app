@@ -86,7 +86,7 @@ const RecentActivities = ({
             {recentActivities.map((activity) => (
               <div
                 key={activity.id}
-                className={`flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all ${getRecentActivityCardColorClasses(activity.type)}`}
+                className={`relative flex items-center justify-between p-3 rounded-lg group cursor-pointer hover:brightness-95 transition-all before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary/40 ${activity.type === 'behavior' ? 'border-primary/30 bg-primary/10' : getRecentActivityCardColorClasses(activity.type)}`}
                 onClick={() => onLogCardClick(activity)}
               >
                 <div className="flex-1">

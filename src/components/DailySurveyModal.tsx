@@ -431,9 +431,11 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
             <SurveyBody showNav={false} />
           </div>
 
-          <DrawerFooter className="sticky bottom-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4 [padding-bottom:calc(1rem+env(safe-area-inset-bottom))]">
-            <NavigationControls large />
-          </DrawerFooter>
+          {survey && survey.questions.length > 0 && (
+            <DrawerFooter className="sticky bottom-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4 [padding-bottom:calc(1rem+env(safe-area-inset-bottom))]">
+              <NavigationControls large />
+            </DrawerFooter>
+          )}
         </DrawerContent>
       </Drawer>
     );
@@ -457,7 +459,7 @@ const DailySurveyModal = ({ open, onClose }: DailySurveyModalProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <SurveyBody showNav={!isMobile} />
+        <SurveyBody showNav={!!survey && survey.questions.length > 0} />
       </DialogContent>
     </Dialog>
   );

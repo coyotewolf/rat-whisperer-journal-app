@@ -64,7 +64,9 @@ serve(async (req) => {
         data: {
           surveyId: survey.id,
           questions: questions,
-          surveyDate: today
+          surveyDate: today,
+          api_cost_estimate: geminiApiKey ? 0.00018 : 0,
+          model_used: geminiApiKey ? 'gemini-2.0-flash-exp' : 'fallback'
         }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -145,37 +147,58 @@ serve(async (req) => {
 });
 
 async function generateDailyQuestions(supabase: any, userId: string) {
+  // Analyze recent behavior logs to identify data gaps
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() - 14);
+
+  const { data: recentLogs } = await supabase
+    .from('log_entries')
+    .select('content, created_at, type')
+    .eq('user_id', userId)
+    .eq('type', 'behavior')
+    .gte('created_at', fromDate.toISOString());
+
+  const categoryCounts: Record<string, number> = { feeding: 0, play: 0, territory: 0, interaction: 0 };
+
+  (recentLogs || []).forEach((entry: any) => {
+    const behaviorTag = entry?.content?.behavior as string | undefined;
+    if (!behaviorTag) return;
+    if (behaviorTag.includes('resource')) categoryCounts.feeding++;
+    else if (behaviorTag.includes('play')) categoryCounts.play++;
+    else if (behaviorTag.includes('territory')) categoryCounts.territory++;
+    else if (behaviorTag.includes('interaction')) categoryCounts.interaction++;
+  });
+
+  const leastObserved = Object.entries(categoryCounts)
+    .sort((a, b) => a[1] - b[1])
+    .map(([k]) => k)
+    .slice(0, 2);
+
   if (!geminiApiKey) {
-    // Fallback questions when Gemini is not available
-    return [
-      {
-        id: 1,
-        type: 'multiple_choice',
-        question: '今天誰通常第一個接近食物？',
-        options: ['需要獲取老鼠列表'],
-        category: 'feeding'
-      },
-      {
-        id: 2,
-        type: 'multiple_choice',
-        question: '在玩耍時，誰比較主動？',
-        options: ['需要獲取老鼠列表'],
-        category: 'play'
-      },
-      {
-        id: 3,
-        type: 'multiple_choice',
-        question: '誰通常占據最高的位置？',
-        options: ['需要獲取老鼠列表'],
-        category: 'territory'
-      },
-      {
-        id: 4,
-        type: 'text',
-        question: '今天有觀察到任何特殊的互動行為嗎？',
-        category: 'interaction'
-      }
-    ];
+    // Fallback questions tailored to least observed categories
+    const fallbackCategories = ['feeding', 'play', 'territory', 'interaction'];
+    const ordered = [...leastObserved, ...fallbackCategories].filter((v, i, arr) => arr.indexOf(v) === i).slice(0, 4);
+
+    // Get user's rats
+    const { data: rats } = await supabase
+      .from('rats')
+      .select('id, name')
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    const ratNames = (rats || []).map((r: any) => r.name);
+
+    return ordered.map((cat, idx) => (
+      cat === 'interaction'
+        ? { id: idx + 1, type: 'text', question: '今天有觀察到任何特殊的互動行為嗎？', category: 'interaction' }
+        : {
+            id: idx + 1,
+            type: 'multiple_choice',
+            question: cat === 'feeding' ? '今天誰通常第一個接近食物？' : cat === 'play' ? '在玩耍時，誰比較主動？' : '誰通常占據最高的位置？',
+            options: [...ratNames, '沒有觀察到'],
+            category: cat,
+          }
+    ));
   }
 
   // Get user's rats
@@ -189,58 +212,33 @@ async function generateDailyQuestions(supabase: any, userId: string) {
     return [];
   }
 
-  const ratNames = rats.map(rat => rat.name);
+  const ratNames = rats.map((rat: any) => rat.name);
+
+  const gapsText = Object.entries(categoryCounts)
+    .map(([k, v]) => `${k}:${v}`)
+    .join(', ');
 
   const prompt = `
-請為鼠類社會互動觀察生成 4-5 個問題，基於以下鼠群資訊：
+請根據以下「數據缺口」優先生成 4-5 個日常觀察問題，聚焦補齊缺乏的面向：
+- 近14日各面向紀錄次數：${gapsText}
+- 請優先關注最少的面向（例如：${leastObserved.join(', ')}）
+- 鼠群成員：${ratNames.join(', ')}
 
-鼠群成員：${ratNames.join(', ')}
-
-生成規則：
-1. 包含多選題和開放題
-2. 重點關注：食物競爭、空間占據、社交互動、遊戲行為
-3. 問題要簡單易懂，適合日常觀察
-4. 多選題的選項包含所有鼠名稱加上 "沒有觀察到" 選項
-
-請返回 JSON 格式：
-{
-  "questions": [
-    {
-      "id": 1,
-      "type": "multiple_choice",
-      "question": "問題內容",
-      "options": ["選項1", "選項2", ...],
-      "category": "feeding/play/territory/interaction"
-    },
-    {
-      "id": 2,
-      "type": "text", 
-      "question": "開放性問題",
-      "category": "interaction"
-    }
-  ]
-}
+規則：
+1. 同時包含多選題與開放題
+2. 多選題選項包含所有鼠名與「沒有觀察到」
+3. 問題需簡潔、日常可觀察
+4. 返回 JSON 格式 { "questions": [...] }，包含 id、type、question、options(如為多選)、category(feeding/play/territory/interaction)
 `;
 
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.8,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      }),
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.8, topK: 40, topP: 0.95, maxOutputTokens: 1024 }
+      })
     });
 
     if (!response.ok) {
@@ -249,53 +247,30 @@ async function generateDailyQuestions(supabase: any, userId: string) {
 
     const result = await response.json();
     const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!generatedText) {
-      throw new Error('No response from Gemini API');
-    }
-
-    // Extract JSON from the response
+    if (!generatedText) throw new Error('No response from Gemini API');
     const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No JSON found in Gemini response');
-    }
-    
+    if (!jsonMatch) throw new Error('No JSON found in Gemini response');
     const parsedResult = JSON.parse(jsonMatch[0]);
     return parsedResult.questions || [];
-
   } catch (error) {
     console.error('Failed to generate questions with Gemini:', error);
-    
-    // Fallback questions with actual rat names
-    return [
-      {
-        id: 1,
-        type: 'multiple_choice',
-        question: '今天誰通常第一個接近食物？',
-        options: [...ratNames, '沒有觀察到'],
-        category: 'feeding'
-      },
-      {
-        id: 2,
-        type: 'multiple_choice',
-        question: '在玩耍時，誰比較主動？',
-        options: [...ratNames, '沒有觀察到'],
-        category: 'play'
-      },
-      {
-        id: 3,
-        type: 'multiple_choice',
-        question: '誰通常占據最高的位置？',
-        options: [...ratNames, '沒有觀察到'],
-        category: 'territory'
-      },
-      {
-        id: 4,
-        type: 'text',
-        question: '今天有觀察到任何特殊的互動行為嗎？',
-        category: 'interaction'
-      }
-    ];
+    // Fallback to simple tailored questions
+    const fallbackCategories = ['feeding', 'play', 'territory', 'interaction'];
+    const ordered = [...leastObserved, ...fallbackCategories].filter((v, i, arr) => arr.indexOf(v) === i).slice(0, 4);
+
+    const ratNames = (rats || []).map((r: any) => r.name);
+
+    return ordered.map((cat, idx) => (
+      cat === 'interaction'
+        ? { id: idx + 1, type: 'text', question: '今天有觀察到任何特殊的互動行為嗎？', category: 'interaction' }
+        : {
+            id: idx + 1,
+            type: 'multiple_choice',
+            question: cat === 'feeding' ? '今天誰通常第一個接近食物？' : cat === 'play' ? '在玩耍時，誰比較主動？' : '誰通常占據最高的位置？',
+            options: [...ratNames, '沒有觀察到'],
+            category: cat,
+          }
+    ));
   }
 }
 

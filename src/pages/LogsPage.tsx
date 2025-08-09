@@ -152,18 +152,22 @@ const LogsPage = () => {
 
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
+    const isFromSurvey = typeof log.notes === 'string' && (log.notes.includes('每日調查') || log.notes.toLowerCase().includes('daily survey'));
     
     return (
       <Card
-        className={`${getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}
+        className={`${isFromSurvey ? 'border-primary/40 bg-primary/10' : getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}
         onClick={() => handleLogCardClick(log)}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-2 text-card-foreground">
-              {getLogIcon(log.type)}
-              <span className="font-medium capitalize">{t(log.type)}</span>
-            </div>
+          <div className="flex items-center gap-2 text-card-foreground">
+            {getLogIcon(log.type)}
+            <span className="font-medium capitalize">{t(log.type)}</span>
+            {isFromSurvey && (
+              <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">🤖 {t('AI Survey')}</Badge>
+            )}
+          </div>
             <div className="flex items-center gap-2">
               <div className="text-right text-sm text-muted-foreground">
                 <div>{date}</div>

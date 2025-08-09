@@ -35,6 +35,7 @@ export const useDailySurvey = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shouldShowModal, setShouldShowModal] = useState(false);
+  const [lastApiCost, setLastApiCost] = useState<number>(0);
 
   const checkTodaySurvey = async () => {
     if (!user) return;
@@ -104,8 +105,7 @@ export const useDailySurvey = () => {
         surveyDate: data.data.surveyDate,
         completed: false
       });
-
-      setShouldShowModal(true);
+      setLastApiCost(Number(data.data.api_cost_estimate || 0));
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate daily survey';
@@ -141,7 +141,7 @@ export const useDailySurvey = () => {
 
       setSurvey(prev => prev ? { ...prev, completed: true } : null);
       setShouldShowModal(false);
-      toast.success('每日調查提交成功！行為數據已更新。');
+      toast.success('✅ ' + 'Daily survey submitted! Behavior data has been updated.');
       
       // Auto trigger hierarchy analysis refresh
       window.dispatchEvent(new CustomEvent('refreshHierarchyAnalysis'));
@@ -175,6 +175,7 @@ export const useDailySurvey = () => {
     checkTodaySurvey,
     generateTodaySurvey,
     submitSurveyAnswers,
-    dismissSurvey
+    dismissSurvey,
+    lastApiCost,
   };
 };

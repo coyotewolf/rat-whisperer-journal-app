@@ -87,7 +87,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
                       </span>
                       {rat.nickname && (
                         <Badge variant="secondary" className="text-xs">
-                          {rat.nickname}
+                          {`${rat.nickname} 🐭`}
                         </Badge>
                       )}
                     </div>
@@ -117,7 +117,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
               {selectedRat?.rat_name || 'Unknown'}
               {selectedRat?.nickname && (
                 <Badge variant="secondary" className="text-xs">
-                  {selectedRat.nickname}
+                  {`${selectedRat.nickname} 🐭`}
                 </Badge>
               )}
             </DialogTitle>
@@ -128,7 +128,7 @@ const RankChart = ({ data, rats }: RankChartProps) => {
               {/* Rank and Score */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">排名:</span>
+                  <span className="text-sm text-muted-foreground">{t('Rank')}:</span>
                   <span className="font-bold">#{selectedRat.rank}</span>
                 </div>
                 <div className="flex items-center gap-2">
