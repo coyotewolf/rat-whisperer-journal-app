@@ -15,7 +15,9 @@ import {
   Clock,
   Scale,
   Heart,
-  AlertTriangle
+  AlertTriangle,
+  Calendar,
+  Wheat
 } from 'lucide-react';
 
 const ToolsPage = () => {
@@ -24,6 +26,8 @@ const ToolsPage = () => {
   const [cageWidth, setCageWidth] = useState('');
   const [cageHeight, setCageHeight] = useState('');
   const [ratCount, setRatCount] = useState(0);
+  const [ratAge, setRatAge] = useState('');
+  const [humanAge, setHumanAge] = useState(0);
 
   // 計算籠子可容納的老鼠數量（基於最小空間需求）
   const calculateRatCapacity = () => {
@@ -41,6 +45,25 @@ const ToolsPage = () => {
     const minSpacePerRat = 2000;
     const capacity = Math.floor(totalVolume / minSpacePerRat);
     setRatCount(Math.max(0, capacity));
+  };
+
+  // 計算老鼠年齡對應人類年齡
+  const calculateHumanAge = () => {
+    const age = parseFloat(ratAge);
+    if (!age) {
+      setHumanAge(0);
+      return;
+    }
+    
+    // 老鼠年齡轉換公式：大約1個月的老鼠相當於人類12歲
+    // 成年後每個月約等於人類2.5歲
+    let human = 0;
+    if (age <= 1) {
+      human = age * 12;
+    } else {
+      human = 12 + (age - 1) * 30;
+    }
+    setHumanAge(Math.round(human));
   };
 
   const tools = [
@@ -117,6 +140,22 @@ const ToolsPage = () => {
       bgColor: 'bg-pink-50'
     },
     {
+      title: t('Age Comparison Chart'),
+      description: t('Compare rat age to human age'),
+      icon: Calendar,
+      component: 'age',
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-50'
+    },
+    {
+      title: t('Nutrition Analysis'),
+      description: t('Analyze feed nutrition and recommendations'),
+      icon: Wheat,
+      component: 'nutrition',
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50'
+    },
+    {
       title: t('Emergency Contacts'),
       description: t('Quick access to emergency vet contacts'),
       icon: AlertTriangle,
@@ -144,52 +183,184 @@ const ToolsPage = () => {
       
       case 'calculator':
         return (
-          <div className="p-4 space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="length">{t('Length')} (cm)</Label>
-                <Input
-                  id="length"
-                  type="number"
-                  placeholder="60"
-                  value={cageLength}
-                  onChange={(e) => setCageLength(e.target.value)}
-                />
+          <div className="p-4 space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-center">{t('Cage Dimensions')}</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="length" className="text-sm font-medium">{t('Length')} (cm)</Label>
+                  <Input
+                    id="length"
+                    type="number"
+                    placeholder="60"
+                    value={cageLength}
+                    onChange={(e) => setCageLength(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="width" className="text-sm font-medium">{t('Width')} (cm)</Label>
+                  <Input
+                    id="width"
+                    type="number"
+                    placeholder="40"
+                    value={cageWidth}
+                    onChange={(e) => setCageWidth(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="height" className="text-sm font-medium">{t('Height')} (cm)</Label>
+                  <Input
+                    id="height"
+                    type="number"
+                    placeholder="30"
+                    value={cageHeight}
+                    onChange={(e) => setCageHeight(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="width">{t('Width')} (cm)</Label>
-                <Input
-                  id="width"
-                  type="number"
-                  placeholder="40"
-                  value={cageWidth}
-                  onChange={(e) => setCageWidth(e.target.value)}
-                />
+            </div>
+            
+            <Button onClick={calculateRatCapacity} className="w-full py-3 text-lg">
+              {t('Calculate Capacity')}
+            </Button>
+            
+            {ratCount > 0 && (
+              <div className="text-center p-6 bg-primary/10 rounded-lg space-y-2">
+                <div className="text-3xl font-bold text-primary">{ratCount}</div>
+                <p className="text-lg font-semibold">
+                  {t('Recommended rats')}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t('Based on minimum 2000cm³ per rat')}
+                </p>
+                <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-muted">
+                  {t('Total volume')}: {(parseFloat(cageLength) * parseFloat(cageWidth) * parseFloat(cageHeight)).toLocaleString()}cm³
+                </div>
               </div>
+            )}
+            
+            <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded">
+              <p className="font-semibold mb-1">{t('Minimum space requirements')}:</p>
+              <p>• {t('Adult rats need at least 2000cm³ each')}</p>
+              <p>• {t('More space is always better for rat welfare')}</p>
+              <p>• {t('Consider adding multiple levels for enrichment')}</p>
+            </div>
+          </div>
+        );
+      
+      case 'age':
+        return (
+          <div className="p-4 space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-center">{t('Rat Age Calculator')}</h3>
               <div>
-                <Label htmlFor="height">{t('Height')} (cm)</Label>
+                <Label htmlFor="ratAge" className="text-sm font-medium">{t('Rat Age')} ({t('months')})</Label>
                 <Input
-                  id="height"
+                  id="ratAge"
                   type="number"
-                  placeholder="30"
-                  value={cageHeight}
-                  onChange={(e) => setCageHeight(e.target.value)}
+                  placeholder="12"
+                  step="0.5"
+                  value={ratAge}
+                  onChange={(e) => setRatAge(e.target.value)}
+                  className="mt-1"
                 />
               </div>
             </div>
-            <Button onClick={calculateRatCapacity} className="w-full">
-              {t('Calculate Capacity')}
+            
+            <Button onClick={calculateHumanAge} className="w-full py-3 text-lg">
+              {t('Calculate Human Age')}
             </Button>
-            {ratCount > 0 && (
-              <div className="text-center p-4 bg-primary/10 rounded-lg">
+            
+            {humanAge > 0 && (
+              <div className="text-center p-6 bg-primary/10 rounded-lg space-y-2">
+                <div className="text-3xl font-bold text-primary">{humanAge}</div>
                 <p className="text-lg font-semibold">
-                  {t('Recommended capacity')}: {ratCount} {t('rats')}
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {t('Based on minimum 2000cm³ per rat')}
+                  {t('Human years equivalent')}
                 </p>
               </div>
             )}
+            
+            <div className="space-y-3">
+              <h4 className="font-semibold">{t('Age Reference Chart')}</h4>
+              <div className="text-sm space-y-2">
+                <div className="flex justify-between border-b pb-1">
+                  <span>{t('Rat Age')}</span>
+                  <span>{t('Human Equivalent')}</span>
+                </div>
+                <div className="flex justify-between"><span>1-3 {t('weeks')}</span><span>0-2 {t('years')}</span></div>
+                <div className="flex justify-between"><span>1 {t('month')}</span><span>12 {t('years')}</span></div>
+                <div className="flex justify-between"><span>3 {t('months')}</span><span>18 {t('years')}</span></div>
+                <div className="flex justify-between"><span>6 {t('months')}</span><span>25 {t('years')}</span></div>
+                <div className="flex justify-between"><span>12 {t('months')}</span><span>40 {t('years')}</span></div>
+                <div className="flex justify-between"><span>18 {t('months')}</span><span>55 {t('years')}</span></div>
+                <div className="flex justify-between"><span>24 {t('months')}</span><span>70 {t('years')}</span></div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'nutrition':
+        return (
+          <div className="p-4 space-y-6">
+            <h3 className="text-lg font-semibold text-center">{t('Nutrition Analysis')}</h3>
+            
+            <div className="space-y-4">
+              <h4 className="font-semibold text-green-600">{t('Recommended Nutrition Values')}</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-green-50 p-3 rounded">
+                  <div className="font-semibold">{t('Protein')}</div>
+                  <div>16-18% (Adult)</div>
+                  <div>20-22% (Young/Pregnant)</div>
+                </div>
+                <div className="bg-blue-50 p-3 rounded">
+                  <div className="font-semibold">{t('Fat')}</div>
+                  <div>4-5% (Adult)</div>
+                  <div>7-8% (Young/Pregnant)</div>
+                </div>
+                <div className="bg-orange-50 p-3 rounded">
+                  <div className="font-semibold">{t('Fiber')}</div>
+                  <div>14-20%</div>
+                </div>
+                <div className="bg-purple-50 p-3 rounded">
+                  <div className="font-semibold">{t('Calcium')}</div>
+                  <div>0.5-1.0%</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-semibold text-blue-600">{t('Popular Feed Brands')}</h4>
+              <div className="space-y-3 text-sm">
+                <div className="border rounded p-3">
+                  <div className="font-semibold">Oxbow Regal Rat</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('Protein')}: 17% | {t('Fat')}: 5% | {t('Fiber')}: 20%
+                  </div>
+                </div>
+                <div className="border rounded p-3">
+                  <div className="font-semibold">Mazuri Rat Diet</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('Protein')}: 16% | {t('Fat')}: 4% | {t('Fiber')}: 18%
+                  </div>
+                </div>
+                <div className="border rounded p-3">
+                  <div className="font-semibold">Harlan Teklad 2018</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('Protein')}: 18% | {t('Fat')}: 6% | {t('Fiber')}: 14%
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 p-3 rounded text-xs">
+              <p className="font-semibold text-yellow-800 mb-1">{t('Important Notes')}:</p>
+              <p>• {t('Always transition feed gradually over 7-10 days')}</p>
+              <p>• {t('Fresh vegetables should complement, not replace pellets')}</p>
+              <p>• {t('Avoid high-fat seeds and nuts as primary food')}</p>
+            </div>
           </div>
         );
       
