@@ -440,7 +440,7 @@ const ToolsPage = () => {
                 {(() => {
                   const totalVolume = parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0');
                   const optimal = Math.floor(totalVolume / 70000); // 2.5 cubic feet per rat
-                  const comfortable = Math.floor(totalVolume / 79507); // 43x43x43 cm per rat
+                  const comfortable = Math.floor(totalVolume / (43 * 43 * 43)); // 43×43×43 cm per rat
                   const minimum = Math.floor(totalVolume / 26028); // 38x38x18 cm per rat
                   
                   return (
