@@ -13,7 +13,7 @@ const BottomNav = () => {
     { path: "/rats", icon: Users, label: t("Rats") },
     { path: "/logs", icon: Activity, label: t("Logs") },
     { path: "/library", icon: BookOpen, label: t("Library") },
-    { path: "/community", icon: MessageSquare, label: t("Community") },
+    { path: "/tools", icon: MessageSquare, label: t("Tools") },
   ];
 
   return (

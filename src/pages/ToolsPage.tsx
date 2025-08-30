@@ -1,0 +1,327 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import BottomNav from '@/components/BottomNav';
+import { 
+  MapPin, 
+  Calculator, 
+  Volume2, 
+  Sun, 
+  Wind,
+  Thermometer,
+  Clock,
+  Scale,
+  Heart,
+  AlertTriangle
+} from 'lucide-react';
+
+const ToolsPage = () => {
+  const { t } = useTranslation();
+  const [cageLength, setCageLength] = useState('');
+  const [cageWidth, setCageWidth] = useState('');
+  const [cageHeight, setCageHeight] = useState('');
+  const [ratCount, setRatCount] = useState(0);
+
+  // 計算籠子可容納的老鼠數量（基於最小空間需求）
+  const calculateRatCapacity = () => {
+    const length = parseFloat(cageLength);
+    const width = parseFloat(cageWidth);
+    const height = parseFloat(cageHeight);
+    
+    if (!length || !width || !height) {
+      setRatCount(0);
+      return;
+    }
+
+    const totalVolume = length * width * height;
+    // 每隻老鼠需要至少 2000 立方公分的空間（建議值）
+    const minSpacePerRat = 2000;
+    const capacity = Math.floor(totalVolume / minSpacePerRat);
+    setRatCount(Math.max(0, capacity));
+  };
+
+  const tools = [
+    {
+      title: t('Veterinary Hospital Map'),
+      description: t('Find nearby exotic pet hospitals'),
+      icon: MapPin,
+      component: 'map',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50'
+    },
+    {
+      title: t('Cage Space Calculator'),
+      description: t('Calculate optimal rat capacity for cage'),
+      icon: Calculator,
+      component: 'calculator',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    {
+      title: t('Decibel Meter'),
+      description: t('Measure environmental noise levels'),
+      icon: Volume2,
+      component: 'decibel',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    },
+    {
+      title: t('Light Meter'),
+      description: t('Measure light intensity'),
+      icon: Sun,
+      component: 'light',
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50'
+    },
+    {
+      title: t('Oxygen Equipment Rental'),
+      description: t('Find oxygen equipment rental services'),
+      icon: Wind,
+      component: 'oxygen',
+      color: 'text-cyan-600',
+      bgColor: 'bg-cyan-50'
+    },
+    {
+      title: t('Temperature Monitor'),
+      description: t('Monitor ambient temperature'),
+      icon: Thermometer,
+      component: 'temperature',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50'
+    },
+    {
+      title: t('Medication Timer'),
+      description: t('Set reminders for medication times'),
+      icon: Clock,
+      component: 'timer',
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50'
+    },
+    {
+      title: t('Weight Tracker'),
+      description: t('Track rat weight changes'),
+      icon: Scale,
+      component: 'weight',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50'
+    },
+    {
+      title: t('Health Calculator'),
+      description: t('Calculate BMI and health metrics'),
+      icon: Heart,
+      component: 'health',
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-50'
+    },
+    {
+      title: t('Emergency Contacts'),
+      description: t('Quick access to emergency vet contacts'),
+      icon: AlertTriangle,
+      component: 'emergency',
+      color: 'text-red-500',
+      bgColor: 'bg-red-50'
+    }
+  ];
+
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
+
+  const renderToolContent = (component: string) => {
+    switch (component) {
+      case 'map':
+        return (
+          <div className="p-4">
+            <p className="text-muted-foreground mb-4">
+              {t('This feature will show a map of nearby exotic pet hospitals. Map integration coming soon.')}
+            </p>
+            <Button disabled className="w-full">
+              {t('Open Map')} ({t('Coming Soon')})
+            </Button>
+          </div>
+        );
+      
+      case 'calculator':
+        return (
+          <div className="p-4 space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="length">{t('Length')} (cm)</Label>
+                <Input
+                  id="length"
+                  type="number"
+                  placeholder="60"
+                  value={cageLength}
+                  onChange={(e) => setCageLength(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="width">{t('Width')} (cm)</Label>
+                <Input
+                  id="width"
+                  type="number"
+                  placeholder="40"
+                  value={cageWidth}
+                  onChange={(e) => setCageWidth(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="height">{t('Height')} (cm)</Label>
+                <Input
+                  id="height"
+                  type="number"
+                  placeholder="30"
+                  value={cageHeight}
+                  onChange={(e) => setCageHeight(e.target.value)}
+                />
+              </div>
+            </div>
+            <Button onClick={calculateRatCapacity} className="w-full">
+              {t('Calculate Capacity')}
+            </Button>
+            {ratCount > 0 && (
+              <div className="text-center p-4 bg-primary/10 rounded-lg">
+                <p className="text-lg font-semibold">
+                  {t('Recommended capacity')}: {ratCount} {t('rats')}
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t('Based on minimum 2000cm³ per rat')}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'decibel':
+        return (
+          <div className="p-4 text-center">
+            <p className="text-muted-foreground mb-4">
+              {t('This feature requires microphone access and Capacitor mobile integration.')}
+            </p>
+            <Button disabled className="w-full">
+              {t('Start Measuring')} ({t('Mobile App Required')})
+            </Button>
+          </div>
+        );
+      
+      case 'light':
+        return (
+          <div className="p-4 text-center">
+            <p className="text-muted-foreground mb-4">
+              {t('This feature requires light sensor access and Capacitor mobile integration.')}
+            </p>
+            <Button disabled className="w-full">
+              {t('Measure Light')} ({t('Mobile App Required')})
+            </Button>
+          </div>
+        );
+      
+      case 'oxygen':
+        return (
+          <div className="p-4">
+            <h3 className="font-semibold mb-3">{t('Oxygen Equipment Rental Services')}</h3>
+            <div className="space-y-2 text-sm">
+              <p>• {t('Contact your local pet supply store')}</p>
+              <p>• {t('Check with veterinary clinics')}</p>
+              <p>• {t('Search online medical equipment rental')}</p>
+            </div>
+            <Button className="w-full mt-4" disabled>
+              {t('Find Nearby Services')} ({t('Coming Soon')})
+            </Button>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="p-4 text-center">
+            <p className="text-muted-foreground">
+              {t('This tool is under development')}
+            </p>
+          </div>
+        );
+    }
+  };
+
+  if (selectedTool) {
+    const tool = tools.find(t => t.component === selectedTool);
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setSelectedTool(null)}
+            >
+              ← {t('Back')}
+            </Button>
+            <h1 className="text-2xl font-bold">{tool?.title}</h1>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {tool?.icon && <tool.icon className={`h-5 w-5 ${tool.color}`} />}
+                {tool?.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderToolContent(selectedTool)}
+            </CardContent>
+          </Card>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {t('Rat Care Tools')}
+          </h1>
+          <p className="text-muted-foreground">
+            {t('Essential tools for optimal rat care and monitoring')}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          {tools.map((tool, index) => {
+            const Icon = tool.icon;
+            return (
+              <Card 
+                key={index} 
+                className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+                onClick={() => setSelectedTool(tool.component)}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className={`inline-flex p-3 rounded-full ${tool.bgColor} mb-3`}>
+                    <Icon className={`h-6 w-6 ${tool.color}`} />
+                  </div>
+                  <h3 className="font-semibold text-sm mb-2 line-clamp-2">
+                    {tool.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {tool.description}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="mt-8 p-4 bg-muted/50 rounded-lg">
+          <h2 className="font-semibold mb-2">{t('Mobile Features Note')}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t('Some tools require mobile device sensors and will be fully functional when using the Capacitor mobile app version.')}
+          </p>
+        </div>
+      </div>
+      <BottomNav />
+    </div>
+  );
+};
+
+export default ToolsPage;

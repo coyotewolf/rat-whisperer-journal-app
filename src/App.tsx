@@ -10,7 +10,7 @@ import RatsPage from "./pages/RatsPage";
 import LogsPage from "./pages/LogsPage";
 import ReportsPage from "./pages/ReportsPage";
 import LibraryPage from "./pages/LibraryPage";
-import CommunityPage from "./pages/CommunityPage";
+import ToolsPage from "./pages/ToolsPage";
 import TasksPage from "./pages/TasksPage";
 import NotFound from "./pages/NotFound";
 
@@ -30,7 +30,7 @@ const App = () => (
               <Route path="/logs" element={<LogsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/library" element={<LibraryPage />} />
-              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
               <Route path="/tasks" element={<TasksPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
