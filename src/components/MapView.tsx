@@ -33,10 +33,12 @@ const MapView = () => {
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const [isLoadingToken, setIsLoadingToken] = useState(true);
   const [tokenError, setTokenError] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('');
+  const [isLoadingRole, setIsLoadingRole] = useState(true);
   const [newPoint, setNewPoint] = useState({
     title: '',
     description: '',
-    category: 'general',
+    category: 'hospital',
     latitude: 0,
     longitude: 0
   });
@@ -66,10 +68,40 @@ const MapView = () => {
     }
   };
 
+  // Fetch user role
+  const fetchUserRole = async () => {
+    if (!user) {
+      setIsLoadingRole(false);
+      return;
+    }
+
+    try {
+      setIsLoadingRole(true);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUserRole(data?.role || 'user');
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      setUserRole('user'); // Default to user role
+    } finally {
+      setIsLoadingRole(false);
+    }
+  };
+
   // Fetch token on component mount
   useEffect(() => {
     fetchMapboxToken();
   }, []);
+
+  // Fetch user role when user changes
+  useEffect(() => {
+    fetchUserRole();
+  }, [user]);
 
   // Initialize map
   useEffect(() => {
@@ -173,7 +205,7 @@ const MapView = () => {
       setNewPoint({
         title: '',
         description: '',
-        category: 'general',
+        category: 'hospital',
         latitude: 0,
         longitude: 0
       });
@@ -187,14 +219,16 @@ const MapView = () => {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      general: '#6B7280',
-      health: '#EF4444',
-      behavior: '#3B82F6',
-      environment: '#10B981',
-      food: '#F59E0B'
+      hospital: '#EF4444',
+      clinic: '#F59E0B',
+      emergency: '#DC2626',
+      specialist: '#3B82F6',
+      pharmacy: '#10B981'
     };
-    return colors[category as keyof typeof colors] || colors.general;
+    return colors[category as keyof typeof colors] || colors.hospital;
   };
+
+  const isTester = userRole === 'tester';
 
   if (!user) {
     return (
@@ -209,7 +243,14 @@ const MapView = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Interactive Map</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Veterinary Hospital Map</h2>
+          <p className="text-sm text-muted-foreground">
+            {isLoadingRole ? 'Loading...' : 
+              isTester ? 'Tester - You can view and add veterinary hospitals' : 
+              'User - You can view veterinary hospitals'}
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             onClick={fetchMapboxToken}
@@ -220,15 +261,17 @@ const MapView = () => {
             <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingToken ? 'animate-spin' : ''}`} />
             Refresh Token
           </Button>
-          <Button
-            onClick={() => setIsAddingPoint(!isAddingPoint)}
-            variant={isAddingPoint ? "destructive" : "default"}
-            size="sm"
-            disabled={isLoadingToken || !!tokenError}
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            {isAddingPoint ? 'Cancel Adding' : 'Add Point'}
-          </Button>
+          {isTester && (
+            <Button
+              onClick={() => setIsAddingPoint(!isAddingPoint)}
+              variant={isAddingPoint ? "destructive" : "default"}
+              size="sm"
+              disabled={isLoadingToken || !!tokenError || isLoadingRole}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              {isAddingPoint ? 'Cancel Adding' : 'Add Hospital'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -248,11 +291,11 @@ const MapView = () => {
         </Alert>
       )}
 
-      {isAddingPoint && (
+      {isTester && isAddingPoint && (
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">
-              Click anywhere on the map to add a new point.
+              Click anywhere on the map to add a new veterinary hospital.
             </p>
           </CardContent>
         </Card>
@@ -271,16 +314,16 @@ const MapView = () => {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Map Point</DialogTitle>
+            <DialogTitle>Add Veterinary Hospital</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Hospital Name</Label>
               <Input
                 id="title"
                 value={newPoint.title}
                 onChange={(e) => setNewPoint(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter point title"
+                placeholder="Enter hospital name"
               />
             </div>
             <div>
@@ -289,12 +332,12 @@ const MapView = () => {
                 id="description"
                 value={newPoint.description}
                 onChange={(e) => setNewPoint(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter point description"
+                placeholder="Enter hospital description, services, contact info, etc."
                 rows={3}
               />
             </div>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">Type</Label>
               <Select
                 value={newPoint.category}
                 onValueChange={(value) => setNewPoint(prev => ({ ...prev, category: value }))}
@@ -303,11 +346,11 @@ const MapView = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="health">Health</SelectItem>
-                  <SelectItem value="behavior">Behavior</SelectItem>
-                  <SelectItem value="environment">Environment</SelectItem>
-                  <SelectItem value="food">Food</SelectItem>
+                  <SelectItem value="hospital">Veterinary Hospital</SelectItem>
+                  <SelectItem value="clinic">Veterinary Clinic</SelectItem>
+                  <SelectItem value="emergency">Emergency Vet</SelectItem>
+                  <SelectItem value="specialist">Specialist Vet</SelectItem>
+                  <SelectItem value="pharmacy">Veterinary Pharmacy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -322,7 +365,7 @@ const MapView = () => {
                 onClick={addMapPoint}
                 disabled={!newPoint.title.trim()}
               >
-                Add Point
+                Add Hospital
               </Button>
             </div>
           </div>
