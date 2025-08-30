@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MapView from '@/components/MapView';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -137,16 +138,7 @@ const ToolsPage = () => {
   const renderToolContent = (component: string) => {
     switch (component) {
       case 'map':
-        return (
-          <div className="p-4">
-            <p className="text-muted-foreground mb-4">
-              {t('This feature will show a map of nearby exotic pet hospitals. Map integration coming soon.')}
-            </p>
-            <Button disabled className="w-full">
-              {t('Open Map')} ({t('Coming Soon')})
-            </Button>
-          </div>
-        );
+        return <MapView />;
       
       case 'calculator':
         return (
