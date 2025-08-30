@@ -419,29 +419,83 @@ const ToolsPage = () => {
         
         {/* Calculator Result Modal */}
         <Dialog open={showCalculatorResult} onOpenChange={setShowCalculatorResult}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle className="text-center">{t('Calculation Result')}</DialogTitle>
+              <DialogTitle className="text-center">{t('Space Analysis Results')}</DialogTitle>
             </DialogHeader>
-            <div className="text-center p-6 space-y-4">
-              <div className="text-4xl font-bold text-primary">{ratCount}</div>
-              <p className="text-xl font-semibold">
-                {t('Recommended rats')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t('Based on minimum 2000cm³ per rat')}
-              </p>
-              <div className="bg-muted/50 p-3 rounded text-sm">
-                <div className="font-semibold mb-2">{t('Cage Information')}</div>
-                <div className="text-xs space-y-1">
+            <div className="p-6 space-y-6">
+              {/* Cage Information */}
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="font-semibold mb-2 text-center">{t('Cage Information')}</div>
+                <div className="text-sm space-y-1 text-center">
                   <div>{t('Dimensions')}: {cageLength} × {cageWidth} × {cageHeight} cm</div>
                   <div>{t('Total volume')}: {(parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0')).toLocaleString()}cm³</div>
-                  <div>{t('Space per rat')}: {Math.round((parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0')) / Math.max(ratCount, 1)).toLocaleString()}cm³</div>
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                <p>• {t('More space is always better for rat welfare')}</p>
-                <p>• {t('Consider adding multiple levels for enrichment')}</p>
+
+              {/* Comfort Level Recommendations */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-center">{t('Comfort Level Recommendations')}</h3>
+                
+                {(() => {
+                  const totalVolume = parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0');
+                  const optimal = Math.floor(totalVolume / 70000); // 2.5 cubic feet per rat
+                  const comfortable = Math.floor(totalVolume / 79507); // 43x43x43 cm per rat
+                  const minimum = Math.floor(totalVolume / 26028); // 38x38x18 cm per rat
+                  
+                  return (
+                    <>
+                      {/* Optimal */}
+                      <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span className="font-semibold text-green-700">{t('Most Comfortable')}</span>
+                        </div>
+                        <div className="text-2xl font-bold text-green-600 mb-1">
+                          {Math.max(0, optimal)} {t('rats')}
+                        </div>
+                        <div className="text-sm text-green-600">
+                          {t('Premium space: 70L+ per rat for maximum comfort and natural behavior')}
+                        </div>
+                      </div>
+
+                      {/* Comfortable */}
+                      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <span className="font-semibold text-blue-700">{t('Comfortable')}</span>
+                        </div>
+                        <div className="text-2xl font-bold text-blue-600 mb-1">
+                          {Math.max(0, comfortable)} {t('rats')}
+                        </div>
+                        <div className="text-sm text-blue-600">
+                          {t('Adequate space: 43×43×43cm per rat provides good living conditions')}
+                        </div>
+                      </div>
+
+                      {/* Minimum Acceptable */}
+                      <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                          <span className="font-semibold text-orange-700">{t('Minimum Acceptable')}</span>
+                        </div>
+                        <div className="text-2xl font-bold text-orange-600 mb-1">
+                          {Math.max(0, minimum)} {t('rats')}
+                        </div>
+                        <div className="text-sm text-orange-600">
+                          {t('Veterinary minimum: Based on textbook standards (38-51×38-51×18-25cm)')}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+              
+              <div className="bg-yellow-50 p-3 rounded text-xs border border-yellow-200">
+                <p className="font-semibold text-yellow-800 mb-1">{t('Important Notes')}:</p>
+                <p>• {t('Rats are social animals - always keep pairs or groups')}</p>
+                <p>• {t('Multiple levels and enrichment items increase usable space')}</p>
+                <p>• {t('Young rats need less space, but will grow quickly')}</p>
               </div>
             </div>
           </DialogContent>
