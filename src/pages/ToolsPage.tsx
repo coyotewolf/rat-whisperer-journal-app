@@ -439,50 +439,35 @@ const ToolsPage = () => {
                 
                 {(() => {
                   const totalVolume = parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0');
-                  const optimal = Math.floor(totalVolume / 70000); // 2.5 cubic feet per rat
                   const comfortable = Math.floor(totalVolume / (43 * 43 * 43)); // 43×43×43 cm per rat
                   const minimum = Math.floor(totalVolume / 26028); // 38x38x18 cm per rat
                   
                   return (
                     <>
-                      {/* Optimal */}
+                      {/* Comfortable */}
                       <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                          <span className="font-semibold text-green-700">{t('Most Comfortable')}</span>
+                          <span className="font-semibold text-green-700">{t('Comfortable')}</span>
                         </div>
                         <div className="text-2xl font-bold text-green-600 mb-1">
-                          {Math.max(0, optimal)} {t('rats')}
-                        </div>
-                        <div className="text-sm text-green-600">
-                          {t('Premium space: 70L+ per rat for maximum comfort and natural behavior')}
-                        </div>
-                      </div>
-
-                      {/* Comfortable */}
-                      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                          <span className="font-semibold text-blue-700">{t('Comfortable')}</span>
-                        </div>
-                        <div className="text-2xl font-bold text-blue-600 mb-1">
                           {Math.max(0, comfortable)} {t('rats')}
                         </div>
-                        <div className="text-sm text-blue-600">
+                        <div className="text-sm text-green-600">
                           {t('Adequate space: 43×43×43cm per rat provides good living conditions')}
                         </div>
                       </div>
 
                       {/* Minimum Acceptable */}
-                      <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                      <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                          <span className="font-semibold text-orange-700">{t('Minimum Acceptable')}</span>
+                          <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                          <span className="font-semibold text-amber-700">{t('Minimum Acceptable')}</span>
                         </div>
-                        <div className="text-2xl font-bold text-orange-600 mb-1">
+                        <div className="text-2xl font-bold text-amber-600 mb-1">
                           {Math.max(0, minimum)} {t('rats')}
                         </div>
-                        <div className="text-sm text-orange-600">
+                        <div className="text-sm text-amber-600">
                           {t('Veterinary minimum: Based on textbook standards (38-51×38-51×18-25cm)')}
                         </div>
                       </div>
@@ -491,8 +476,8 @@ const ToolsPage = () => {
                 })()}
               </div>
               
-              <div className="bg-yellow-50 p-3 rounded text-xs border border-yellow-200">
-                <p className="font-semibold text-yellow-800 mb-1">{t('Important Notes')}:</p>
+              <div className="bg-blue-50 p-3 rounded text-xs border border-blue-200">
+                <p className="font-semibold text-blue-800 mb-1">{t('Important Notes')}:</p>
                 <p>• {t('Rats are social animals - always keep pairs or groups')}</p>
                 <p>• {t('Multiple levels and enrichment items increase usable space')}</p>
                 <p>• {t('Young rats need less space, but will grow quickly')}</p>
