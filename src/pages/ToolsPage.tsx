@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BottomNav from '@/components/BottomNav';
 import { 
   MapPin, 
@@ -24,6 +25,7 @@ const ToolsPage = () => {
   const [ratCount, setRatCount] = useState(0);
   const [ratAge, setRatAge] = useState('');
   const [humanAge, setHumanAge] = useState(0);
+  const [showCalculatorResult, setShowCalculatorResult] = useState(false);
 
   // 計算籠子可容納的老鼠數量（基於最小空間需求）
   const calculateRatCapacity = () => {
@@ -41,6 +43,7 @@ const ToolsPage = () => {
     const minSpacePerRat = 2000;
     const capacity = Math.floor(totalVolume / minSpacePerRat);
     setRatCount(Math.max(0, capacity));
+    setShowCalculatorResult(true);
   };
 
   // 計算老鼠年齡對應人類年齡
@@ -191,21 +194,6 @@ const ToolsPage = () => {
               {t('Calculate Capacity')}
             </Button>
             
-            {ratCount > 0 && (
-              <div className="text-center p-6 bg-primary/10 rounded-lg space-y-2">
-                <div className="text-3xl font-bold text-primary">{ratCount}</div>
-                <p className="text-lg font-semibold">
-                  {t('Recommended rats')}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('Based on minimum 2000cm³ per rat')}
-                </p>
-                <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-muted">
-                  {t('Total volume')}: {(parseFloat(cageLength) * parseFloat(cageWidth) * parseFloat(cageHeight)).toLocaleString()}cm³
-                </div>
-              </div>
-            )}
-            
             <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded">
               <p className="font-semibold mb-1">{t('Minimum space requirements')}:</p>
               <p>• {t('Adult rats need at least 2000cm³ each')}</p>
@@ -291,6 +279,28 @@ const ToolsPage = () => {
                 <div className="bg-purple-50 p-3 rounded">
                   <div className="font-semibold">{t('Calcium')}</div>
                   <div>0.5-1.0%</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-semibold text-orange-600">{t('Essential Vitamins')}</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-yellow-50 p-3 rounded">
+                  <div className="font-semibold">{t('Vitamin A')}</div>
+                  <div>4000-8000 IU/kg</div>
+                </div>
+                <div className="bg-red-50 p-3 rounded">
+                  <div className="font-semibold">{t('Vitamin D3')}</div>
+                  <div>1000-2000 IU/kg</div>
+                </div>
+                <div className="bg-pink-50 p-3 rounded">
+                  <div className="font-semibold">{t('Vitamin E')}</div>
+                  <div>30-100 mg/kg</div>
+                </div>
+                <div className="bg-indigo-50 p-3 rounded">
+                  <div className="font-semibold">{t('Vitamin C')}</div>
+                  <div>30-50 mg/kg</div>
                 </div>
               </div>
             </div>
@@ -406,6 +416,36 @@ const ToolsPage = () => {
           </Card>
         </div>
         <BottomNav />
+        
+        {/* Calculator Result Modal */}
+        <Dialog open={showCalculatorResult} onOpenChange={setShowCalculatorResult}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">{t('Calculation Result')}</DialogTitle>
+            </DialogHeader>
+            <div className="text-center p-6 space-y-4">
+              <div className="text-4xl font-bold text-primary">{ratCount}</div>
+              <p className="text-xl font-semibold">
+                {t('Recommended rats')}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t('Based on minimum 2000cm³ per rat')}
+              </p>
+              <div className="bg-muted/50 p-3 rounded text-sm">
+                <div className="font-semibold mb-2">{t('Cage Information')}</div>
+                <div className="text-xs space-y-1">
+                  <div>{t('Dimensions')}: {cageLength} × {cageWidth} × {cageHeight} cm</div>
+                  <div>{t('Total volume')}: {(parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0')).toLocaleString()}cm³</div>
+                  <div>{t('Space per rat')}: {Math.round((parseFloat(cageLength || '0') * parseFloat(cageWidth || '0') * parseFloat(cageHeight || '0')) / Math.max(ratCount, 1)).toLocaleString()}cm³</div>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <p>• {t('More space is always better for rat welfare')}</p>
+                <p>• {t('Consider adding multiple levels for enrichment')}</p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
