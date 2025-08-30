@@ -12,10 +12,6 @@ import {
   Sun, 
   Wind,
   Thermometer,
-  Clock,
-  Scale,
-  Heart,
-  AlertTriangle,
   Calendar,
   Wheat
 } from 'lucide-react';
@@ -116,30 +112,6 @@ const ToolsPage = () => {
       bgColor: 'bg-red-50'
     },
     {
-      title: t('Medication Timer'),
-      description: t('Set reminders for medication times'),
-      icon: Clock,
-      component: 'timer',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50'
-    },
-    {
-      title: t('Weight Tracker'),
-      description: t('Track rat weight changes'),
-      icon: Scale,
-      component: 'weight',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50'
-    },
-    {
-      title: t('Health Calculator'),
-      description: t('Calculate BMI and health metrics'),
-      icon: Heart,
-      component: 'health',
-      color: 'text-pink-600',
-      bgColor: 'bg-pink-50'
-    },
-    {
       title: t('Age Comparison Chart'),
       description: t('Compare rat age to human age'),
       icon: Calendar,
@@ -154,14 +126,6 @@ const ToolsPage = () => {
       component: 'nutrition',
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50'
-    },
-    {
-      title: t('Emergency Contacts'),
-      description: t('Quick access to emergency vet contacts'),
-      icon: AlertTriangle,
-      component: 'emergency',
-      color: 'text-red-500',
-      bgColor: 'bg-red-50'
     }
   ];
 
