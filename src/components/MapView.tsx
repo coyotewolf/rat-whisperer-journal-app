@@ -9,11 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, Plus, Settings } from 'lucide-react';
+import { MapPin, Plus, RefreshCw, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import MapboxTokenInput from './MapboxTokenInput';
 
 interface MapData {
   id: string;
@@ -31,8 +30,9 @@ const MapView = () => {
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapData, setMapData] = useState<MapData[]>([]);
   const [isAddingPoint, setIsAddingPoint] = useState(false);
-  const [showTokenInput, setShowTokenInput] = useState(false);
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [isLoadingToken, setIsLoadingToken] = useState(true);
+  const [tokenError, setTokenError] = useState<string>('');
   const [newPoint, setNewPoint] = useState({
     title: '',
     description: '',
@@ -42,22 +42,39 @@ const MapView = () => {
   });
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  // Check for token on component mount
-  useEffect(() => {
-    const savedToken = localStorage.getItem('mapbox_token');
-    if (savedToken) {
-      setMapboxToken(savedToken);
-    } else {
-      setShowTokenInput(true);
+  // Fetch token from Supabase edge function
+  const fetchMapboxToken = async () => {
+    try {
+      setIsLoadingToken(true);
+      setTokenError('');
+      
+      const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+      
+      if (error) throw error;
+      
+      if (data?.token) {
+        setMapboxToken(data.token);
+      } else {
+        throw new Error('No token received');
+      }
+    } catch (error) {
+      console.error('Error fetching Mapbox token:', error);
+      setTokenError('Failed to load Mapbox token. Please check configuration.');
+      toast.error('Failed to load map configuration');
+    } finally {
+      setIsLoadingToken(false);
     }
+  };
+
+  // Fetch token on component mount
+  useEffect(() => {
+    fetchMapboxToken();
   }, []);
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current || !mapboxToken || isLoadingToken) return;
 
-    // Get Mapbox token from Supabase secrets (will be available in production)
-    // For development, you can temporarily set it here
     mapboxgl.accessToken = mapboxToken;
     
     map.current = new mapboxgl.Map({
@@ -85,7 +102,7 @@ const MapView = () => {
     return () => {
       map.current?.remove();
     };
-  }, [isAddingPoint, mapboxToken]);
+  }, [isAddingPoint, mapboxToken, isLoadingToken]);
 
   // Load map data
   useEffect(() => {
@@ -168,18 +185,6 @@ const MapView = () => {
     }
   };
 
-  const handleTokenSubmit = (token: string) => {
-    setMapboxToken(token);
-    toast.success('Mapbox token saved successfully');
-  };
-
-  const clearToken = () => {
-    localStorage.removeItem('mapbox_token');
-    setMapboxToken('');
-    setShowTokenInput(true);
-    toast.info('Mapbox token cleared');
-  };
-
   const getCategoryColor = (category: string) => {
     const colors = {
       general: '#6B7280',
@@ -207,17 +212,19 @@ const MapView = () => {
         <h2 className="text-2xl font-bold">Interactive Map</h2>
         <div className="flex items-center gap-2">
           <Button
-            onClick={clearToken}
+            onClick={fetchMapboxToken}
             variant="outline"
             size="sm"
+            disabled={isLoadingToken}
           >
-            <Settings className="w-4 h-4 mr-2" />
-            Token Settings
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingToken ? 'animate-spin' : ''}`} />
+            Refresh Token
           </Button>
           <Button
             onClick={() => setIsAddingPoint(!isAddingPoint)}
             variant={isAddingPoint ? "destructive" : "default"}
             size="sm"
+            disabled={isLoadingToken || !!tokenError}
           >
             <MapPin className="w-4 h-4 mr-2" />
             {isAddingPoint ? 'Cancel Adding' : 'Add Point'}
@@ -225,10 +232,18 @@ const MapView = () => {
         </div>
       </div>
 
-      {!mapboxToken && (
+      {isLoadingToken && (
         <Alert>
           <AlertDescription>
-            Map requires a Mapbox token to display. Click Token Settings to configure.
+            Loading map configuration...
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {tokenError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {tokenError}
           </AlertDescription>
         </Alert>
       )}
@@ -252,12 +267,6 @@ const MapView = () => {
           />
         </CardContent>
       </Card>
-
-      <MapboxTokenInput
-        open={showTokenInput}
-        onClose={() => setShowTokenInput(false)}
-        onTokenSubmit={handleTokenSubmit}
-      />
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
