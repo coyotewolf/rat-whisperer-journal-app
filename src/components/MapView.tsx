@@ -153,13 +153,13 @@ const MapView = () => {
 
   // Add markers to map
   useEffect(() => {
-    if (!map.current || !mapData.length) return;
+    if (!map.current) return;
 
     // Clear existing markers
     const markers = document.querySelectorAll('.mapboxgl-marker');
     markers.forEach(marker => marker.remove());
 
-    // Add new markers with custom icons
+    // Add new markers with custom icons (even if mapData is empty, we should clear markers)
     mapData.forEach(point => {
       const customElement = createCustomMarker(point.category);
       
