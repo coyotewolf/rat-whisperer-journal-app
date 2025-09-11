@@ -203,18 +203,27 @@ const MapView = () => {
                   <span class="text-xs px-2 py-1 rounded-full text-white flex-shrink-0" style="background-color: ${getCategoryColor(point.category)}">${point.category}</span>
                 </div>
                 ${isTester ? `
-                  <div class="flex flex-wrap gap-2 pt-2 border-t">
+                  <div class="flex gap-2 pt-2 border-t justify-end">
                     <button 
                       onclick="window.editMapPoint('${point.id}')" 
-                      class="flex items-center gap-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                      class="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                      title="Edit"
                     >
-                      <span>✏️</span> Edit
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="m18.5 2.5 a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
                     </button>
                     <button 
                       onclick="window.deleteMapPoint('${point.id}')" 
-                      class="flex items-center gap-1 px-3 py-2 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                      class="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      title="Delete"
                     >
-                      <span>🗑️</span> Delete
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 6 18 0"/>
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                      </svg>
                     </button>
                   </div>
                 ` : ''}
