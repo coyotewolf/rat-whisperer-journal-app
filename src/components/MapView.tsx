@@ -37,6 +37,7 @@ const MapView = () => {
   const [tokenError, setTokenError] = useState<string>('');
   const [userRole, setUserRole] = useState<string>('');
   const [isLoadingRole, setIsLoadingRole] = useState(true);
+  const [isMapReady, setIsMapReady] = useState(false);
   const [newPoint, setNewPoint] = useState({
     title: '',
     description: '',
@@ -126,6 +127,10 @@ const MapView = () => {
       zoom: 10,
     });
 
+    map.current.on('load', () => {
+      setIsMapReady(true);
+    });
+
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
     // Add click handler for adding points
@@ -142,9 +147,10 @@ const MapView = () => {
     });
 
     return () => {
+      setIsMapReady(false);
       map.current?.remove();
     };
-  }, [isAddingPoint, mapboxToken, isLoadingToken]);
+  }, [mapboxToken, isLoadingToken]);
 
   // Load map data
   useEffect(() => {
@@ -153,7 +159,7 @@ const MapView = () => {
 
   // Add markers to map
   useEffect(() => {
-    if (!map.current || !mapData) return;
+    if (!map.current || !isMapReady || !mapData) return;
 
     // Clear existing markers
     const markers = document.querySelectorAll('.mapboxgl-marker');
@@ -205,7 +211,7 @@ const MapView = () => {
         marker.addTo(map.current);
       }
     });
-  }, [mapData]);
+  }, [mapData, isMapReady]);
 
   const loadMapData = async () => {
     try {
