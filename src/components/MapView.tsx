@@ -9,7 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, Plus, RefreshCw, Settings } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { MapPin, Plus, RefreshCw, Settings, Edit, Trash2, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -43,6 +45,11 @@ const MapView = () => {
     longitude: 0
   });
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDataPanel, setShowDataPanel] = useState(false);
+  const [editingPoint, setEditingPoint] = useState<MapData | null>(null);
+  const [deletingPoint, setDeletingPoint] = useState<MapData | null>(null);
 
   // Fetch token from Supabase edge function
   const fetchMapboxToken = async () => {
@@ -158,10 +165,26 @@ const MapView = () => {
         .setPopup(
           new mapboxgl.Popup({ offset: 25 })
             .setHTML(`
-              <div class="p-2">
-                <h3 class="font-semibold">${point.title}</h3>
-                ${point.description ? `<p class="text-sm text-muted-foreground mt-1">${point.description}</p>` : ''}
-                <p class="text-xs text-muted-foreground mt-1">Category: ${point.category}</p>
+              <div class="p-3 min-w-[250px]">
+                <h3 class="font-semibold text-base mb-2">${point.title}</h3>
+                ${point.description ? `<p class="text-sm text-muted-foreground mb-2">${point.description}</p>` : ''}
+                <p class="text-xs text-muted-foreground mb-3">Category: ${point.category}</p>
+                ${isTester ? `
+                  <div class="flex gap-2 pt-2 border-t">
+                    <button 
+                      onclick="window.editMapPoint('${point.id}')" 
+                      class="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      <span>✏️</span> Edit
+                    </button>
+                    <button 
+                      onclick="window.deleteMapPoint('${point.id}')" 
+                      class="flex items-center gap-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      <span>🗑️</span> Delete
+                    </button>
+                  </div>
+                ` : ''}
               </div>
             `)
         )
@@ -217,6 +240,81 @@ const MapView = () => {
     }
   };
 
+  const updateMapPoint = async () => {
+    if (!user || !editingPoint || !editingPoint.title.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('map_data')
+        .update({
+          title: editingPoint.title,
+          description: editingPoint.description,
+          category: editingPoint.category,
+          latitude: editingPoint.latitude,
+          longitude: editingPoint.longitude,
+        })
+        .eq('id', editingPoint.id);
+
+      if (error) throw error;
+
+      toast.success('Map point updated successfully');
+      setEditingPoint(null);
+      setShowEditDialog(false);
+      loadMapData();
+    } catch (error) {
+      console.error('Error updating map point:', error);
+      toast.error('Failed to update map point');
+    }
+  };
+
+  const deleteMapPoint = async () => {
+    if (!user || !deletingPoint) return;
+
+    try {
+      const { error } = await supabase
+        .from('map_data')
+        .delete()
+        .eq('id', deletingPoint.id);
+
+      if (error) throw error;
+
+      toast.success('Map point deleted successfully');
+      setDeletingPoint(null);
+      setShowDeleteDialog(false);
+      loadMapData();
+    } catch (error) {
+      console.error('Error deleting map point:', error);
+      toast.error('Failed to delete map point');
+    }
+  };
+
+  const handleEditPoint = (pointId: string) => {
+    const point = mapData.find(p => p.id === pointId);
+    if (point) {
+      setEditingPoint({ ...point });
+      setShowEditDialog(true);
+    }
+  };
+
+  const handleDeletePoint = (pointId: string) => {
+    const point = mapData.find(p => p.id === pointId);
+    if (point) {
+      setDeletingPoint(point);
+      setShowDeleteDialog(true);
+    }
+  };
+
+  // Add global functions for popup buttons
+  useEffect(() => {
+    (window as any).editMapPoint = handleEditPoint;
+    (window as any).deleteMapPoint = handleDeletePoint;
+    
+    return () => {
+      delete (window as any).editMapPoint;
+      delete (window as any).deleteMapPoint;
+    };
+  }, [mapData]);
+
   const getCategoryColor = (category: string) => {
     const colors = {
       hospital: '#EF4444',
@@ -252,6 +350,14 @@ const MapView = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowDataPanel(!showDataPanel)}
+            variant="outline"
+            size="sm"
+          >
+            <List className="w-4 h-4 mr-2" />
+            {showDataPanel ? 'Hide' : 'Show'} Data Points
+          </Button>
           <Button
             onClick={fetchMapboxToken}
             variant="outline"
@@ -297,6 +403,70 @@ const MapView = () => {
             <p className="text-sm text-muted-foreground">
               Click anywhere on the map to add a new veterinary hospital.
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {showDataPanel && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Map Data Points ({mapData.length})</span>
+              {isTester && (
+                <Button
+                  onClick={() => setIsAddingPoint(true)}
+                  size="sm"
+                  disabled={isLoadingToken || !!tokenError}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New
+                </Button>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {mapData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No veterinary hospitals added yet.</p>
+            ) : (
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {mapData.map((point) => (
+                  <div key={point.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium">{point.title}</h4>
+                        <Badge variant="secondary" style={{ backgroundColor: getCategoryColor(point.category), color: 'white' }}>
+                          {point.category}
+                        </Badge>
+                      </div>
+                      {point.description && (
+                        <p className="text-sm text-muted-foreground mb-1">{point.description}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Location: {point.latitude.toFixed(6)}, {point.longitude.toFixed(6)}
+                      </p>
+                    </div>
+                    {isTester && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => handleEditPoint(point.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeletePoint(point.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -371,6 +541,104 @@ const MapView = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Veterinary Hospital</DialogTitle>
+          </DialogHeader>
+          {editingPoint && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-title">Hospital Name</Label>
+                <Input
+                  id="edit-title"
+                  value={editingPoint.title}
+                  onChange={(e) => setEditingPoint(prev => prev ? { ...prev, title: e.target.value } : null)}
+                  placeholder="Enter hospital name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">Description (Optional)</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editingPoint.description || ''}
+                  onChange={(e) => setEditingPoint(prev => prev ? { ...prev, description: e.target.value } : null)}
+                  placeholder="Enter hospital description, services, contact info, etc."
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-category">Type</Label>
+                <Select
+                  value={editingPoint.category}
+                  onValueChange={(value) => setEditingPoint(prev => prev ? { ...prev, category: value } : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hospital">Veterinary Hospital</SelectItem>
+                    <SelectItem value="clinic">Veterinary Clinic</SelectItem>
+                    <SelectItem value="emergency">Emergency Vet</SelectItem>
+                    <SelectItem value="specialist">Specialist Vet</SelectItem>
+                    <SelectItem value="pharmacy">Veterinary Pharmacy</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-latitude">Latitude</Label>
+                  <Input
+                    id="edit-latitude"
+                    type="number"
+                    step="any"
+                    value={editingPoint.latitude}
+                    onChange={(e) => setEditingPoint(prev => prev ? { ...prev, latitude: parseFloat(e.target.value) || 0 } : null)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-longitude">Longitude</Label>
+                  <Input
+                    id="edit-longitude"
+                    type="number"
+                    step="any"
+                    value={editingPoint.longitude}
+                    onChange={(e) => setEditingPoint(prev => prev ? { ...prev, longitude: parseFloat(e.target.value) || 0 } : null)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={updateMapPoint}
+                  disabled={!editingPoint.title.trim()}
+                >
+                  Update Hospital
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={deleteMapPoint}
+        title="Delete Veterinary Hospital"
+        description={`Are you sure you want to delete "${deletingPoint?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
     </div>
   );
 };
