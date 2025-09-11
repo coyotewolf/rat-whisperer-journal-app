@@ -634,44 +634,75 @@ const MapView = () => {
             {mapData.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No veterinary hospitals added yet.</p>
             ) : (
-              <div className="space-y-3 max-h-60 sm:max-h-80 overflow-y-auto">
+              <div className="space-y-4 max-h-60 sm:max-h-80 overflow-y-auto">
                 {mapData.map((point) => (
-                  <div key={point.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-3">
-                    <div className="flex-1 min-w-0">
-                       <div className="flex items-center gap-2 mb-1">
-                         <span className="text-lg flex-shrink-0">{getCategoryIcon(point.category)}</span>
-                         <h4 className="font-medium truncate">{point.title}</h4>
-                         <Badge variant="secondary" style={{ backgroundColor: getCategoryColor(point.category), color: 'white' }} className="flex-shrink-0">
-                           {point.category}
-                         </Badge>
-                       </div>
-                      {point.description && (
-                        <p className="text-sm text-muted-foreground mb-1 line-clamp-2">{point.description}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Location: {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
-                      </p>
-                    </div>
-                    {isTester && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Button
-                          onClick={() => handleEditPoint(point.id)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Edit className="w-4 h-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button
-                          onClick={() => handleDeletePoint(point.id)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
+                  <div key={point.id} className="group relative bg-card border border-border rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:border-primary/20">
+                    <div className="space-y-3">
+                      {/* Header with icon, title, and category badge */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-semibold" 
+                               style={{ backgroundColor: getCategoryColor(point.category) }}>
+                            {getCategoryIcon(point.category)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-foreground text-base leading-tight mb-1 break-words">{point.title}</h4>
+                            <Badge 
+                              variant="secondary" 
+                              className="text-xs font-medium px-2 py-1"
+                              style={{ 
+                                backgroundColor: `${getCategoryColor(point.category)}20`,
+                                color: getCategoryColor(point.category),
+                                border: `1px solid ${getCategoryColor(point.category)}40`
+                              }}
+                            >
+                              {point.category}
+                            </Badge>
+                          </div>
+                        </div>
+                        {isTester && (
+                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <Button
+                              onClick={() => handleEditPoint(point.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-primary/10"
+                            >
+                              <Edit className="w-4 h-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button
+                              onClick={() => handleDeletePoint(point.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                    )}
+                      
+                      {/* Description */}
+                      {point.description && (
+                        <div className="pl-12">
+                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 break-words">
+                            {point.description}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Location coordinates */}
+                      <div className="pl-12">
+                        <div className="inline-flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-md">
+                          <MapPin className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground font-mono">
+                            {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
