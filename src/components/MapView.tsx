@@ -130,6 +130,41 @@ const MapView = () => {
       zoom: 10,
     });
 
+    // Set map language to Chinese if the app is in Chinese mode
+    map.current.on('style.load', () => {
+      const currentLanguage = localStorage.getItem('i18nextLng') || 'en';
+      if (currentLanguage.includes('zh')) {
+        // Set map labels to Chinese
+        try {
+          map.current?.setLayoutProperty('country-label', 'text-field', [
+            'coalesce',
+            ['get', 'name_zh-Hans'],
+            ['get', 'name_zh'],
+            ['get', 'name_en'],
+            ['get', 'name']
+          ]);
+          
+          map.current?.setLayoutProperty('state-label', 'text-field', [
+            'coalesce',
+            ['get', 'name_zh-Hans'],
+            ['get', 'name_zh'],
+            ['get', 'name_en'],
+            ['get', 'name']
+          ]);
+          
+          map.current?.setLayoutProperty('settlement-label', 'text-field', [
+            'coalesce',
+            ['get', 'name_zh-Hans'],
+            ['get', 'name_zh'],
+            ['get', 'name_en'],
+            ['get', 'name']
+          ]);
+        } catch (error) {
+          console.log('Could not set Chinese labels, using default labels');
+        }
+      }
+    });
+
     map.current.on('load', () => {
       setIsMapReady(true);
       // Ensure proper sizing once styles are fully loaded
