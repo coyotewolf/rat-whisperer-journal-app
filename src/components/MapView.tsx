@@ -153,7 +153,7 @@ const MapView = () => {
 
   // Add markers to map
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapData) return;
 
     // Clear existing markers
     const markers = document.querySelectorAll('.mapboxgl-marker');
@@ -161,6 +161,9 @@ const MapView = () => {
 
     // Add new markers with custom icons (even if mapData is empty, we should clear markers)
     mapData.forEach(point => {
+      // Double-check map.current is still valid before creating markers
+      if (!map.current) return;
+      
       const customElement = createCustomMarker(point.category);
       
       const marker = new mapboxgl.Marker({ element: customElement })
@@ -195,8 +198,12 @@ const MapView = () => {
                 ` : ''}
               </div>
             `)
-        )
-        .addTo(map.current!);
+        );
+        
+      // Final check before adding to map
+      if (map.current) {
+        marker.addTo(map.current);
+      }
     });
   }, [mapData]);
 
