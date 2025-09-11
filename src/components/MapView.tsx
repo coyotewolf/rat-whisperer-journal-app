@@ -123,45 +123,25 @@ const MapView = () => {
 
     mapboxgl.accessToken = mapboxToken;
     
+    const currentLanguage = localStorage.getItem('i18nextLng') || 'en';
+    
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
       center: [121.5654, 25.0330], // Taipei coordinates as default
       zoom: 10,
+      language: currentLanguage.includes('zh') ? 'zh-Hant' : 'en',
     });
 
-    // Set map language to Chinese if the app is in Chinese mode
+    // Set map language after style loads
     map.current.on('style.load', () => {
-      const currentLanguage = localStorage.getItem('i18nextLng') || 'en';
       if (currentLanguage.includes('zh')) {
-        // Set map labels to Chinese
-        try {
-          map.current?.setLayoutProperty('country-label', 'text-field', [
-            'coalesce',
-            ['get', 'name_zh-Hans'],
-            ['get', 'name_zh'],
-            ['get', 'name_en'],
-            ['get', 'name']
-          ]);
-          
-          map.current?.setLayoutProperty('state-label', 'text-field', [
-            'coalesce',
-            ['get', 'name_zh-Hans'],
-            ['get', 'name_zh'],
-            ['get', 'name_en'],
-            ['get', 'name']
-          ]);
-          
-          map.current?.setLayoutProperty('settlement-label', 'text-field', [
-            'coalesce',
-            ['get', 'name_zh-Hans'],
-            ['get', 'name_zh'],
-            ['get', 'name_en'],
-            ['get', 'name']
-          ]);
-        } catch (error) {
-          console.log('Could not set Chinese labels, using default labels');
-        }
+        // Use Mapbox's built-in Chinese language support
+        map.current?.setLayoutProperty('country-label', 'text-field', ['get', 'name_zh-Hant']);
+        map.current?.setLayoutProperty('state-label', 'text-field', ['get', 'name_zh-Hant']); 
+        map.current?.setLayoutProperty('settlement-label', 'text-field', ['get', 'name_zh-Hant']);
+        map.current?.setLayoutProperty('settlement-subdivision-label', 'text-field', ['get', 'name_zh-Hant']);
+        map.current?.setLayoutProperty('poi-label', 'text-field', ['get', 'name_zh-Hant']);
       }
     });
 
@@ -239,7 +219,7 @@ const MapView = () => {
                 <div class="flex items-center gap-2 mb-3">
                   <span class="text-xs px-2 py-1 rounded-full text-white flex-shrink-0" style="background-color: ${getCategoryColor(point.category)}">${point.category}</span>
                 </div>
-                ${isTester ? `
+                ${userRole === 'admin' ? `
                   <div class="flex gap-2 pt-2 border-t justify-end">
                     <button 
                       onclick="window.editMapPoint('${point.id}')" 
