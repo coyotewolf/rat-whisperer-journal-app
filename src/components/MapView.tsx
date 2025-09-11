@@ -30,6 +30,7 @@ const MapView = () => {
   const { user } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapData, setMapData] = useState<MapData[]>([]);
   const [isAddingPoint, setIsAddingPoint] = useState(false);
   const [mapboxToken, setMapboxToken] = useState<string>('');
@@ -129,6 +130,8 @@ const MapView = () => {
 
     map.current.on('load', () => {
       setIsMapReady(true);
+      // Ensure proper sizing once styles are fully loaded
+      map.current?.resize();
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -161,19 +164,26 @@ const MapView = () => {
   useEffect(() => {
     if (!map.current || !isMapReady || !mapData) return;
 
-    // Clear existing markers
-    const markers = document.querySelectorAll('.mapboxgl-marker');
-    markers.forEach(marker => marker.remove());
+    console.debug('[MapView] Rendering markers:', mapData.length);
 
-    // Add new markers with custom icons (even if mapData is empty, we should clear markers)
+    // Remove existing markers via ref to avoid DOM query side-effects
+    if (markersRef.current.length) {
+      markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
+    }
+
+    // Add new markers with custom icons
     mapData.forEach(point => {
-      // Double-check map.current is still valid before creating markers
       if (!map.current) return;
-      
+
+      const lat = Number(point.latitude);
+      const lng = Number(point.longitude);
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
       const customElement = createCustomMarker(point.category);
-      
+
       const marker = new mapboxgl.Marker({ element: customElement })
-        .setLngLat([point.longitude, point.latitude])
+        .setLngLat([lng, lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 })
             .setHTML(`
@@ -205,13 +215,27 @@ const MapView = () => {
               </div>
             `)
         );
-        
-      // Final check before adding to map
+
       if (map.current) {
         marker.addTo(map.current);
+        markersRef.current.push(marker);
       }
     });
   }, [mapData, isMapReady]);
+
+  // Auto-fit map to markers when data is available
+  useEffect(() => {
+    if (!map.current || !isMapReady || !mapData || mapData.length === 0) return;
+    const bounds = new mapboxgl.LngLatBounds();
+    mapData.forEach(p => {
+      const lat = Number(p.latitude);
+      const lng = Number(p.longitude);
+      if (!Number.isNaN(lat) && !Number.isNaN(lng)) bounds.extend([lng, lat]);
+    });
+    if (!bounds.isEmpty()) {
+      map.current.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 500 });
+    }
+  }, [isMapReady, mapData.length]);
 
   const loadMapData = async () => {
     try {
