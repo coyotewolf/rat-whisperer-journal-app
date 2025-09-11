@@ -497,9 +497,52 @@ const MapView = () => {
       {isTester && isAddingPoint && (
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">
-              Click anywhere on the map to add a new veterinary hospital.
-            </p>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Click anywhere on the map to add a new veterinary hospital, or search for an address below:
+              </p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="map-address-search">Search Address to Add Hospital</Label>
+                <div className="relative">
+                  <Input
+                    id="map-address-search"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (e.target.value.length > 2) {
+                        searchAddress(e.target.value);
+                      } else {
+                        setSearchResults([]);
+                      }
+                    }}
+                    placeholder="搜尋地址或地點名稱..."
+                    className="pr-10"
+                  />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  {isSearching && (
+                    <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    </div>
+                  )}
+                </div>
+                
+                {searchResults.length > 0 && (
+                  <div className="border rounded-md max-h-40 overflow-y-auto">
+                    {searchResults.map((result, index) => (
+                      <button
+                        key={index}
+                        onClick={() => selectSearchResult(result)}
+                        className="w-full text-left p-2 hover:bg-muted text-sm border-b last:border-b-0"
+                      >
+                        <div className="font-medium">{result.text}</div>
+                        <div className="text-xs text-muted-foreground">{result.place_name}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -585,45 +628,6 @@ const MapView = () => {
             <DialogTitle>Add Veterinary Hospital</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="address-search">Search Address</Label>
-              <div className="relative">
-                <Input
-                  id="address-search"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (e.target.value.length > 2) {
-                      searchAddress(e.target.value);
-                    } else {
-                      setSearchResults([]);
-                    }
-                  }}
-                  placeholder="搜尋地址或地點名稱..."
-                  className="pr-10"
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                {isSearching && (
-                  <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  </div>
-                )}
-              </div>
-              {searchResults.length > 0 && (
-                <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
-                  {searchResults.map((result, index) => (
-                    <button
-                      key={index}
-                      onClick={() => selectSearchResult(result)}
-                      className="w-full text-left p-2 hover:bg-muted text-sm border-b last:border-b-0"
-                    >
-                      <div className="font-medium">{result.text}</div>
-                      <div className="text-xs text-muted-foreground">{result.place_name}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
             <div>
               <Label htmlFor="title">Hospital Name</Label>
               <Input
