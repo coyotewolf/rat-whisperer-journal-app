@@ -15,6 +15,7 @@ import { MapPin, Plus, RefreshCw, Settings, Edit, Trash2, List, Search } from 'l
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface MapData {
   id: string;
@@ -27,6 +28,7 @@ interface MapData {
 }
 
 const MapView = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -495,7 +497,7 @@ const MapView = () => {
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">Please sign in to access the map features.</p>
+          <p className="text-muted-foreground">{t('Please sign in to access the map features.')}</p>
         </CardContent>
       </Card>
     );
@@ -506,11 +508,11 @@ const MapView = () => {
       {/* Header section with responsive layout */}
       <div className="space-y-4 sm:space-y-0 sm:flex sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl sm:text-2xl font-bold truncate">Veterinary Hospital Map</h2>
+          <h2 className="text-xl sm:text-2xl font-bold truncate">{t('Veterinary Hospital Map')}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {isLoadingRole ? 'Loading...' : 
-              isTester ? 'Tester - You can view and add veterinary hospitals' : 
-              'User - You can view veterinary hospitals'}
+            {isLoadingRole ? t('Loading...') : 
+              isTester ? t('Tester - You can view and add veterinary hospitals') : 
+              t('User - You can view veterinary hospitals')}
           </p>
         </div>
         {/* Mobile-friendly button layout */}
@@ -522,8 +524,8 @@ const MapView = () => {
             className="flex-shrink-0"
           >
             <List className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">{showDataPanel ? 'Hide' : 'Show'} Data Points</span>
-            <span className="sm:hidden">{showDataPanel ? 'Hide' : 'List'}</span>
+            <span className="hidden sm:inline">{showDataPanel ? t('Hide') : t('Show')} {t('Data Points')}</span>
+            <span className="sm:hidden">{showDataPanel ? t('Hide') : t('List')}</span>
           </Button>
           <Button
             onClick={fetchMapboxToken}
@@ -533,8 +535,8 @@ const MapView = () => {
             className="flex-shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${isLoadingToken ? 'animate-spin' : ''} sm:mr-2`} />
-            <span className="hidden sm:inline">Refresh Token</span>
-            <span className="sm:hidden">Refresh</span>
+            <span className="hidden sm:inline">{t('Refresh Token')}</span>
+            <span className="sm:hidden">{t('Refresh')}</span>
           </Button>
           {isTester && (
             <Button
@@ -545,8 +547,8 @@ const MapView = () => {
               className="flex-shrink-0"
             >
               <MapPin className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">{isAddingPoint ? 'Cancel Adding' : 'Add Hospital'}</span>
-              <span className="sm:hidden">{isAddingPoint ? 'Cancel' : 'Add'}</span>
+              <span className="hidden sm:inline">{isAddingPoint ? t('Cancel Adding') : t('Add Hospital')}</span>
+              <span className="sm:hidden">{isAddingPoint ? t('Cancel') : t('Add')}</span>
             </Button>
           )}
         </div>
@@ -555,7 +557,7 @@ const MapView = () => {
       {isLoadingToken && (
         <Alert>
           <AlertDescription>
-            Loading map configuration...
+            {t('Loading map configuration...')}
           </AlertDescription>
         </Alert>
       )}
@@ -573,11 +575,11 @@ const MapView = () => {
           <CardContent className="p-4">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Click anywhere on the map to add a new veterinary hospital, or search for an address below:
+                {t('Click anywhere on the map to add a new veterinary hospital, or search for an address below:')}
               </p>
               
               <div className="space-y-2">
-                <Label htmlFor="map-address-search">Search Address to Add Hospital</Label>
+                <Label htmlFor="map-address-search">{t('Search Address to Add Hospital')}</Label>
                 <div className="relative">
                   <Input
                     id="map-address-search"
@@ -625,7 +627,7 @@ const MapView = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <span>Map Data Points ({mapData.length})</span>
+              <span>{t('Map Data Points')} ({mapData.length})</span>
               {isTester && (
                 <Button
                   onClick={() => setIsAddingPoint(true)}
@@ -634,14 +636,14 @@ const MapView = () => {
                   className="self-start sm:self-auto"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add New
+                  {t('Add New')}
                 </Button>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {mapData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No veterinary hospitals added yet.</p>
+              <p className="text-muted-foreground text-center py-8">{t('No veterinary hospitals added yet.')}</p>
             ) : (
               <div className="space-y-4 max-h-60 sm:max-h-80 overflow-y-auto">
                 {mapData.map((point) => (
@@ -677,8 +679,8 @@ const MapView = () => {
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-primary/10"
                             >
-                              <Edit className="w-4 h-4" />
-                              <span className="sr-only">Edit</span>
+                            <Edit className="w-4 h-4" />
+                            <span className="sr-only">{t('Edit')}</span>
                             </Button>
                             <Button
                               onClick={() => handleDeletePoint(point.id)}
@@ -686,8 +688,8 @@ const MapView = () => {
                               size="sm"
                               className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
                             >
-                              <Trash2 className="w-4 h-4" />
-                              <span className="sr-only">Delete</span>
+                            <Trash2 className="w-4 h-4" />
+                            <span className="sr-only">{t('Delete')}</span>
                             </Button>
                           </div>
                         )}
@@ -733,31 +735,31 @@ const MapView = () => {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Veterinary Hospital</DialogTitle>
+            <DialogTitle>{t('Add Veterinary Hospital')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto">
             <div>
-              <Label htmlFor="title">Hospital Name</Label>
+              <Label htmlFor="title">{t('Hospital Name')}</Label>
               <Input
                 id="title"
                 value={newPoint.title}
                 onChange={(e) => setNewPoint(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter hospital name"
+                placeholder={t('Enter hospital name')}
               />
             </div>
             <div>
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description">{t('Description (Optional)')}</Label>
               <Textarea
                 id="description"
                 value={newPoint.description}
                 onChange={(e) => setNewPoint(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter hospital description, services, contact info, etc."
+                placeholder={t('Enter hospital description, services, contact info, etc.')}
                 rows={3}
                 className="resize-none"
               />
             </div>
             <div>
-              <Label htmlFor="category">Type</Label>
+              <Label htmlFor="category">{t('Type')}</Label>
               <Select
                 value={newPoint.category}
                 onValueChange={(value) => setNewPoint(prev => ({ ...prev, category: value }))}
@@ -766,11 +768,11 @@ const MapView = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hospital">Veterinary Hospital</SelectItem>
-                  <SelectItem value="clinic">Veterinary Clinic</SelectItem>
-                  <SelectItem value="emergency">Emergency Vet</SelectItem>
-                  <SelectItem value="specialist">Specialist Vet</SelectItem>
-                  <SelectItem value="pharmacy">Veterinary Pharmacy</SelectItem>
+                  <SelectItem value="hospital">{t('Veterinary Hospital')}</SelectItem>
+                  <SelectItem value="clinic">{t('Veterinary Clinic')}</SelectItem>
+                  <SelectItem value="emergency">{t('Emergency Vet')}</SelectItem>
+                  <SelectItem value="specialist">{t('Specialist Vet')}</SelectItem>
+                  <SelectItem value="pharmacy">{t('Veterinary Pharmacy')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -780,14 +782,14 @@ const MapView = () => {
                 onClick={() => setShowAddDialog(false)}
                 className="order-2 sm:order-1"
               >
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button
                 onClick={addMapPoint}
                 disabled={!newPoint.title.trim()}
                 className="order-1 sm:order-2"
               >
-                Add Hospital
+                {t('Add Hospital')}
               </Button>
             </div>
           </div>
@@ -798,32 +800,32 @@ const MapView = () => {
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Veterinary Hospital</DialogTitle>
+            <DialogTitle>{t('Edit Veterinary Hospital')}</DialogTitle>
           </DialogHeader>
           {editingPoint && (
             <div className="space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
-                <Label htmlFor="edit-title">Hospital Name</Label>
+                <Label htmlFor="edit-title">{t('Hospital Name')}</Label>
                 <Input
                   id="edit-title"
                   value={editingPoint.title}
                   onChange={(e) => setEditingPoint(prev => prev ? { ...prev, title: e.target.value } : null)}
-                  placeholder="Enter hospital name"
+                  placeholder={t('Enter hospital name')}
                 />
               </div>
               <div>
-                <Label htmlFor="edit-description">Description (Optional)</Label>
+                <Label htmlFor="edit-description">{t('Description (Optional)')}</Label>
                 <Textarea
                   id="edit-description"
                   value={editingPoint.description || ''}
                   onChange={(e) => setEditingPoint(prev => prev ? { ...prev, description: e.target.value } : null)}
-                  placeholder="Enter hospital description, services, contact info, etc."
+                  placeholder={t('Enter hospital description, services, contact info, etc.')}
                   rows={3}
                   className="resize-none"
                 />
               </div>
               <div>
-                <Label htmlFor="edit-category">Type</Label>
+                <Label htmlFor="edit-category">{t('Type')}</Label>
                 <Select
                   value={editingPoint.category}
                   onValueChange={(value) => setEditingPoint(prev => prev ? { ...prev, category: value } : null)}
@@ -832,17 +834,17 @@ const MapView = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hospital">Veterinary Hospital</SelectItem>
-                    <SelectItem value="clinic">Veterinary Clinic</SelectItem>
-                    <SelectItem value="emergency">Emergency Vet</SelectItem>
-                    <SelectItem value="specialist">Specialist Vet</SelectItem>
-                    <SelectItem value="pharmacy">Veterinary Pharmacy</SelectItem>
+                    <SelectItem value="hospital">{t('Veterinary Hospital')}</SelectItem>
+                    <SelectItem value="clinic">{t('Veterinary Clinic')}</SelectItem>
+                    <SelectItem value="emergency">{t('Emergency Vet')}</SelectItem>
+                    <SelectItem value="specialist">{t('Specialist Vet')}</SelectItem>
+                    <SelectItem value="pharmacy">{t('Veterinary Pharmacy')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="edit-latitude">Latitude</Label>
+                  <Label htmlFor="edit-latitude">{t('Latitude')}</Label>
                   <Input
                     id="edit-latitude"
                     type="number"
@@ -852,7 +854,7 @@ const MapView = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-longitude">Longitude</Label>
+                  <Label htmlFor="edit-longitude">{t('Longitude')}</Label>
                   <Input
                     id="edit-longitude"
                     type="number"
@@ -868,14 +870,14 @@ const MapView = () => {
                   onClick={() => setShowEditDialog(false)}
                   className="order-2 sm:order-1"
                 >
-                  Cancel
+                  {t('Cancel')}
                 </Button>
                 <Button
                   onClick={updateMapPoint}
                   disabled={!editingPoint.title.trim()}
                   className="order-1 sm:order-2"
                 >
-                  Update Hospital
+                  {t('Update Hospital')}
                 </Button>
               </div>
             </div>
@@ -888,10 +890,10 @@ const MapView = () => {
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={deleteMapPoint}
-        title="Delete Veterinary Hospital"
-        description={`Are you sure you want to delete "${deletingPoint?.title}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('Delete Veterinary Hospital')}
+        description={`${t('Are you sure you want to delete')} "${deletingPoint?.title}"? ${t('This action cannot be undone.')}`}
+        confirmText={t('Delete')}
+        cancelText={t('Cancel')}
         variant="destructive"
       />
     </div>
