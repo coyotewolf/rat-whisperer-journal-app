@@ -185,28 +185,34 @@ const MapView = () => {
       const marker = new mapboxgl.Marker({ element: customElement })
         .setLngLat([lng, lat])
         .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
+          new mapboxgl.Popup({ 
+            offset: 25,
+            maxWidth: '90vw',
+            className: 'mobile-friendly-popup'
+          })
             .setHTML(`
-              <div class="p-3 min-w-[250px]">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="text-lg">${getCategoryIcon(point.category)}</span>
-                  <h3 class="font-semibold text-base">${point.title}</h3>
+              <div class="p-3 min-w-0 max-w-[320px]">
+                <div class="flex items-start gap-2 mb-2">
+                  <span class="text-lg flex-shrink-0">${getCategoryIcon(point.category)}</span>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-base leading-tight break-words">${point.title}</h3>
+                  </div>
                 </div>
-                ${point.description ? `<p class="text-sm text-muted-foreground mb-2">${point.description}</p>` : ''}
+                ${point.description ? `<p class="text-sm text-gray-600 mb-2 leading-relaxed break-words">${point.description}</p>` : ''}
                 <div class="flex items-center gap-2 mb-3">
-                  <span class="text-xs px-2 py-1 rounded-full text-white" style="background-color: ${getCategoryColor(point.category)}">${point.category}</span>
+                  <span class="text-xs px-2 py-1 rounded-full text-white flex-shrink-0" style="background-color: ${getCategoryColor(point.category)}">${point.category}</span>
                 </div>
                 ${isTester ? `
-                  <div class="flex gap-2 pt-2 border-t">
+                  <div class="flex flex-wrap gap-2 pt-2 border-t">
                     <button 
                       onclick="window.editMapPoint('${point.id}')" 
-                      class="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                      class="flex items-center gap-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                     >
                       <span>✏️</span> Edit
                     </button>
                     <button 
                       onclick="window.deleteMapPoint('${point.id}')" 
-                      class="flex items-center gap-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                      class="flex items-center gap-1 px-3 py-2 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >
                       <span>🗑️</span> Delete
                     </button>
@@ -488,32 +494,38 @@ const MapView = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Veterinary Hospital Map</h2>
-          <p className="text-sm text-muted-foreground">
+      {/* Header section with responsive layout */}
+      <div className="space-y-4 sm:space-y-0 sm:flex sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl sm:text-2xl font-bold truncate">Veterinary Hospital Map</h2>
+          <p className="text-sm text-muted-foreground mt-1">
             {isLoadingRole ? 'Loading...' : 
               isTester ? 'Tester - You can view and add veterinary hospitals' : 
               'User - You can view veterinary hospitals'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Mobile-friendly button layout */}
+        <div className="flex flex-wrap items-center gap-2 sm:ml-4">
           <Button
             onClick={() => setShowDataPanel(!showDataPanel)}
             variant="outline"
             size="sm"
+            className="flex-shrink-0"
           >
-            <List className="w-4 h-4 mr-2" />
-            {showDataPanel ? 'Hide' : 'Show'} Data Points
+            <List className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">{showDataPanel ? 'Hide' : 'Show'} Data Points</span>
+            <span className="sm:hidden">{showDataPanel ? 'Hide' : 'List'}</span>
           </Button>
           <Button
             onClick={fetchMapboxToken}
             variant="outline"
             size="sm"
             disabled={isLoadingToken}
+            className="flex-shrink-0"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingToken ? 'animate-spin' : ''}`} />
-            Refresh Token
+            <RefreshCw className={`w-4 h-4 ${isLoadingToken ? 'animate-spin' : ''} sm:mr-2`} />
+            <span className="hidden sm:inline">Refresh Token</span>
+            <span className="sm:hidden">Refresh</span>
           </Button>
           {isTester && (
             <Button
@@ -521,9 +533,11 @@ const MapView = () => {
               variant={isAddingPoint ? "destructive" : "default"}
               size="sm"
               disabled={isLoadingToken || !!tokenError || isLoadingRole}
+              className="flex-shrink-0"
             >
-              <MapPin className="w-4 h-4 mr-2" />
-              {isAddingPoint ? 'Cancel Adding' : 'Add Hospital'}
+              <MapPin className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{isAddingPoint ? 'Cancel Adding' : 'Add Hospital'}</span>
+              <span className="sm:hidden">{isAddingPoint ? 'Cancel' : 'Add'}</span>
             </Button>
           )}
         </div>
@@ -601,13 +615,14 @@ const MapView = () => {
       {showDataPanel && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <span>Map Data Points ({mapData.length})</span>
               {isTester && (
                 <Button
                   onClick={() => setIsAddingPoint(true)}
                   size="sm"
                   disabled={isLoadingToken || !!tokenError}
+                  className="self-start sm:self-auto"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add New
@@ -619,32 +634,33 @@ const MapView = () => {
             {mapData.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No veterinary hospitals added yet.</p>
             ) : (
-              <div className="space-y-3 max-h-80 overflow-y-auto">
+              <div className="space-y-3 max-h-60 sm:max-h-80 overflow-y-auto">
                 {mapData.map((point) => (
-                  <div key={point.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
+                  <div key={point.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-3">
+                    <div className="flex-1 min-w-0">
                        <div className="flex items-center gap-2 mb-1">
-                         <span className="text-lg">{getCategoryIcon(point.category)}</span>
-                         <h4 className="font-medium">{point.title}</h4>
-                         <Badge variant="secondary" style={{ backgroundColor: getCategoryColor(point.category), color: 'white' }}>
+                         <span className="text-lg flex-shrink-0">{getCategoryIcon(point.category)}</span>
+                         <h4 className="font-medium truncate">{point.title}</h4>
+                         <Badge variant="secondary" style={{ backgroundColor: getCategoryColor(point.category), color: 'white' }} className="flex-shrink-0">
                            {point.category}
                          </Badge>
                        </div>
                       {point.description && (
-                        <p className="text-sm text-muted-foreground mb-1">{point.description}</p>
+                        <p className="text-sm text-muted-foreground mb-1 line-clamp-2">{point.description}</p>
                       )}
                       <p className="text-xs text-muted-foreground">
-                        Location: {point.latitude.toFixed(6)}, {point.longitude.toFixed(6)}
+                        Location: {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
                       </p>
                     </div>
                     {isTester && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
                           onClick={() => handleEditPoint(point.id)}
                           variant="outline"
                           size="sm"
                         >
                           <Edit className="w-4 h-4" />
+                          <span className="sr-only">Edit</span>
                         </Button>
                         <Button
                           onClick={() => handleDeletePoint(point.id)}
@@ -652,6 +668,7 @@ const MapView = () => {
                           size="sm"
                         >
                           <Trash2 className="w-4 h-4" />
+                          <span className="sr-only">Delete</span>
                         </Button>
                       </div>
                     )}
@@ -667,18 +684,18 @@ const MapView = () => {
         <CardContent className="p-0">
           <div 
             ref={mapContainer} 
-            className="h-[500px] w-full rounded-lg"
+            className="h-[300px] sm:h-[400px] md:h-[500px] w-full rounded-lg"
             style={{ cursor: isAddingPoint ? 'crosshair' : 'default' }}
           />
         </CardContent>
       </Card>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Veterinary Hospital</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
             <div>
               <Label htmlFor="title">Hospital Name</Label>
               <Input
@@ -696,6 +713,7 @@ const MapView = () => {
                 onChange={(e) => setNewPoint(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Enter hospital description, services, contact info, etc."
                 rows={3}
+                className="resize-none"
               />
             </div>
             <div>
@@ -716,16 +734,18 @@ const MapView = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end space-x-2">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowAddDialog(false)}
+                className="order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button
                 onClick={addMapPoint}
                 disabled={!newPoint.title.trim()}
+                className="order-1 sm:order-2"
               >
                 Add Hospital
               </Button>
@@ -736,12 +756,12 @@ const MapView = () => {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Veterinary Hospital</DialogTitle>
           </DialogHeader>
           {editingPoint && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
                 <Label htmlFor="edit-title">Hospital Name</Label>
                 <Input
@@ -759,6 +779,7 @@ const MapView = () => {
                   onChange={(e) => setEditingPoint(prev => prev ? { ...prev, description: e.target.value } : null)}
                   placeholder="Enter hospital description, services, contact info, etc."
                   rows={3}
+                  className="resize-none"
                 />
               </div>
               <div>
@@ -801,16 +822,18 @@ const MapView = () => {
                   />
                 </div>
               </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowEditDialog(false)}
+                  className="order-2 sm:order-1"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={updateMapPoint}
                   disabled={!editingPoint.title.trim()}
+                  className="order-1 sm:order-2"
                 >
                   Update Hospital
                 </Button>
