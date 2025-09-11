@@ -386,11 +386,23 @@ const MapView = () => {
     const icon = getCategoryIcon(category);
     const color = getCategoryColor(category);
     
+    // IMPORTANT: Do NOT set transform on the root element because Mapbox
+    // uses transform to position the marker. We'll animate a child instead.
     const el = document.createElement('div');
     el.className = 'custom-marker';
     el.style.cssText = `
       width: 40px;
       height: 40px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    `;
+
+    const inner = document.createElement('div');
+    inner.style.cssText = `
+      width: 100%;
+      height: 100%;
       background-color: ${color};
       border-radius: 50%;
       display: flex;
@@ -399,17 +411,19 @@ const MapView = () => {
       font-size: 18px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       border: 3px solid white;
-      cursor: pointer;
       transition: transform 0.2s ease;
+      transform: scale(1);
     `;
-    el.innerHTML = icon;
+    inner.innerHTML = icon;
+
+    el.appendChild(inner);
     
     el.addEventListener('mouseenter', () => {
-      el.style.transform = 'scale(1.1)';
+      inner.style.transform = 'scale(1.1)';
     });
     
     el.addEventListener('mouseleave', () => {
-      el.style.transform = 'scale(1)';
+      inner.style.transform = 'scale(1)';
     });
     
     return el;
