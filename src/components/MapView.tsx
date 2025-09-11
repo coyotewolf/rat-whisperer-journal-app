@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { MapPin, Plus, RefreshCw, Settings, Edit, Trash2, List } from 'lucide-react';
+import { MapPin, Plus, RefreshCw, Settings, Edit, Trash2, List, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -50,6 +50,9 @@ const MapView = () => {
   const [showDataPanel, setShowDataPanel] = useState(false);
   const [editingPoint, setEditingPoint] = useState<MapData | null>(null);
   const [deletingPoint, setDeletingPoint] = useState<MapData | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Fetch token from Supabase edge function
   const fetchMapboxToken = async () => {
@@ -156,19 +159,24 @@ const MapView = () => {
     const markers = document.querySelectorAll('.mapboxgl-marker');
     markers.forEach(marker => marker.remove());
 
-    // Add new markers
+    // Add new markers with custom icons
     mapData.forEach(point => {
-      const marker = new mapboxgl.Marker({
-        color: getCategoryColor(point.category)
-      })
+      const customElement = createCustomMarker(point.category);
+      
+      const marker = new mapboxgl.Marker({ element: customElement })
         .setLngLat([point.longitude, point.latitude])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 })
             .setHTML(`
               <div class="p-3 min-w-[250px]">
-                <h3 class="font-semibold text-base mb-2">${point.title}</h3>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-lg">${getCategoryIcon(point.category)}</span>
+                  <h3 class="font-semibold text-base">${point.title}</h3>
+                </div>
                 ${point.description ? `<p class="text-sm text-muted-foreground mb-2">${point.description}</p>` : ''}
-                <p class="text-xs text-muted-foreground mb-3">Category: ${point.category}</p>
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-xs px-2 py-1 rounded-full text-white" style="background-color: ${getCategoryColor(point.category)}">${point.category}</span>
+                </div>
                 ${isTester ? `
                   <div class="flex gap-2 pt-2 border-t">
                     <button 
@@ -326,6 +334,95 @@ const MapView = () => {
     return colors[category as keyof typeof colors] || colors.hospital;
   };
 
+  const getCategoryIcon = (category: string) => {
+    const icons = {
+      hospital: '🏥',
+      clinic: '🏥',
+      emergency: '🚑',
+      specialist: '👨‍⚕️',
+      pharmacy: '💊'
+    };
+    return icons[category as keyof typeof icons] || icons.hospital;
+  };
+
+  const createCustomMarker = (category: string) => {
+    const icon = getCategoryIcon(category);
+    const color = getCategoryColor(category);
+    
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    el.style.cssText = `
+      width: 40px;
+      height: 40px;
+      background-color: ${color};
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 3px solid white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    `;
+    el.innerHTML = icon;
+    
+    el.addEventListener('mouseenter', () => {
+      el.style.transform = 'scale(1.1)';
+    });
+    
+    el.addEventListener('mouseleave', () => {
+      el.style.transform = 'scale(1)';
+    });
+    
+    return el;
+  };
+
+  // Address search function
+  const searchAddress = async (query: string) => {
+    if (!query.trim() || !mapboxToken) return;
+    
+    setIsSearching(true);
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&country=tw&limit=5`
+      );
+      
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      setSearchResults(data.features || []);
+    } catch (error) {
+      console.error('Error searching address:', error);
+      toast.error('Address search failed');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectSearchResult = (result: any) => {
+    const [lng, lat] = result.center;
+    setNewPoint(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      title: prev.title || result.text || result.place_name
+    }));
+    
+    // Move map to selected location
+    if (map.current) {
+      map.current.flyTo({
+        center: [lng, lat],
+        zoom: 15
+      });
+    }
+    
+    setSearchResults([]);
+    setSearchQuery('');
+    setShowAddDialog(true);
+  };
+
   const isTester = userRole === 'tester';
 
   if (!user) {
@@ -432,12 +529,13 @@ const MapView = () => {
                 {mapData.map((point) => (
                   <div key={point.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{point.title}</h4>
-                        <Badge variant="secondary" style={{ backgroundColor: getCategoryColor(point.category), color: 'white' }}>
-                          {point.category}
-                        </Badge>
-                      </div>
+                       <div className="flex items-center gap-2 mb-1">
+                         <span className="text-lg">{getCategoryIcon(point.category)}</span>
+                         <h4 className="font-medium">{point.title}</h4>
+                         <Badge variant="secondary" style={{ backgroundColor: getCategoryColor(point.category), color: 'white' }}>
+                           {point.category}
+                         </Badge>
+                       </div>
                       {point.description && (
                         <p className="text-sm text-muted-foreground mb-1">{point.description}</p>
                       )}
@@ -482,11 +580,50 @@ const MapView = () => {
       </Card>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Add Veterinary Hospital</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="address-search">Search Address</Label>
+              <div className="relative">
+                <Input
+                  id="address-search"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.length > 2) {
+                      searchAddress(e.target.value);
+                    } else {
+                      setSearchResults([]);
+                    }
+                  }}
+                  placeholder="搜尋地址或地點名稱..."
+                  className="pr-10"
+                />
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                {isSearching && (
+                  <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  </div>
+                )}
+              </div>
+              {searchResults.length > 0 && (
+                <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+                  {searchResults.map((result, index) => (
+                    <button
+                      key={index}
+                      onClick={() => selectSearchResult(result)}
+                      className="w-full text-left p-2 hover:bg-muted text-sm border-b last:border-b-0"
+                    >
+                      <div className="font-medium">{result.text}</div>
+                      <div className="text-xs text-muted-foreground">{result.place_name}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div>
               <Label htmlFor="title">Hospital Name</Label>
               <Input
