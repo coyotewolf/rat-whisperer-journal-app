@@ -585,7 +585,12 @@
   "map": {
     "filterByCategory": "依類型篩選",
     "showAllCategories": "顯示全部",
-    "selectCategories": "選擇要顯示的醫院類型"
+    "selectCategories": "選擇要顯示的醫院類型",
+    "category": {
+      "clinic": "獸醫診所",
+      "emergency24h": "24H",
+      "exoticVet": "特寵獸醫"
+    }
   },
   "tools": {
     "title": "鼠類照護工具",

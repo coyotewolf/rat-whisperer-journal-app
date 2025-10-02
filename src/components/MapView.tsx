@@ -44,7 +44,7 @@ const MapView = () => {
   const [newPoint, setNewPoint] = useState({
     title: '',
     description: '',
-    category: 'hospital',
+        category: 'clinic',
     latitude: 0,
     longitude: 0
   });
@@ -58,7 +58,7 @@ const MapView = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
-    'hospital', 'clinic', 'emergency', 'specialist', 'pharmacy'
+    'clinic', 'emergency_24h', 'exotic_vet'
   ]);
 
   // Fetch token from Supabase edge function
@@ -313,7 +313,7 @@ const MapView = () => {
       setNewPoint({
         title: '',
         description: '',
-        category: 'hospital',
+        category: 'clinic',
         latitude: 0,
         longitude: 0
       });
@@ -402,24 +402,20 @@ const MapView = () => {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      hospital: '#EF4444',
       clinic: '#F59E0B',
-      emergency: '#DC2626',
-      specialist: '#3B82F6',
-      pharmacy: '#10B981'
+      emergency_24h: '#DC2626',
+      exotic_vet: '#8B5CF6'
     };
-    return colors[category as keyof typeof colors] || colors.hospital;
+    return colors[category as keyof typeof colors] || colors.clinic;
   };
 
   const getCategoryIcon = (category: string) => {
     const icons = {
-      hospital: '🏥',
       clinic: '🏥',
-      emergency: '🚑',
-      specialist: '👨‍⚕️',
-      pharmacy: '💊'
+      emergency_24h: '🚑',
+      exotic_vet: '🐭'
     };
-    return icons[category as keyof typeof icons] || icons.hospital;
+    return icons[category as keyof typeof icons] || icons.clinic;
   };
 
   const createCustomMarker = (category: string) => {
@@ -525,19 +521,17 @@ const MapView = () => {
   };
 
   const toggleAllCategories = () => {
-    if (selectedCategories.length === 5) {
+    if (selectedCategories.length === 3) {
       setSelectedCategories([]);
     } else {
-      setSelectedCategories(['hospital', 'clinic', 'emergency', 'specialist', 'pharmacy']);
+      setSelectedCategories(['clinic', 'emergency_24h', 'exotic_vet']);
     }
   };
 
   const categories = [
-    { value: 'hospital', label: t('Veterinary Hospital'), icon: '🏥', color: '#EF4444' },
-    { value: 'clinic', label: t('Veterinary Clinic'), icon: '🏥', color: '#F59E0B' },
-    { value: 'emergency', label: t('Emergency Vet'), icon: '🚑', color: '#DC2626' },
-    { value: 'specialist', label: t('Specialist Vet'), icon: '👨‍⚕️', color: '#3B82F6' },
-    { value: 'pharmacy', label: t('Veterinary Pharmacy'), icon: '💊', color: '#10B981' }
+    { value: 'clinic', label: t('map.category.clinic'), icon: '🏥', color: '#F59E0B' },
+    { value: 'emergency_24h', label: t('map.category.emergency24h'), icon: '🚑', color: '#DC2626' },
+    { value: 'exotic_vet', label: t('map.category.exoticVet'), icon: '🐭', color: '#8B5CF6' }
   ];
 
   const isTester = userRole === 'tester';
@@ -631,7 +625,7 @@ const MapView = () => {
                 size="sm"
                 className="h-8 text-xs"
               >
-                {selectedCategories.length === 5 ? t('Clear') : t('map.showAllCategories')}
+                {selectedCategories.length === 3 ? t('Clear') : t('map.showAllCategories')}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">{t('map.selectCategories')}</p>
@@ -856,11 +850,9 @@ const MapView = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hospital">{t('Veterinary Hospital')}</SelectItem>
-                  <SelectItem value="clinic">{t('Veterinary Clinic')}</SelectItem>
-                  <SelectItem value="emergency">{t('Emergency Vet')}</SelectItem>
-                  <SelectItem value="specialist">{t('Specialist Vet')}</SelectItem>
-                  <SelectItem value="pharmacy">{t('Veterinary Pharmacy')}</SelectItem>
+                  <SelectItem value="clinic">{t('map.category.clinic')}</SelectItem>
+                  <SelectItem value="emergency_24h">{t('map.category.emergency24h')}</SelectItem>
+                  <SelectItem value="exotic_vet">{t('map.category.exoticVet')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -922,11 +914,9 @@ const MapView = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hospital">{t('Veterinary Hospital')}</SelectItem>
-                    <SelectItem value="clinic">{t('Veterinary Clinic')}</SelectItem>
-                    <SelectItem value="emergency">{t('Emergency Vet')}</SelectItem>
-                    <SelectItem value="specialist">{t('Specialist Vet')}</SelectItem>
-                    <SelectItem value="pharmacy">{t('Veterinary Pharmacy')}</SelectItem>
+                    <SelectItem value="clinic">{t('map.category.clinic')}</SelectItem>
+                    <SelectItem value="emergency_24h">{t('map.category.emergency24h')}</SelectItem>
+                    <SelectItem value="exotic_vet">{t('map.category.exoticVet')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
