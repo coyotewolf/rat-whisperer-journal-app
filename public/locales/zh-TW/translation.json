@@ -587,9 +587,9 @@
     "showAllCategories": "顯示全部",
     "selectCategories": "選擇要顯示的醫院類型",
     "category": {
-      "clinic": "獸醫診所",
-      "emergency24h": "24H",
-      "exoticVet": "特寵獸醫"
+      "general": "一般",
+      "24h": "24H",
+      "exotic": "特寵"
     }
   },
   "tools": {

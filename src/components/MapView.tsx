@@ -529,9 +529,9 @@ const MapView = () => {
   };
 
   const categories = [
-    { value: 'clinic', label: t('map.category.clinic'), icon: '🏥', color: '#F59E0B' },
-    { value: 'emergency_24h', label: t('map.category.emergency24h'), icon: '🚑', color: '#DC2626' },
-    { value: 'exotic_vet', label: t('map.category.exoticVet'), icon: '🐭', color: '#8B5CF6' }
+    { value: 'clinic', label: t('map.category.general'), icon: '🏥', color: '#F59E0B' },
+    { value: 'emergency_24h', label: t('map.category.24h'), icon: '🚑', color: '#DC2626' },
+    { value: 'exotic_vet', label: t('map.category.exotic'), icon: '🐭', color: '#8B5CF6' }
   ];
 
   const isTester = userRole === 'tester';
@@ -856,9 +856,9 @@ const MapView = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="clinic">{t('map.category.clinic')}</SelectItem>
-                  <SelectItem value="emergency_24h">{t('map.category.emergency24h')}</SelectItem>
-                  <SelectItem value="exotic_vet">{t('map.category.exoticVet')}</SelectItem>
+                  <SelectItem value="clinic">{t('map.category.general')}</SelectItem>
+                  <SelectItem value="emergency_24h">{t('map.category.24h')}</SelectItem>
+                  <SelectItem value="exotic_vet">{t('map.category.exotic')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -921,9 +921,9 @@ const MapView = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="clinic">{t('map.category.clinic')}</SelectItem>
-                    <SelectItem value="emergency_24h">{t('map.category.emergency24h')}</SelectItem>
-                    <SelectItem value="exotic_vet">{t('map.category.exoticVet')}</SelectItem>
+                    <SelectItem value="clinic">{t('map.category.general')}</SelectItem>
+                    <SelectItem value="emergency_24h">{t('map.category.24h')}</SelectItem>
+                    <SelectItem value="exotic_vet">{t('map.category.exotic')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
