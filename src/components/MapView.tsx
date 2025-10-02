@@ -646,7 +646,7 @@ const MapView = () => {
                   } : {}}
                 >
                   <span className="text-sm sm:text-base">{category.icon}</span>
-                  <span className="font-medium hidden xs:inline sm:inline">{category.label}</span>
+                  <span className="font-medium">{category.label}</span>
                   {selectedCategories.includes(category.value) && (
                     <span className="text-xs">✓</span>
                   )}
