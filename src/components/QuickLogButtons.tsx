@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Droplets, UtensilsCrossed, Trash2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,47 +80,57 @@ const QuickLogButtons = () => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-2">
-      <Button
-        variant="outline"
-        className="flex flex-col items-center gap-1 h-auto py-3 px-2"
-        onClick={() => handleQuickLog('feeding', 'Added Food')}
-        disabled={loading === 'feeding'}
-      >
-        <UtensilsCrossed className="h-5 w-5" />
-        <span className="text-xs">{t('Add Food')}</span>
-      </Button>
-      
-      <Button
-        variant="outline"
-        className="flex flex-col items-center gap-1 h-auto py-3 px-2"
-        onClick={() => handleQuickLog('water', 'Changed Water')}
-        disabled={loading === 'water'}
-      >
-        <Droplets className="h-5 w-5" />
-        <span className="text-xs">{t('Change Water')}</span>
-      </Button>
-      
-      <Button
-        variant="outline"
-        className="flex flex-col items-center gap-1 h-auto py-3 px-2"
-        onClick={() => handleQuickLog('cage_cleaning', 'Cleaned Cage')}
-        disabled={loading === 'cage_cleaning'}
-      >
-        <Sparkles className="h-5 w-5" />
-        <span className="text-xs">{t('Clean Cage')}</span>
-      </Button>
-      
-      <Button
-        variant="outline"
-        className="flex flex-col items-center gap-1 h-auto py-3 px-2"
-        onClick={() => handleQuickLog('litter_cleaning', 'Cleaned Litter')}
-        disabled={loading === 'litter_cleaning'}
-      >
-        <Trash2 className="h-5 w-5" />
-        <span className="text-xs">{t('Clean Litter')}</span>
-      </Button>
-    </div>
+    <Card className="bg-card border-border shadow-xl">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <Sparkles className="h-5 w-5 text-primary" />
+          {t('Quick Actions')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 h-auto py-3"
+            onClick={() => handleQuickLog('feeding', 'Added Food')}
+            disabled={loading === 'feeding'}
+          >
+            <UtensilsCrossed className="h-4 w-4" />
+            <span className="text-xs">{t('Add Food')}</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 h-auto py-3"
+            onClick={() => handleQuickLog('water', 'Changed Water')}
+            disabled={loading === 'water'}
+          >
+            <Droplets className="h-4 w-4" />
+            <span className="text-xs">{t('Change Water')}</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 h-auto py-3"
+            onClick={() => handleQuickLog('cage_cleaning', 'Cleaned Cage')}
+            disabled={loading === 'cage_cleaning'}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="text-xs">{t('Clean Cage')}</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 h-auto py-3"
+            onClick={() => handleQuickLog('litter_cleaning', 'Cleaned Litter')}
+            disabled={loading === 'litter_cleaning'}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="text-xs">{t('Clean Litter')}</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
