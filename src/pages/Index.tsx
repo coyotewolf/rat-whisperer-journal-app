@@ -8,8 +8,6 @@ import EditLogModal from "@/components/EditLogModal";
 import LogDetailModal from "@/components/LogDetailModal";
 import IndexHeader from "@/components/IndexHeader";
 import QuickActions from "@/components/QuickActions";
-import QuickLogButtons from "@/components/QuickLogButtons";
-import SmartReminders from "@/components/SmartReminders";
 import UpcomingTasks from "@/components/UpcomingTasks";
 import RecentActivities from "@/components/RecentActivities";
 import { useTasks, type Task } from "@/hooks/useTasks";
@@ -124,22 +122,14 @@ const Index = () => {
       <IndexHeader onSettingsClick={() => setIsSettingsOpen(true)} />
 
       <div className="relative p-4">
-        <div className="mb-6">
-          <AlertCards />
-        </div>
-
-        <div className="mb-6">
-          <QuickLogButtons />
-        </div>
-
-        <div className="mb-6">
-          <SmartReminders />
-        </div>
-
         <QuickActions 
           onQuickLogClick={() => setIsQuickLogOpen(true)}
           onNewTaskClick={() => setIsNewTaskOpen(true)}
         />
+
+        <div className="mb-6">
+          <AlertCards />
+        </div>
 
         <UpcomingTasks
           tasks={tasks}
