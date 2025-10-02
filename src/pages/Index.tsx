@@ -7,7 +7,6 @@ import AlertCards from "@/components/AlertCards";
 import EditLogModal from "@/components/EditLogModal";
 import LogDetailModal from "@/components/LogDetailModal";
 import IndexHeader from "@/components/IndexHeader";
-import QuickActions from "@/components/QuickActions";
 import QuickLogButtons from "@/components/QuickLogButtons";
 import SmartReminders from "@/components/SmartReminders";
 import UpcomingTasks from "@/components/UpcomingTasks";
@@ -136,11 +135,6 @@ const Index = () => {
           <SmartReminders />
         </div>
 
-        <QuickActions 
-          onQuickLogClick={() => setIsQuickLogOpen(true)}
-          onNewTaskClick={() => setIsNewTaskOpen(true)}
-        />
-
         <UpcomingTasks
           tasks={tasks}
           loading={loading}
@@ -150,13 +144,15 @@ const Index = () => {
           onToggleTaskCompletion={toggleTaskCompletion}
         />
 
-        <RecentActivities
-          recentActivities={recentActivities}
-          loading={!initialLoadComplete}
-          onLogCardClick={handleLogCardClick}
-          onEditActivity={handleEditActivity}
-          onQuickLogClick={() => setIsQuickLogOpen(true)}
-        />
+        {recentActivities.length > 0 && (
+          <RecentActivities
+            recentActivities={recentActivities}
+            loading={!initialLoadComplete}
+            onLogCardClick={handleLogCardClick}
+            onEditActivity={handleEditActivity}
+            onQuickLogClick={() => setIsQuickLogOpen(true)}
+          />
+        )}
       </div>
 
       <BottomNav />
