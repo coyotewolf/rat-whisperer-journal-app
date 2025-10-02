@@ -95,6 +95,36 @@ export type Database = {
         }
         Relationships: []
       }
+      health_alerts_cache: {
+        Row: {
+          analysis_data: Json
+          created_at: string
+          id: string
+          last_log_timestamp: string
+          log_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_data: Json
+          created_at?: string
+          id?: string
+          last_log_timestamp: string
+          log_count: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json
+          created_at?: string
+          id?: string
+          last_log_timestamp?: string
+          log_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hierarchy_analysis_cache: {
         Row: {
           analysis_data: Json
@@ -380,6 +410,42 @@ export type Database = {
           profile_picture?: string | null
           sex?: string
           status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reminder_settings: {
+        Row: {
+          created_at: string
+          custom_message: string | null
+          enabled: boolean
+          frequency_days: number
+          id: string
+          priority: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_message?: string | null
+          enabled?: boolean
+          frequency_days: number
+          id?: string
+          priority: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_message?: string | null
+          enabled?: boolean
+          frequency_days?: number
+          id?: string
+          priority?: string
+          type?: string
           updated_at?: string
           user_id?: string
         }

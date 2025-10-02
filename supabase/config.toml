@@ -1,1 +1,16 @@
 project_id = "nqellorkzgnbijkpyelf"
+
+[functions.hierarchy-analysis]
+verify_jwt = true
+
+[functions.daily-interaction-survey]
+verify_jwt = true
+
+[functions.delete_user_by_id]
+verify_jwt = true
+
+[functions.get-mapbox-token]
+verify_jwt = true
+
+[functions.health-alerts-analysis]
+verify_jwt = true
