@@ -613,39 +613,44 @@ const MapView = () => {
         </Alert>
       )}
 
-      {/* Category Filter */}
+      {/* Category Filter - Compact for mobile */}
       <Card>
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">{t('map.filterByCategory')}</Label>
+        <CardContent className="p-3 sm:p-4">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-xs sm:text-sm font-semibold">{t('map.filterByCategory')}</Label>
               <Button
                 onClick={toggleAllCategories}
                 variant="ghost"
                 size="sm"
-                className="h-8 text-xs"
+                className="h-7 sm:h-8 text-xs px-2 sm:px-3"
               >
                 {selectedCategories.length === 3 ? t('Clear') : t('map.showAllCategories')}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">{t('map.selectCategories')}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {categories.map((category) => (
-                <button
+                <Badge
                   key={category.value}
                   onClick={() => toggleCategory(category.value)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                  variant={selectedCategories.includes(category.value) ? "default" : "outline"}
+                  className={`cursor-pointer flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm transition-all ${
                     selectedCategories.includes(category.value)
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border bg-background hover:border-primary/50'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'bg-background hover:bg-muted'
                   }`}
+                  style={selectedCategories.includes(category.value) ? {
+                    backgroundColor: category.color,
+                    borderColor: category.color,
+                    color: 'white'
+                  } : {}}
                 >
-                  <span className="text-lg">{category.icon}</span>
-                  <span className="text-sm font-medium">{category.label}</span>
+                  <span className="text-sm sm:text-base">{category.icon}</span>
+                  <span className="font-medium hidden xs:inline sm:inline">{category.label}</span>
                   {selectedCategories.includes(category.value) && (
-                    <span className="text-primary text-xs">✓</span>
+                    <span className="text-xs">✓</span>
                   )}
-                </button>
+                </Badge>
               ))}
             </div>
           </div>
@@ -654,14 +659,14 @@ const MapView = () => {
 
       {isTester && isAddingPoint && (
         <Card>
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+          <CardContent className="p-3 sm:p-4">
+            <div className="space-y-3 sm:space-y-4">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {t('Click anywhere on the map to add a new veterinary hospital, or search for an address below:')}
               </p>
               
               <div className="space-y-2">
-                <Label htmlFor="map-address-search">{t('Search Address to Add Hospital')}</Label>
+                <Label htmlFor="map-address-search" className="text-sm">{t('Search Address to Add Hospital')}</Label>
                 <div className="relative">
                   <Input
                     id="map-address-search"
@@ -675,26 +680,26 @@ const MapView = () => {
                       }
                     }}
                     placeholder="搜尋地址或地點名稱..."
-                    className="pr-10"
+                    className="pr-10 text-sm"
                   />
                   <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   {isSearching && (
                     <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                     </div>
                   )}
                 </div>
                 
                 {searchResults.length > 0 && (
-                  <div className="border rounded-md max-h-40 overflow-y-auto">
+                  <div className="border rounded-md max-h-48 overflow-y-auto shadow-sm">
                     {searchResults.map((result, index) => (
                       <button
                         key={index}
                         onClick={() => selectSearchResult(result)}
-                        className="w-full text-left p-2 hover:bg-muted text-sm border-b last:border-b-0"
+                        className="w-full text-left p-2.5 sm:p-3 hover:bg-muted text-sm border-b last:border-b-0 transition-colors"
                       >
-                        <div className="font-medium">{result.text}</div>
-                        <div className="text-xs text-muted-foreground">{result.place_name}</div>
+                        <div className="font-medium text-sm sm:text-base">{result.text}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{result.place_name}</div>
                       </button>
                     ))}
                   </div>
@@ -707,9 +712,9 @@ const MapView = () => {
 
       {showDataPanel && (
         <Card>
-          <CardHeader>
+          <CardHeader className="p-3 sm:p-6">
             <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <span>{t('Map Data Points')} ({mapData.filter(p => selectedCategories.includes(p.category)).length})</span>
+              <span className="text-base sm:text-lg">{t('Map Data Points')} ({mapData.filter(p => selectedCategories.includes(p.category)).length})</span>
               {isTester && (
                 <Button
                   onClick={() => setIsAddingPoint(true)}
@@ -723,26 +728,26 @@ const MapView = () => {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             {mapData.filter(p => selectedCategories.includes(p.category)).length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">{t('No veterinary hospitals added yet.')}</p>
+              <p className="text-muted-foreground text-center py-8 text-sm">{t('No veterinary hospitals added yet.')}</p>
             ) : (
-              <div className="space-y-4 max-h-60 sm:max-h-80 overflow-y-auto">
+              <div className="space-y-3 sm:space-y-4 max-h-[50vh] sm:max-h-80 overflow-y-auto pr-1">
                 {mapData.filter(p => selectedCategories.includes(p.category)).map((point) => (
-                  <div key={point.id} className="group relative bg-card border border-border rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:border-primary/20">
-                    <div className="space-y-3">
+                  <div key={point.id} className="group relative bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-all duration-200 hover:border-primary/20">
+                    <div className="space-y-2 sm:space-y-3">
                       {/* Header with icon, title, and category badge */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-semibold" 
+                      <div className="flex items-start justify-between gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                          <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-base sm:text-lg font-semibold" 
                                style={{ backgroundColor: getCategoryColor(point.category) }}>
                             {getCategoryIcon(point.category)}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-semibold text-foreground text-base leading-tight mb-1 break-words">{point.title}</h4>
+                            <h4 className="font-semibold text-foreground text-sm sm:text-base leading-tight mb-1 break-words">{point.title}</h4>
                             <Badge 
                               variant="secondary" 
-                              className="text-xs font-medium px-2 py-1"
+                              className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1"
                               style={{ 
                                 backgroundColor: `${getCategoryColor(point.category)}20`,
                                 color: getCategoryColor(point.category),
@@ -754,23 +759,23 @@ const MapView = () => {
                           </div>
                         </div>
                         {isTester && (
-                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <div className="flex items-center gap-1 flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                             <Button
                               onClick={() => handleEditPoint(point.id)}
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-primary/10"
+                              className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-primary/10"
                             >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span className="sr-only">{t('Edit')}</span>
                             </Button>
                             <Button
                               onClick={() => handleDeletePoint(point.id)}
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                              className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
                             >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span className="sr-only">{t('Delete')}</span>
                             </Button>
                           </div>
@@ -779,17 +784,17 @@ const MapView = () => {
                       
                       {/* Description */}
                       {point.description && (
-                        <div className="pl-12">
-                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 break-words">
+                        <div className="pl-10 sm:pl-12">
+                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 break-words">
                             {point.description}
                           </p>
                         </div>
                       )}
                       
                       {/* Location coordinates */}
-                      <div className="pl-12">
-                        <div className="inline-flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-md">
-                          <MapPin className="w-3 h-3 text-muted-foreground" />
+                      <div className="pl-10 sm:pl-12">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-muted/50 rounded-md">
+                          <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                           <span className="text-xs text-muted-foreground font-mono">
                             {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
                           </span>
@@ -804,49 +809,50 @@ const MapView = () => {
         </Card>
       )}
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           <div 
             ref={mapContainer} 
-            className="h-[300px] sm:h-[400px] md:h-[500px] w-full rounded-lg"
+            className="h-[400px] sm:h-[450px] md:h-[550px] lg:h-[600px] w-full rounded-lg"
             style={{ cursor: isAddingPoint ? 'crosshair' : 'default' }}
           />
         </CardContent>
       </Card>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-md">
+        <DialogContent className="mx-2 sm:mx-4 max-w-[calc(100vw-1rem)] sm:max-w-md max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{t('Add Veterinary Hospital')}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">{t('Add Veterinary Hospital')}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-3 sm:space-y-4 max-h-[calc(90vh-120px)] overflow-y-auto px-1">
             <div>
-              <Label htmlFor="title">{t('Hospital Name')}</Label>
+              <Label htmlFor="title" className="text-sm">{t('Hospital Name')}</Label>
               <Input
                 id="title"
                 value={newPoint.title}
                 onChange={(e) => setNewPoint(prev => ({ ...prev, title: e.target.value }))}
                 placeholder={t('Enter hospital name')}
+                className="mt-1.5"
               />
             </div>
             <div>
-              <Label htmlFor="description">{t('Description (Optional)')}</Label>
+              <Label htmlFor="description" className="text-sm">{t('Description (Optional)')}</Label>
               <Textarea
                 id="description"
                 value={newPoint.description}
                 onChange={(e) => setNewPoint(prev => ({ ...prev, description: e.target.value }))}
                 placeholder={t('Enter hospital description, services, contact info, etc.')}
                 rows={3}
-                className="resize-none"
+                className="resize-none mt-1.5"
               />
             </div>
             <div>
-              <Label htmlFor="category">{t('Type')}</Label>
+              <Label htmlFor="category" className="text-sm">{t('Type')}</Label>
               <Select
                 value={newPoint.category}
                 onValueChange={(value) => setNewPoint(prev => ({ ...prev, category: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="mt-1.5">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -856,18 +862,18 @@ const MapView = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 sm:pt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowAddDialog(false)}
-                className="order-2 sm:order-1"
+                className="w-full sm:w-auto"
               >
                 {t('Cancel')}
               </Button>
               <Button
                 onClick={addMapPoint}
                 disabled={!newPoint.title.trim()}
-                className="order-1 sm:order-2"
+                className="w-full sm:w-auto"
               >
                 {t('Add Hospital')}
               </Button>
@@ -878,39 +884,40 @@ const MapView = () => {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-lg">
+        <DialogContent className="mx-2 sm:mx-4 max-w-[calc(100vw-1rem)] sm:max-w-lg max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{t('Edit Veterinary Hospital')}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">{t('Edit Veterinary Hospital')}</DialogTitle>
           </DialogHeader>
           {editingPoint && (
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-3 sm:space-y-4 max-h-[calc(90vh-120px)] overflow-y-auto px-1">
               <div>
-                <Label htmlFor="edit-title">{t('Hospital Name')}</Label>
+                <Label htmlFor="edit-title" className="text-sm">{t('Hospital Name')}</Label>
                 <Input
                   id="edit-title"
                   value={editingPoint.title}
                   onChange={(e) => setEditingPoint(prev => prev ? { ...prev, title: e.target.value } : null)}
                   placeholder={t('Enter hospital name')}
+                  className="mt-1.5"
                 />
               </div>
               <div>
-                <Label htmlFor="edit-description">{t('Description (Optional)')}</Label>
+                <Label htmlFor="edit-description" className="text-sm">{t('Description (Optional)')}</Label>
                 <Textarea
                   id="edit-description"
                   value={editingPoint.description || ''}
                   onChange={(e) => setEditingPoint(prev => prev ? { ...prev, description: e.target.value } : null)}
                   placeholder={t('Enter hospital description, services, contact info, etc.')}
                   rows={3}
-                  className="resize-none"
+                  className="resize-none mt-1.5"
                 />
               </div>
               <div>
-                <Label htmlFor="edit-category">{t('Type')}</Label>
+                <Label htmlFor="edit-category" className="text-sm">{t('Type')}</Label>
                 <Select
                   value={editingPoint.category}
                   onValueChange={(value) => setEditingPoint(prev => prev ? { ...prev, category: value } : null)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="mt-1.5">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -920,40 +927,18 @@ const MapView = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-latitude">{t('Latitude')}</Label>
-                  <Input
-                    id="edit-latitude"
-                    type="number"
-                    step="any"
-                    value={editingPoint.latitude}
-                    onChange={(e) => setEditingPoint(prev => prev ? { ...prev, latitude: parseFloat(e.target.value) || 0 } : null)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-longitude">{t('Longitude')}</Label>
-                  <Input
-                    id="edit-longitude"
-                    type="number"
-                    step="any"
-                    value={editingPoint.longitude}
-                    onChange={(e) => setEditingPoint(prev => prev ? { ...prev, longitude: parseFloat(e.target.value) || 0 } : null)}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 sm:pt-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowEditDialog(false)}
-                  className="order-2 sm:order-1"
+                  className="w-full sm:w-auto"
                 >
                   {t('Cancel')}
                 </Button>
                 <Button
                   onClick={updateMapPoint}
                   disabled={!editingPoint.title.trim()}
-                  className="order-1 sm:order-2"
+                  className="w-full sm:w-auto"
                 >
                   {t('Update Hospital')}
                 </Button>
