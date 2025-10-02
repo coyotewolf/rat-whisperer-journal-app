@@ -57,6 +57,9 @@ const MapView = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([
+    'hospital', 'clinic', 'emergency', 'specialist', 'pharmacy'
+  ]);
 
   // Fetch token from Supabase edge function
   const fetchMapboxToken = async () => {
@@ -189,8 +192,11 @@ const MapView = () => {
       markersRef.current = [];
     }
 
+    // Filter map data by selected categories
+    const filteredData = mapData.filter(point => selectedCategories.includes(point.category));
+
     // Add new markers with custom icons
-    mapData.forEach(point => {
+    filteredData.forEach(point => {
       if (!map.current) return;
 
       const lat = Number(point.latitude);
@@ -253,13 +259,15 @@ const MapView = () => {
         markersRef.current.push(marker);
       }
     });
-  }, [mapData, isMapReady]);
+  }, [mapData, isMapReady, selectedCategories]);
 
   // Auto-fit map to markers when data is available
   useEffect(() => {
     if (!map.current || !isMapReady || !mapData || mapData.length === 0) return;
+    const filteredData = mapData.filter(point => selectedCategories.includes(point.category));
+    if (filteredData.length === 0) return;
     const bounds = new mapboxgl.LngLatBounds();
-    mapData.forEach(p => {
+    filteredData.forEach(p => {
       const lat = Number(p.latitude);
       const lng = Number(p.longitude);
       if (!Number.isNaN(lat) && !Number.isNaN(lng)) bounds.extend([lng, lat]);
@@ -267,7 +275,7 @@ const MapView = () => {
     if (!bounds.isEmpty()) {
       map.current.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 500 });
     }
-  }, [isMapReady, mapData.length]);
+  }, [isMapReady, mapData.length, selectedCategories]);
 
   const loadMapData = async () => {
     try {
@@ -506,6 +514,32 @@ const MapView = () => {
     setShowAddDialog(true);
   };
 
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  const toggleAllCategories = () => {
+    if (selectedCategories.length === 5) {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(['hospital', 'clinic', 'emergency', 'specialist', 'pharmacy']);
+    }
+  };
+
+  const categories = [
+    { value: 'hospital', label: t('Veterinary Hospital'), icon: '🏥', color: '#EF4444' },
+    { value: 'clinic', label: t('Veterinary Clinic'), icon: '🏥', color: '#F59E0B' },
+    { value: 'emergency', label: t('Emergency Vet'), icon: '🚑', color: '#DC2626' },
+    { value: 'specialist', label: t('Specialist Vet'), icon: '👨‍⚕️', color: '#3B82F6' },
+    { value: 'pharmacy', label: t('Veterinary Pharmacy'), icon: '💊', color: '#10B981' }
+  ];
+
   const isTester = userRole === 'tester';
 
   if (!user) {
@@ -585,6 +619,45 @@ const MapView = () => {
         </Alert>
       )}
 
+      {/* Category Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">{t('map.filterByCategory')}</Label>
+              <Button
+                onClick={toggleAllCategories}
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+              >
+                {selectedCategories.length === 5 ? t('Clear') : t('map.showAllCategories')}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">{t('map.selectCategories')}</p>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category.value}
+                  onClick={() => toggleCategory(category.value)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                    selectedCategories.includes(category.value)
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-background hover:border-primary/50'
+                  }`}
+                >
+                  <span className="text-lg">{category.icon}</span>
+                  <span className="text-sm font-medium">{category.label}</span>
+                  {selectedCategories.includes(category.value) && (
+                    <span className="text-primary text-xs">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {isTester && isAddingPoint && (
         <Card>
           <CardContent className="p-4">
@@ -642,7 +715,7 @@ const MapView = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <span>{t('Map Data Points')} ({mapData.length})</span>
+              <span>{t('Map Data Points')} ({mapData.filter(p => selectedCategories.includes(p.category)).length})</span>
               {isTester && (
                 <Button
                   onClick={() => setIsAddingPoint(true)}
@@ -657,11 +730,11 @@ const MapView = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {mapData.length === 0 ? (
+            {mapData.filter(p => selectedCategories.includes(p.category)).length === 0 ? (
               <p className="text-muted-foreground text-center py-8">{t('No veterinary hospitals added yet.')}</p>
             ) : (
               <div className="space-y-4 max-h-60 sm:max-h-80 overflow-y-auto">
-                {mapData.map((point) => (
+                {mapData.filter(p => selectedCategories.includes(p.category)).map((point) => (
                   <div key={point.id} className="group relative bg-card border border-border rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:border-primary/20">
                     <div className="space-y-3">
                       {/* Header with icon, title, and category badge */}
