@@ -36,16 +36,11 @@ interface AppSettingsProviderProps {
 }
 
 export const AppSettingsProvider = ({ children }: AppSettingsProviderProps) => {
-  const { i18n } = useTranslation();
   const [settings, setSettings] = useState<AppSettings>(() => {
     const savedSettings = localStorage.getItem('ratTracker_settings');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        // Ensure language from localStorage is applied to i18n on initial load
-        if (parsed.language) {
-          i18n.changeLanguage(parsed.language);
-        }
         return { ...defaultSettings, ...parsed };
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -54,6 +49,16 @@ export const AppSettingsProvider = ({ children }: AppSettingsProviderProps) => {
     }
     return defaultSettings;
   });
+
+  // Safely access i18n after component mounts
+  const { i18n } = useTranslation();
+
+  // Apply language to i18n after it's initialized
+  useEffect(() => {
+    if (settings.language && i18n.isInitialized) {
+      i18n.changeLanguage(settings.language);
+    }
+  }, [settings.language, i18n]);
 
   useEffect(() => {
     // Apply settings to document
