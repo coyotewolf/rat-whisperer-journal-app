@@ -516,5 +516,26 @@
       "24h": "24H",
       "exotic": "Exotic Pet"
     }
-  }
+  },
+  "Start logging activities to track your rats health": "Start logging activities to track your rats health",
+  "{{ratName}} has been losing weight for 3 consecutive records": "{{ratName}} has been losing weight for 3 consecutive records",
+  "Unknown rat": "Unknown rat",
+  "{{ratNames}} health status: {{status}}": "{{ratNames}} health status: {{status}}",
+  "{{ratName}} showed aggressive behavior {{count}} times recently": "{{ratName}} showed aggressive behavior {{count}} times recently",
+  "{{ratNames}} has respiratory symptoms, please monitor closely": "{{ratNames}} has respiratory symptoms, please monitor closely",
+  "Everything looks good! All your rats are healthy and happy.": "Everything looks good! All your rats are healthy and happy.",
+  "Overdue task: {{taskTitles}}": "Overdue task: {{taskTitles}}",
+  "{{count}} overdue tasks including: {{taskTitles}}": "{{count}} overdue tasks including: {{taskTitles}}",
+  ", ": ", ",
+  "Last feeding was {{days}} day(s) ago, check food supply": "Last feeding was {{days}} day(s) ago, check food supply",
+  "No feeding records found, consider logging feeding activities": "No feeding records found, consider logging feeding activities",
+  "Cage was last cleaned {{days}} day(s) ago, consider cleaning soon": "Cage was last cleaned {{days}} day(s) ago, consider cleaning soon",
+  "Water was last changed {{days}} day(s) ago, please check water bottle": "Water was last changed {{days}} day(s) ago, please check water bottle",
+  "today": "today",
+  "tomorrow": "tomorrow",
+  "High priority task due {{time}}: {{title}}": "High priority task due {{time}}: {{title}}",
+  "Feed": "Feed",
+  "Water": "Water",
+  "Clean": "Clean",
+  "Error adding quick log:": "Error adding quick log:"
 }

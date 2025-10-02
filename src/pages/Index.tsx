@@ -10,12 +10,15 @@ import IndexHeader from "@/components/IndexHeader";
 import QuickActions from "@/components/QuickActions";
 import UpcomingTasks from "@/components/UpcomingTasks";
 import RecentActivities from "@/components/RecentActivities";
+import SmartReminders from "@/components/SmartReminders";
+import QuickLogFAB from "@/components/QuickLogFAB";
 import { useTasks, type Task } from "@/hooks/useTasks";
 import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useIndexModals } from "@/hooks/useIndexModals";
 import { useTranslation } from 'react-i18next';
 import { processRecentActivities } from "@/utils/activityUtils";
+import { generateSmartReminders } from "@/utils/smartTaskReminders";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -46,6 +49,7 @@ const Index = () => {
   } = useIndexModals();
 
   const recentActivities = processRecentActivities(logs, t);
+  const smartReminders = generateSmartReminders(logs, tasks, t);
 
   const handleNewLogEntry = async (logEntryDataFromModal: any) => {
     try {
@@ -117,6 +121,21 @@ const Index = () => {
     handleEditActivity({ originalLog: log });
   };
 
+  const handleQuickLogFromFAB = async (type: string, tag: string) => {
+    try {
+      const now = new Date().toISOString();
+      await addLog({
+        type: type,
+        ratIds: [],
+        notes: '',
+        hashtags: [tag],
+        updated_at: now,
+      });
+    } catch (error) {
+      console.error(t("Error adding quick log:"), error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 relative overflow-hidden">
       <IndexHeader onSettingsClick={() => setIsSettingsOpen(true)} />
@@ -128,7 +147,8 @@ const Index = () => {
         />
 
         <div className="mb-6">
-          <AlertCards />
+          <AlertCards logs={logs} />
+          <SmartReminders reminders={smartReminders} />
         </div>
 
         <UpcomingTasks
@@ -149,6 +169,7 @@ const Index = () => {
         />
       </div>
 
+      <QuickLogFAB onQuickLog={handleQuickLogFromFAB} />
       <BottomNav />
       <QuickLogModal
         isOpen={isQuickLogOpen}

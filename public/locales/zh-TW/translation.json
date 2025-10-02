@@ -597,5 +597,26 @@
     "subtitle": "最佳鼠類照護和監控的必備工具",
     "mobileNote": "行動功能說明",
     "mobileNoteDescription": "部分工具需要行動裝置感應器，並且在使用 Capacitor 行動應用程式版本時才能完全正常運作。"
-  }
+  },
+  "Start logging activities to track your rats health": "開始記錄活動以追蹤您的鼠鼠健康",
+  "{{ratName}} has been losing weight for 3 consecutive records": "{{ratName}} 連續 3 次記錄體重下降",
+  "Unknown rat": "未知的鼠鼠",
+  "{{ratNames}} health status: {{status}}": "{{ratNames}} 健康狀態：{{status}}",
+  "{{ratName}} showed aggressive behavior {{count}} times recently": "{{ratName}} 最近出現 {{count}} 次攻擊行為",
+  "{{ratNames}} has respiratory symptoms, please monitor closely": "{{ratNames}} 出現呼吸道症狀，請密切觀察",
+  "Everything looks good! All your rats are healthy and happy.": "一切良好！您的鼠鼠們都很健康快樂。",
+  "Overdue task: {{taskTitles}}": "逾期任務：{{taskTitles}}",
+  "{{count}} overdue tasks including: {{taskTitles}}": "{{count}} 個逾期任務，包括：{{taskTitles}}",
+  ", ": "、",
+  "Last feeding was {{days}} day(s) ago, check food supply": "上次餵食是 {{days}} 天前，請檢查食物供應",
+  "No feeding records found, consider logging feeding activities": "未找到餵食記錄，建議記錄餵食活動",
+  "Cage was last cleaned {{days}} day(s) ago, consider cleaning soon": "籠子上次清理是 {{days}} 天前，建議盡快清理",
+  "Water was last changed {{days}} day(s) ago, please check water bottle": "水上次更換是 {{days}} 天前，請檢查水瓶",
+  "today": "今天",
+  "tomorrow": "明天",
+  "High priority task due {{time}}: {{title}}": "高優先級任務 {{time}} 到期：{{title}}",
+  "Feed": "餵食",
+  "Water": "換水",
+  "Clean": "清理",
+  "Error adding quick log:": "添加快速日誌時出錯："
 }

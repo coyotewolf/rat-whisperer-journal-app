@@ -1,49 +1,27 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, CheckCircle, TrendingDown, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { AlertTriangle, CheckCircle, TrendingDown, AlertCircle, Info } from "lucide-react";
+import type { LogEntry } from "@/types/logEntry";
+import { analyzeHealthAlerts } from "@/utils/healthAnalysis";
+import { useTranslation } from "react-i18next";
 
-interface Alert {
-  id: string;
-  type: 'warning' | 'info' | 'success' | 'error';
-  message: string;
-  icon: React.ElementType;
+interface AlertCardsProps {
+  logs: LogEntry[];
 }
 
-const AlertCards = () => {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+const AlertCards = ({ logs }: AlertCardsProps) => {
+  const { t } = useTranslation();
+  const alerts = analyzeHealthAlerts(logs, t);
 
-  useEffect(() => {
-    // Mock alert data - in a real app, this would analyze actual rat data
-    const mockAlerts: Alert[] = [
-      {
-        id: '1',
-        type: 'warning',
-        message: 'Pepper has been losing weight for 3 consecutive days',
-        icon: TrendingDown
-      },
-      {
-        id: '2',
-        type: 'error',
-        message: 'Salt showed aggressive behavior 4 times this week',
-        icon: AlertTriangle
-      }
-    ];
-
-    // Simulate random alerts or show success message
-    const shouldShowAlerts = Math.random() > 0.5;
-    
-    if (shouldShowAlerts && mockAlerts.length > 0) {
-      setAlerts(mockAlerts.slice(0, Math.floor(Math.random() * mockAlerts.length) + 1));
-    } else {
-      setAlerts([{
-        id: 'success',
-        type: 'success',
-        message: 'Everything looks good! All your rats are healthy and happy.',
-        icon: CheckCircle
-      }]);
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'warning': return AlertTriangle;
+      case 'error': return AlertCircle;
+      case 'success': return CheckCircle;
+      case 'info': return Info;
+      default: return Info;
     }
-  }, []);
+  };
 
   const getAlertStyleClasses = (type: string) => { // Renamed and themed
     switch (type) {
@@ -65,13 +43,13 @@ const AlertCards = () => {
   return (
     <div className="space-y-2">
       {alerts.map((alert) => {
-        const Icon = alert.icon;
+        const Icon = getIcon(alert.type);
         return (
-          <Card key={alert.id} className={`bg-card border-border shadow-xl ${getAlertStyleClasses(alert.type)} border-2`}> {/* Themed Card */}
+          <Card key={alert.id} className={`bg-card border-border shadow-xl ${getAlertStyleClasses(alert.type)} border-2`}>
             <CardContent className="p-3">
               <div className="flex items-center gap-3">
-                <Icon className="h-5 w-5 flex-shrink-0" /> {/* Icon color will inherit from text color */}
-                <p className="text-sm font-medium">{alert.message}</p> {/* Text color will inherit from text color */}
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                <p className="text-sm font-medium">{alert.message}</p>
               </div>
             </CardContent>
           </Card>
