@@ -343,6 +343,45 @@ export type Database = {
         }
         Relationships: []
       }
+      quick_log_actions: {
+        Row: {
+          color: string
+          created_at: string
+          display_order: number
+          enabled: boolean
+          icon_name: string
+          id: string
+          log_type: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          display_order?: number
+          enabled?: boolean
+          icon_name: string
+          id?: string
+          log_type: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          display_order?: number
+          enabled?: boolean
+          icon_name?: string
+          id?: string
+          log_type?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       rat_rank_history: {
         Row: {
           analysis_time: string
