@@ -17,12 +17,21 @@ const SmartReminders = ({ reminders }: SmartRemindersProps) => {
     }
   };
 
+  const getBgColor = (type: string) => {
+    switch (type) {
+      case 'task': return 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800';
+      case 'care': return 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800';
+      case 'activity': return 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800';
+      default: return 'bg-muted/50 border-border';
+    }
+  };
+
   const getTextColor = (type: string) => {
     switch (type) {
-      case 'task': return 'text-blue-600 dark:text-blue-400';
-      case 'care': return 'text-orange-600 dark:text-orange-400';
-      case 'activity': return 'text-purple-600 dark:text-purple-400';
-      default: return 'text-muted-foreground';
+      case 'task': return 'text-blue-700 dark:text-blue-300';
+      case 'care': return 'text-orange-700 dark:text-orange-300';
+      case 'activity': return 'text-purple-700 dark:text-purple-300';
+      default: return 'text-foreground';
     }
   };
 
@@ -31,11 +40,15 @@ const SmartReminders = ({ reminders }: SmartRemindersProps) => {
       {reminders.map((reminder) => {
         const Icon = getIcon(reminder.type);
         const textColor = getTextColor(reminder.type);
+        const bgColor = getBgColor(reminder.type);
         
         return (
-          <div key={reminder.id} className="flex items-start gap-2 text-sm">
-            <Icon className={`h-4 w-4 flex-shrink-0 mt-0.5 ${textColor}`} />
-            <p className={`${textColor} font-medium`}>{reminder.message}</p>
+          <div 
+            key={reminder.id} 
+            className={`flex items-start gap-3 p-3 rounded-lg border ${bgColor} transition-colors`}
+          >
+            <Icon className={`h-5 w-5 flex-shrink-0 mt-0.5 ${textColor}`} />
+            <p className={`${textColor} text-sm leading-relaxed`}>{reminder.message}</p>
           </div>
         );
       })}

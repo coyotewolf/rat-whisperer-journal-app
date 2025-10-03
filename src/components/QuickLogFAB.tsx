@@ -17,9 +17,10 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
   if (!user) return null;
 
   const quickActions = [
-    { icon: Utensils, label: t("Feed"), tag: "feeding", color: "bg-green-500 hover:bg-green-600" },
-    { icon: Droplet, label: t("Water"), tag: "water change", color: "bg-blue-500 hover:bg-blue-600" },
-    { icon: Trash2, label: t("Clean"), tag: "cage clean", color: "bg-orange-500 hover:bg-orange-600" },
+    { icon: Utensils, label: t("Feed"), tag: "feeding" },
+    { icon: Droplet, label: t("Water"), tag: "water change" },
+    { icon: Trash2, label: t("Clean Cage"), tag: "cage clean" },
+    { icon: Trash2, label: t("Clean Toilet"), tag: "toilet clean" },
   ];
 
   const handleQuickLog = (tag: string) => {
@@ -49,7 +50,7 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
                 >
                   <Button
                     onClick={() => handleQuickLog(action.tag)}
-                    className={`${action.color} text-white shadow-lg rounded-full h-12 px-4 flex items-center gap-2`}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-full h-12 px-4 flex items-center gap-2"
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{action.label}</span>
@@ -65,9 +66,9 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
         onClick={() => setIsOpen(!isOpen)}
         className={`${
           isOpen 
-            ? "bg-red-500 hover:bg-red-600" 
+            ? "bg-destructive hover:bg-destructive/90" 
             : "bg-primary hover:bg-primary/90"
-        } text-white shadow-lg rounded-full h-14 w-14 p-0 transition-all duration-200`}
+        } text-primary-foreground shadow-lg rounded-full h-14 w-14 p-0 transition-all duration-200`}
       >
         {isOpen ? (
           <X className="h-6 w-6" />

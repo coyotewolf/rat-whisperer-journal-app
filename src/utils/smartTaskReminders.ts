@@ -26,8 +26,8 @@ export const generateSmartReminders = (
     reminders.push({
       id: 'overdue-tasks',
       message: overdueTasks.length === 1 
-        ? t('Overdue task: {{taskTitles}}', { taskTitles })
-        : t('{{count}} overdue tasks including: {{taskTitles}}', { count: overdueTasks.length, taskTitles }),
+        ? t('Hey! Don\'t forget about: {{taskTitles}}', { taskTitles })
+        : t('You have {{count}} tasks waiting, like: {{taskTitles}}', { count: overdueTasks.length, taskTitles }),
       type: 'task'
     });
   }
@@ -41,14 +41,14 @@ export const generateSmartReminders = (
     if (daysSinceFeeding >= 1) {
       reminders.push({
         id: 'feeding-reminder',
-        message: t('Last feeding was {{days}} day(s) ago, check food supply', { days: daysSinceFeeding }),
+        message: t('It\'s been {{days}} day(s) since last feeding, time to check the food bowl!', { days: daysSinceFeeding }),
         type: 'care'
       });
     }
   } else if (logs.length > 0) {
     reminders.push({
       id: 'no-feeding-logs',
-      message: t('No feeding records found, consider logging feeding activities'),
+      message: t('Haven\'t logged any feeding yet - try tracking when you feed your rats!'),
       type: 'care'
     });
   }
@@ -66,7 +66,7 @@ export const generateSmartReminders = (
     if (daysSinceCleaning >= 5) {
       reminders.push({
         id: 'cleaning-reminder',
-        message: t('Cage was last cleaned {{days}} day(s) ago, consider cleaning soon', { days: daysSinceCleaning }),
+        message: t('The cage was last cleaned {{days}} day(s) ago, time for a refresh!', { days: daysSinceCleaning }),
         type: 'care'
       });
     }
@@ -84,7 +84,7 @@ export const generateSmartReminders = (
     if (daysSinceWater >= 3) {
       reminders.push({
         id: 'water-reminder',
-        message: t('Water was last changed {{days}} day(s) ago, please check water bottle', { days: daysSinceWater }),
+        message: t('Water was last changed {{days}} day(s) ago, please check the water bottle!', { days: daysSinceWater }),
         type: 'care'
       });
     }
@@ -104,7 +104,7 @@ export const generateSmartReminders = (
       const timeText = daysUntilDue === 0 ? t('today') : t('tomorrow');
       reminders.push({
         id: `upcoming-${task.id}`,
-        message: t('High priority task due {{time}}: {{title}}', { time: timeText, title: task.title }),
+        message: t('Important: {{title}} is due {{time}}!', { time: timeText, title: task.title }),
         type: 'task'
       });
     });
