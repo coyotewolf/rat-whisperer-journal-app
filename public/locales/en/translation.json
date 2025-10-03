@@ -530,7 +530,7 @@
   "Last feeding was {{days}} day(s) ago, check food supply": "It's been {{days}} days since you logged feeding - time to check the food supply!",
   "No feeding records found, consider logging feeding activities": "No feeding records yet - remember to log feeding times!",
   "Cage was last cleaned {{days}} day(s) ago, consider cleaning soon": "Your cage hasn't been cleaned for {{days}} days - time for a cleanup!",
-  "Water was last changed {{days}} day(s) ago, please check water bottle": "You haven't changed the water for {{days}} days - check the water bottle!",
+  "Water was last changed {{days}} day(s) ago, please check water bottle": "{{days}} days without fresh water - check the water bottle!",
   "today": "today",
   "tomorrow": "tomorrow",
   "High priority task due {{time}}: {{title}}": "Important task due {{time}}: {{title}}",
