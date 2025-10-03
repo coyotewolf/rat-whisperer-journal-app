@@ -80,7 +80,7 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                     />
                   </div>
 
-                  {/* Default values based on log type */}
+                  {/* Default values based on log type and action name */}
                   {action.log_type === "feeding" && (
                     <div className="space-y-2">
                       <Label className="text-sm text-muted-foreground">
@@ -123,39 +123,22 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                     </div>
                   )}
 
-                  {action.log_type === "environment" && (
+                  {action.log_type === "environment" && action.name.toLowerCase() === "water" && (
                     <div className="space-y-2">
                       <Label className="text-sm text-muted-foreground">
                         {t("Default Values")}
                       </Label>
                       <Input
-                        type="number"
-                        placeholder={t("Temperature (°C)")}
-                        value={action.default_values?.temperature || ""}
+                        type="text"
+                        placeholder={t("Amount")}
+                        value={action.default_values?.amount || ""}
                         onChange={(e) =>
                           updateAction({
                             id: action.id,
                             updates: {
                               default_values: {
                                 ...action.default_values,
-                                temperature: e.target.value,
-                              },
-                            },
-                          })
-                        }
-                        disabled={!action.enabled}
-                      />
-                      <Input
-                        type="number"
-                        placeholder={t("Humidity (%)")}
-                        value={action.default_values?.humidity || ""}
-                        onChange={(e) =>
-                          updateAction({
-                            id: action.id,
-                            updates: {
-                              default_values: {
-                                ...action.default_values,
-                                humidity: e.target.value,
+                                amount: e.target.value,
                               },
                             },
                           })
