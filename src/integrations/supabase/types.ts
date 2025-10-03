@@ -347,6 +347,7 @@ export type Database = {
         Row: {
           color: string
           created_at: string
+          default_values: Json | null
           display_order: number
           enabled: boolean
           icon_name: string
@@ -359,6 +360,7 @@ export type Database = {
         Insert: {
           color?: string
           created_at?: string
+          default_values?: Json | null
           display_order?: number
           enabled?: boolean
           icon_name: string
@@ -371,6 +373,7 @@ export type Database = {
         Update: {
           color?: string
           created_at?: string
+          default_values?: Json | null
           display_order?: number
           enabled?: boolean
           icon_name?: string

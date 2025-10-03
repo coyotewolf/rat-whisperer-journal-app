@@ -1,3 +1,4 @@
+import { useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import QuickLogModal from "@/components/QuickLogModal";
 import SettingsModal from "@/components/SettingsModal";
@@ -131,19 +132,11 @@ const Index = () => {
     handleEditActivity({ originalLog: log });
   };
 
-  const handleQuickLogFromFAB = async (type: string, tag: string) => {
-    try {
-      const now = new Date().toISOString();
-      await addLog({
-        type: type,
-        ratIds: [],
-        notes: '',
-        hashtags: [tag],
-        updated_at: now,
-      });
-    } catch (error) {
-      console.error(t("Error adding quick log:"), error);
-    }
+  const [quickLogPreset, setQuickLogPreset] = useState<{ type: string; defaultValues?: Record<string, any> } | null>(null);
+
+  const handleQuickLogFromFAB = (action: { type: string; tag: string; defaultValues?: Record<string, any> }) => {
+    setQuickLogPreset({ type: action.type, defaultValues: action.defaultValues });
+    setIsQuickLogOpen(true);
   };
 
   return (
@@ -183,8 +176,13 @@ const Index = () => {
       <BottomNav />
       <QuickLogModal
         isOpen={isQuickLogOpen}
-        onClose={() => setIsQuickLogOpen(false)}
+        onClose={() => {
+          setIsQuickLogOpen(false);
+          setQuickLogPreset(null);
+        }}
         onLogCreated={handleNewLogEntry}
+        presetLogType={quickLogPreset?.type}
+        presetDefaultValues={quickLogPreset?.defaultValues}
       />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <TaskModal

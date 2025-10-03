@@ -25,9 +25,10 @@ interface LogEntryModalProps {
   onBack: () => void;
   logType: string;
   onLogAdded: (newLog: any) => void;
+  initialData?: Record<string, any>;
 }
 
-const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntryModalProps) => {
+const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded, initialData }: LogEntryModalProps) => {
   console.log('LogEntryModal rendered with logType:', logType);
   const [rats, setRats] = useState<any[]>([]);
   const [selectedRats, setSelectedRats] = useState<string[]>([]);
@@ -41,9 +42,19 @@ const LogEntryModal = ({ isOpen, onClose, onBack, logType, onLogAdded }: LogEntr
   useEffect(() => {
     if (user && isOpen) {
       fetchRats();
-      resetForm(); 
+      // Only reset form if there's no initial data
+      if (!initialData) {
+        resetForm();
+      }
     }
   }, [user, isOpen, logType]);
+
+  // Initialize form data with preset values
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setFormData(initialData);
+    }
+  }, [initialData, isOpen]);
 
   useEffect(() => {
     console.log("LogEntryModal: selectedRats changed to", selectedRats);

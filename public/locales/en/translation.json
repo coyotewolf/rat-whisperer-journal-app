@@ -553,5 +553,10 @@
   "days": "days",
   "Quick Log Actions": "Quick Log Actions",
   "Manage FAB quick actions": "Manage FAB quick actions",
-  "Manage your quick log action buttons": "Manage your quick log action buttons"
+  "Manage your quick log action buttons": "Manage your quick log action buttons",
+  "Action name": "Action name",
+  "Default Values": "Default Values",
+  "Default notes": "Default notes",
+  "Temperature (°C)": "Temperature (°C)",
+  "Humidity (%)": "Humidity (%)"
 }

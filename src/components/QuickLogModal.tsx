@@ -12,9 +12,11 @@ interface QuickLogModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogCreated?: (newLog: any) => void;
+  presetLogType?: string;
+  presetDefaultValues?: Record<string, any>;
 }
 
-const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) => {
+const QuickLogModal = ({ isOpen, onClose, onLogCreated, presetLogType, presetDefaultValues }: QuickLogModalProps) => {
   const [logEntryModalOpen, setLogEntryModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [selectedLogType, setSelectedLogType] = useState("");
@@ -22,6 +24,15 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // Auto-open LogEntryModal if preset values are provided
+  useEffect(() => {
+    if (isOpen && presetLogType && user) {
+      setSelectedLogType(presetLogType);
+      setLogEntryModalOpen(true);
+      setIsQuickLogVisible(false);
+    }
+  }, [isOpen, presetLogType, user]);
 
   const logTypes = [
     { type: "behavior", label: t("Behavior"), icon: Activity, bgColor: "bg-[hsl(217,70%,75%)]", textColor: "text-slate-800" },
@@ -128,10 +139,11 @@ const QuickLogModal = ({ isOpen, onClose, onLogCreated }: QuickLogModalProps) =>
 
       <LogEntryModal
         isOpen={logEntryModalOpen}
-        onClose={handleLogEntryOverlayOrSubmitClose} // For overlay/Esc/submit on LogEntryModal
-        onBack={handleLogEntryBackNavigation}       // For internal back button on LogEntryModal
+        onClose={handleLogEntryOverlayOrSubmitClose}
+        onBack={handleLogEntryBackNavigation}
         logType={selectedLogType}
         onLogAdded={onLogCreated}
+        initialData={presetDefaultValues}
       />
 
       <AuthModal

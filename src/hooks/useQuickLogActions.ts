@@ -11,6 +11,7 @@ export interface QuickLogAction {
   log_type: string;
   enabled: boolean;
   display_order: number;
+  default_values?: Record<string, any>;
 }
 
 export const useQuickLogActions = () => {

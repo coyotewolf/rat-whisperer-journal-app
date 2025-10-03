@@ -634,5 +634,10 @@
   "days": "天",
   "Quick Log Actions": "快速操作",
   "Manage FAB quick actions": "管理FAB快速操作",
-  "Manage your quick log action buttons": "管理快速記錄按鈕"
+  "Manage your quick log action buttons": "管理快速記錄按鈕",
+  "Action name": "操作名稱",
+  "Default Values": "預設值",
+  "Default notes": "預設備註",
+  "Temperature (°C)": "溫度 (°C)",
+  "Humidity (%)": "濕度 (%)"
 }
