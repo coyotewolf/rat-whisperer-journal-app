@@ -15,7 +15,7 @@ export const analyzeHealthAlerts = (logs: LogEntry[], t: (key: string, options?:
     return [{
       id: 'no-data',
       type: 'info',
-      message: t('Start recording daily activities to better understand your rats!')
+      message: t('Start logging activities to track your rats health')
     }];
   }
 
@@ -48,7 +48,7 @@ export const analyzeHealthAlerts = (logs: LogEntry[], t: (key: string, options?:
         alerts.push({
           id: `weight-loss-${ratId}`,
           type: 'warning',
-          message: t('{{ratName}} seems to be losing weight recently, maybe check if eating well?', { ratName }),
+          message: t('{{ratName}} has been losing weight for 3 consecutive records', { ratName }),
           ratName
         });
       }
@@ -65,7 +65,7 @@ export const analyzeHealthAlerts = (logs: LogEntry[], t: (key: string, options?:
       alerts.push({
         id: `health-${log.id}`,
         type: 'error',
-        message: t('{{ratNames}} is not feeling well ({{status}}), please keep a close eye on them!', { ratNames, status: log.status }),
+        message: t('{{ratNames}} health status: {{status}}', { ratNames, status: log.status }),
         ratName: ratNames
       });
     }
@@ -96,7 +96,7 @@ export const analyzeHealthAlerts = (logs: LogEntry[], t: (key: string, options?:
       alerts.push({
         id: `behavior-${ratId}`,
         type: 'error',
-        message: t('{{ratName}} has been a bit aggressive lately ({{count}} times), might need some extra attention', { ratName: data.name, count: data.count }),
+        message: t('{{ratName}} showed aggressive behavior {{count}} times recently', { ratName: data.name, count: data.count }),
         ratName: data.name
       });
     }
@@ -114,7 +114,7 @@ export const analyzeHealthAlerts = (logs: LogEntry[], t: (key: string, options?:
       alerts.push({
         id: `respiratory-${log.id}`,
         type: 'warning',
-        message: t('{{ratNames}} has some sneezing or breathing issues, keep monitoring!', { ratNames }),
+        message: t('{{ratNames}} has respiratory symptoms, please monitor closely', { ratNames }),
         ratName: ratNames
       });
     }
@@ -125,7 +125,7 @@ export const analyzeHealthAlerts = (logs: LogEntry[], t: (key: string, options?:
     return [{
       id: 'all-good',
       type: 'success',
-      message: t('All looking great! Your rats are happy and healthy! 🎉')
+      message: t('Everything looks good! All your rats are healthy and happy.')
     }];
   }
 
