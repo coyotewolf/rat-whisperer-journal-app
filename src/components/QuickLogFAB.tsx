@@ -63,11 +63,15 @@ const QuickLogFAB = ({ onLogAdded, onOpenSettings }: QuickLogFABProps) => {
       if (needsDefaultValues && (!defaultValues || Object.keys(defaultValues).length === 0 || 
           (logType === "feeding" && (!defaultValues.food || !defaultValues.amount)) ||
           (logType === "environment" && actionName.toLowerCase().includes("water") && !defaultValues.amount))) {
+        
+        // Show toast with action button
+        const actionLabel = logType === "feeding" ? t("Set Feeding Defaults") : t("Set Water Defaults");
+        
         toast.error(
-          t("Please set default values in settings first"),
+          t("Please set default values in Quick Log Actions settings first"),
           {
             action: onOpenSettings ? {
-              label: t("Open Settings"),
+              label: actionLabel,
               onClick: () => {
                 setIsOpen(false);
                 onOpenSettings();

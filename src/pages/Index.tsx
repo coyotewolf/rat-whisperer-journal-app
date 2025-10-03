@@ -135,11 +135,17 @@ const Index = () => {
   };
 
   const [quickLogPreset, setQuickLogPreset] = useState<{ type: string; defaultValues?: Record<string, any> } | null>(null);
+  const [settingsInitialSection, setSettingsInitialSection] = useState<'quickLogActions' | undefined>(undefined);
 
   const handleQuickLogAdded = () => {
     // Refresh data after quick log is added
     queryClient.invalidateQueries({ queryKey: ["log-entries"] });
     queryClient.invalidateQueries({ queryKey: ["tasks"] });
+  };
+
+  const handleOpenQuickLogSettings = () => {
+    setSettingsInitialSection('quickLogActions');
+    setIsSettingsOpen(true);
   };
 
   return (
@@ -177,7 +183,7 @@ const Index = () => {
 
       <QuickLogFAB 
         onLogAdded={handleQuickLogAdded}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenSettings={handleOpenQuickLogSettings}
       />
       <BottomNav />
       <QuickLogModal
@@ -190,7 +196,14 @@ const Index = () => {
         presetLogType={quickLogPreset?.type}
         presetDefaultValues={quickLogPreset?.defaultValues}
       />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => {
+          setIsSettingsOpen(false);
+          setSettingsInitialSection(undefined);
+        }}
+        initialSection={settingsInitialSection}
+      />
       <TaskModal
         isOpen={isNewTaskOpen}
         onClose={() => {

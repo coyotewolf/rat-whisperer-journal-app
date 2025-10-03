@@ -18,22 +18,23 @@ import QuickLogActionSettings from "./settings/QuickLogActionSettings";
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialSection?: SettingsSection;
 }
 
 type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes' | 'taskSuggestions' | 'reminders' | 'quickLogActions';
 
-const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
+const SettingsModal = ({ isOpen, onClose, initialSection }: SettingsModalProps) => {
   const { t } = useTranslation();
   const [currentSection, setCurrentSection] = useState<SettingsSection>('main');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); // State for AuthModal
   const { user, signOut } = useAuth();
 
-  // Reset to main section when modal opens (not when it closes)
+  // Set section when modal opens
   useEffect(() => {
     if (isOpen) {
-      setCurrentSection('main');
+      setCurrentSection(initialSection || 'main');
     }
-  }, [isOpen]);
+  }, [isOpen, initialSection]);
 
   const handleClose = () => {
     // Don't reset state here - let it reset when modal reopens
