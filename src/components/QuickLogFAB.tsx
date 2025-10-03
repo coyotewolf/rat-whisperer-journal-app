@@ -22,7 +22,7 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { actions, isLoading } = useQuickLogActions();
+  const { enabledActions, isLoading } = useQuickLogActions();
 
   if (!user) return null;
 
@@ -34,14 +34,14 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
   return (
     <div className="fixed bottom-20 right-4 z-40">
       <AnimatePresence>
-        {isOpen && !isLoading && actions && (
+        {isOpen && !isLoading && enabledActions && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             className="flex flex-col gap-3 mb-3"
           >
-            {actions.map((action, index) => {
+            {enabledActions.map((action, index) => {
               const Icon = iconMap[action.icon_name] || Utensils;
               return (
                 <motion.div

@@ -13,7 +13,7 @@ interface QuickLogActionSettingsProps {
 
 const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
   const { t } = useTranslation();
-  const { actions, isLoading, updateAction, deleteAction } = useQuickLogActions();
+  const { allActions, isLoading, updateAction, deleteAction } = useQuickLogActions();
 
   if (isLoading) {
     return (
@@ -42,7 +42,7 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
       </div>
 
       <div className="space-y-3">
-        {actions?.map((action, index) => (
+        {allActions?.map((action, index) => (
           <Card key={action.id} className="p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 space-y-3">

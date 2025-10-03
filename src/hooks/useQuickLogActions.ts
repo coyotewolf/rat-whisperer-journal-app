@@ -16,8 +16,9 @@ export interface QuickLogAction {
 export const useQuickLogActions = () => {
   const queryClient = useQueryClient();
 
-  const { data: actions, isLoading } = useQuery({
-    queryKey: ["quick-log-actions"],
+  // Query for FAB display (only enabled)
+  const { data: enabledActions, isLoading: isLoadingEnabled } = useQuery({
+    queryKey: ["quick-log-actions", "enabled"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("quick_log_actions" as any)
@@ -29,6 +30,25 @@ export const useQuickLogActions = () => {
       return (data || []) as unknown as QuickLogAction[];
     },
   });
+
+  // Query for settings page (all actions)
+  const { data: allActions, isLoading: isLoadingAll } = useQuery({
+    queryKey: ["quick-log-actions", "all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quick_log_actions" as any)
+        .select("*")
+        .order("display_order");
+
+      if (error) throw error;
+      return (data || []) as unknown as QuickLogAction[];
+    },
+  });
+
+  const invalidateAllQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["quick-log-actions", "enabled"] });
+    queryClient.invalidateQueries({ queryKey: ["quick-log-actions", "all"] });
+  };
 
   const updateAction = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<QuickLogAction> }) => {
@@ -43,7 +63,7 @@ export const useQuickLogActions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["quick-log-actions"] });
+      invalidateAllQueries();
       toast.success("快速操作已更新");
     },
     onError: (error) => {
@@ -64,7 +84,7 @@ export const useQuickLogActions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["quick-log-actions"] });
+      invalidateAllQueries();
       toast.success("快速操作已新增");
     },
     onError: (error) => {
@@ -83,7 +103,7 @@ export const useQuickLogActions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["quick-log-actions"] });
+      invalidateAllQueries();
       toast.success("快速操作已刪除");
     },
     onError: (error) => {
@@ -93,8 +113,9 @@ export const useQuickLogActions = () => {
   });
 
   return {
-    actions,
-    isLoading,
+    enabledActions,
+    allActions,
+    isLoading: isLoadingEnabled || isLoadingAll,
     updateAction: updateAction.mutate,
     createAction: createAction.mutate,
     deleteAction: deleteAction.mutate,
