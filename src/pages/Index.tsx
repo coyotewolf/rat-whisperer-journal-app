@@ -21,6 +21,7 @@ import { useReminderSettings } from "@/hooks/useReminderSettings";
 import { useTranslation } from 'react-i18next';
 import { processRecentActivities } from "@/utils/activityUtils";
 import { generateSmartReminders } from "@/utils/smartTaskReminders";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ const Index = () => {
   const { logs, loading: logsLoading, initialLoadComplete, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
   const { settings: reminderSettings } = useReminderSettings();
+  const queryClient = useQueryClient();
   const {
     isQuickLogOpen,
     setIsQuickLogOpen,
@@ -134,9 +136,10 @@ const Index = () => {
 
   const [quickLogPreset, setQuickLogPreset] = useState<{ type: string; defaultValues?: Record<string, any> } | null>(null);
 
-  const handleQuickLogFromFAB = (action: { type: string; defaultValues?: Record<string, any> }) => {
-    setQuickLogPreset({ type: action.type, defaultValues: action.defaultValues });
-    setIsQuickLogOpen(true);
+  const handleQuickLogAdded = () => {
+    // Refresh data after quick log is added
+    queryClient.invalidateQueries({ queryKey: ["log-entries"] });
+    queryClient.invalidateQueries({ queryKey: ["tasks"] });
   };
 
   return (
@@ -172,7 +175,7 @@ const Index = () => {
         />
       </div>
 
-      <QuickLogFAB onQuickLog={handleQuickLogFromFAB} />
+      <QuickLogFAB onLogAdded={handleQuickLogAdded} />
       <BottomNav />
       <QuickLogModal
         isOpen={isQuickLogOpen}

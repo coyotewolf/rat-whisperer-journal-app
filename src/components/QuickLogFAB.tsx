@@ -5,9 +5,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuickLogActions } from "@/hooks/useQuickLogActions";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface QuickLogFABProps {
-  onQuickLog: (action: { type: string; defaultValues?: Record<string, any> }) => void;
+  onLogAdded?: () => void;
 }
 
 const iconMap: { [key: string]: any } = {
@@ -18,17 +21,76 @@ const iconMap: { [key: string]: any } = {
   toilet: Trash2,
 };
 
-const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
+const QuickLogFAB = ({ onLogAdded }: QuickLogFABProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useTranslation();
   const { enabledActions, isLoading } = useQuickLogActions();
+  const queryClient = useQueryClient();
+
+  // Fetch active rats
+  const { data: rats } = useQuery({
+    queryKey: ["rats", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("rats")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("name");
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
   if (!user) return null;
 
-  const handleQuickLog = (logType: string, defaultValues?: Record<string, any>) => {
-    onQuickLog({ type: logType, defaultValues });
-    setIsOpen(false);
+  const handleQuickLog = async (logType: string, actionName: string, defaultValues?: Record<string, any>) => {
+    try {
+      if (!rats || rats.length === 0) {
+        toast.error(t("Please add at least one rat first"));
+        setIsOpen(false);
+        return;
+      }
+
+      // Get all active rat IDs
+      const ratIds = rats.map(rat => rat.id);
+
+      // Prepare log entry data
+      const logEntry = {
+        user_id: user.id,
+        type: logType,
+        rat_ids: ratIds,
+        content: {
+          timestamp: new Date().toISOString(),
+          ...(defaultValues || {}),
+        },
+      };
+
+      // Insert log entry
+      const { error } = await supabase
+        .from("log_entries")
+        .insert([logEntry]);
+
+      if (error) throw error;
+
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["log-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["health-alerts"] });
+
+      toast.success(t("Log added successfully"));
+      setIsOpen(false);
+      
+      if (onLogAdded) {
+        onLogAdded();
+      }
+    } catch (error) {
+      console.error("Error adding quick log:", error);
+      toast.error(t("Failed to add log"));
+    }
   };
 
   return (
@@ -52,7 +114,7 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
                   transition={{ delay: index * 0.05 }}
                 >
                   <Button
-                    onClick={() => handleQuickLog(action.log_type, action.default_values)}
+                    onClick={() => handleQuickLog(action.log_type, action.name, action.default_values)}
                     style={{ backgroundColor: action.color }}
                     className="shadow-lg rounded-full h-12 px-4 flex items-center gap-2 transition-all text-white hover:opacity-90"
                   >
