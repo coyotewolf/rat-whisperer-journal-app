@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Utensils, Droplet, Trash2, Sparkles, X } from "lucide-react";
+import { Plus, Utensils, Droplet, Trash2, Sparkles, X, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuickLogActions } from "@/hooks/useQuickLogActions";
@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface QuickLogFABProps {
   onLogAdded?: () => void;
+  onOpenSettings?: () => void;
 }
 
 const iconMap: { [key: string]: any } = {
@@ -21,7 +22,7 @@ const iconMap: { [key: string]: any } = {
   toilet: Trash2,
 };
 
-const QuickLogFAB = ({ onLogAdded }: QuickLogFABProps) => {
+const QuickLogFAB = ({ onLogAdded, onOpenSettings }: QuickLogFABProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -53,6 +54,28 @@ const QuickLogFAB = ({ onLogAdded }: QuickLogFABProps) => {
       if (!rats || rats.length === 0) {
         toast.error(t("Please add at least one rat first"));
         setIsOpen(false);
+        return;
+      }
+
+      // Check if default values are required but missing for feeding and water
+      const needsDefaultValues = (logType === "feeding" || (logType === "environment" && actionName.toLowerCase().includes("water")));
+      
+      if (needsDefaultValues && (!defaultValues || Object.keys(defaultValues).length === 0 || 
+          (logType === "feeding" && (!defaultValues.food || !defaultValues.amount)) ||
+          (logType === "environment" && actionName.toLowerCase().includes("water") && !defaultValues.amount))) {
+        toast.error(
+          t("Please set default values in settings first"),
+          {
+            action: onOpenSettings ? {
+              label: t("Open Settings"),
+              onClick: () => {
+                setIsOpen(false);
+                onOpenSettings();
+              }
+            } : undefined,
+            duration: 5000,
+          }
+        );
         return;
       }
 

@@ -640,5 +640,7 @@
   "Default Values": "預設值",
   "Default notes": "預設備註",
   "Temperature (°C)": "溫度 (°C)",
-  "Humidity (%)": "濕度 (%)"
+  "Humidity (%)": "濕度 (%)",
+  "Please set default values in settings first": "請先在設定中設置預設值",
+  "Open Settings": "開啟設定"
 }

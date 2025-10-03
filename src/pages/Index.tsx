@@ -175,7 +175,10 @@ const Index = () => {
         />
       </div>
 
-      <QuickLogFAB onLogAdded={handleQuickLogAdded} />
+      <QuickLogFAB 
+        onLogAdded={handleQuickLogAdded}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
       <BottomNav />
       <QuickLogModal
         isOpen={isQuickLogOpen}

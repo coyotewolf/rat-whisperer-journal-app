@@ -559,5 +559,7 @@
   "Default Values": "Default Values",
   "Default notes": "Default notes",
   "Temperature (°C)": "Temperature (°C)",
-  "Humidity (%)": "Humidity (%)"
+  "Humidity (%)": "Humidity (%)",
+  "Please set default values in settings first": "Please set default values in settings first",
+  "Open Settings": "Open Settings"
 }
