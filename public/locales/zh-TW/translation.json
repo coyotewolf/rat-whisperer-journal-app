@@ -619,5 +619,17 @@
   "Water": "換水",
   "Clean Cage": "打掃籠子",
   "Clean Toilet": "清廁所",
-  "Error adding quick log:": "添加快速日誌時出錯："
+  "Error adding quick log:": "添加快速日誌時出錯：",
+  "Reminder Settings": "提醒設定",
+  "Customize reminder frequency": "自訂提醒頻率",
+  "Customize when you receive reminders for various care activities": "自訂各種照護活動的提醒時機",
+  "Feeding Reminder": "餵食提醒",
+  "Water Change Reminder": "換水提醒",
+  "Cage Cleaning Reminder": "籠子清潔提醒",
+  "Litter Cleaning Reminder": "貓砂清潔提醒",
+  "Weight Check Reminder": "體重檢查提醒",
+  "Health Check Reminder": "健康檢查提醒",
+  "Medication Reminder": "藥物提醒",
+  "Remind after": "提醒間隔",
+  "days": "天"
 }

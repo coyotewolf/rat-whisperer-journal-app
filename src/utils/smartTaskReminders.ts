@@ -8,13 +8,27 @@ export interface SmartReminder {
   type: 'task' | 'activity' | 'care';
 }
 
+interface ReminderSettings {
+  feeding: number;
+  water: number;
+  cage_cleaning: number;
+}
+
 export const generateSmartReminders = (
   logs: LogEntry[], 
   tasks: Task[],
-  t: (key: string, options?: any) => string
+  t: (key: string, options?: any) => string,
+  reminderSettings?: ReminderSettings
 ): SmartReminder[] => {
   const reminders: SmartReminder[] = [];
   const now = new Date();
+
+  // Use custom settings or defaults
+  const settings = reminderSettings || {
+    feeding: 1,
+    water: 3,
+    cage_cleaning: 5
+  };
 
   // Check for overdue tasks
   const overdueTasks = tasks.filter(task => 
@@ -38,7 +52,7 @@ export const generateSmartReminders = (
     const lastFeeding = parseISO(feedingLogs[0].timestamp);
     const daysSinceFeeding = differenceInDays(now, lastFeeding);
     
-    if (daysSinceFeeding >= 1) {
+    if (daysSinceFeeding >= settings.feeding) {
       reminders.push({
         id: 'feeding-reminder',
         message: t('Last feeding was {{days}} day(s) ago, check food supply', { days: daysSinceFeeding }),
@@ -63,7 +77,7 @@ export const generateSmartReminders = (
     const lastCleaning = parseISO(environmentLogs[0].timestamp);
     const daysSinceCleaning = differenceInDays(now, lastCleaning);
     
-    if (daysSinceCleaning >= 5) {
+    if (daysSinceCleaning >= settings.cage_cleaning) {
       reminders.push({
         id: 'cleaning-reminder',
         message: t('Cage was last cleaned {{days}} day(s) ago, consider cleaning soon', { days: daysSinceCleaning }),
@@ -81,7 +95,7 @@ export const generateSmartReminders = (
     const lastWater = parseISO(waterLogs[0].timestamp);
     const daysSinceWater = differenceInDays(now, lastWater);
     
-    if (daysSinceWater >= 3) {
+    if (daysSinceWater >= settings.water) {
       reminders.push({
         id: 'water-reminder',
         message: t('Water was last changed {{days}} day(s) ago, please check water bottle', { days: daysSinceWater }),

@@ -538,5 +538,17 @@
   "Water": "Water",
   "Clean Cage": "Clean Cage",
   "Clean Toilet": "Clean Toilet",
-  "Error adding quick log:": "Error adding quick log:"
+  "Error adding quick log:": "Error adding quick log:",
+  "Reminder Settings": "Reminder Settings",
+  "Customize reminder frequency": "Customize reminder frequency",
+  "Customize when you receive reminders for various care activities": "Customize when you receive reminders for various care activities",
+  "Feeding Reminder": "Feeding Reminder",
+  "Water Change Reminder": "Water Change Reminder",
+  "Cage Cleaning Reminder": "Cage Cleaning Reminder",
+  "Litter Cleaning Reminder": "Litter Cleaning Reminder",
+  "Weight Check Reminder": "Weight Check Reminder",
+  "Health Check Reminder": "Health Check Reminder",
+  "Medication Reminder": "Medication Reminder",
+  "Remind after": "Remind after",
+  "days": "days"
 }

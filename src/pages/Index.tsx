@@ -16,6 +16,7 @@ import { useTasks, type Task } from "@/hooks/useTasks";
 import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useIndexModals } from "@/hooks/useIndexModals";
+import { useReminderSettings } from "@/hooks/useReminderSettings";
 import { useTranslation } from 'react-i18next';
 import { processRecentActivities } from "@/utils/activityUtils";
 import { generateSmartReminders } from "@/utils/smartTaskReminders";
@@ -25,6 +26,7 @@ const Index = () => {
   const { tasks, loading, createTask, updateTask, toggleTaskCompletion } = useTasks();
   const { logs, loading: logsLoading, initialLoadComplete, addLog, updateLog, deleteLog } = useLogEntries();
   const { user } = useAuth();
+  const { settings: reminderSettings } = useReminderSettings();
   const {
     isQuickLogOpen,
     setIsQuickLogOpen,
@@ -49,7 +51,15 @@ const Index = () => {
   } = useIndexModals();
 
   const recentActivities = processRecentActivities(logs, t);
-  const smartReminders = generateSmartReminders(logs, tasks, t);
+  
+  // Convert reminder settings to the format expected by generateSmartReminders
+  const reminderConfig = reminderSettings ? {
+    feeding: reminderSettings.find(s => s.type === 'feeding')?.frequency_days || 1,
+    water: reminderSettings.find(s => s.type === 'water')?.frequency_days || 3,
+    cage_cleaning: reminderSettings.find(s => s.type === 'cage_cleaning')?.frequency_days || 5,
+  } : undefined;
+  
+  const smartReminders = generateSmartReminders(logs, tasks, t, reminderConfig);
 
   const handleNewLogEntry = async (logEntryDataFromModal: any) => {
     try {

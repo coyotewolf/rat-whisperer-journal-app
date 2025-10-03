@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks, ArrowLeft, Sparkles } from "lucide-react";
+import { User, Globe, Type, Palette, LogIn, LogOut, ListChecks, ArrowLeft, Sparkles, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "@/components/AuthModal"; // Import AuthModal
 import AccountSettings from "./settings/AccountSettings"; // Import AccountSettings
@@ -12,13 +12,14 @@ import LanguageSettings from "./settings/LanguageSettings";
 import FontSettings from "./settings/FontSettings";
 import ThemeSettings from "./settings/ThemeSettings";
 import TaskSuggestionSettings from "./settings/TaskSuggestionSettings";
+import ReminderSettings from "./settings/ReminderSettings";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes' | 'taskSuggestions';
+type SettingsSection = 'main' | 'account' | 'language' | 'fonts' | 'themes' | 'taskSuggestions' | 'reminders';
 
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const { t } = useTranslation();
@@ -70,6 +71,13 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       title: t("Task Suggestions"),
       description: t("Manage quick task suggestions"),
       color: "bg-orange-100 text-orange-700"
+    },
+    {
+      id: 'reminders' as const,
+      icon: Bell,
+      title: t("Reminder Settings"),
+      description: t("Customize reminder frequency"),
+      color: "bg-yellow-100 text-yellow-700"
     }
   ];
 
@@ -83,6 +91,8 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         return <ThemeSettings onBack={handleBackToMain} />;
       case 'taskSuggestions':
         return <TaskSuggestionSettings onBack={handleBackToMain} />;
+      case 'reminders':
+        return <ReminderSettings onBack={handleBackToMain} />;
       case 'account':
         return <AccountSettings onBack={handleBackToMain} />;
       default:
