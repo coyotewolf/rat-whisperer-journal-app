@@ -148,6 +148,11 @@ const Index = () => {
     setIsSettingsOpen(true);
   };
 
+  const handleOpenQuickLogModal = (logType: string, defaultValues?: Record<string, any>) => {
+    setQuickLogPreset({ type: logType, defaultValues });
+    setIsQuickLogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-20 relative overflow-hidden">
       <IndexHeader onSettingsClick={() => setIsSettingsOpen(true)} />
@@ -184,6 +189,7 @@ const Index = () => {
       <QuickLogFAB 
         onLogAdded={handleQuickLogAdded}
         onOpenSettings={handleOpenQuickLogSettings}
+        onOpenQuickLogModal={handleOpenQuickLogModal}
       />
       <BottomNav />
       <QuickLogModal
