@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil, Scale, Pill, Utensils } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar, Activity, Heart, Thermometer, Plus, Sparkles, Pencil, Scale, Pill, Utensils, Trash2, X } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import LogSearchFilter from "@/components/LogSearchFilter";
 import EditLogModal from "@/components/EditLogModal";
@@ -14,6 +15,7 @@ import { useLogEntries } from "@/hooks/useLogEntries";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from 'react-i18next';
 import { getHealthStatusEmoji } from "@/utils/cardStyleUtils";
+import { toast } from "sonner";
 
 const LogsPage = () => {
   const { user } = useAuth();
@@ -28,6 +30,8 @@ const LogsPage = () => {
   const [selectedLogEntry, setSelectedLogEntry] = useState<any | null>(null); // State for LogDetailModal
   const [isLogDetailOpen, setIsLogDetailOpen] = useState(false); // State for LogDetailModal
   const [isQuickLogOpen, setIsQuickLogOpen] = useState(false); // State for QuickLogModal
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
 
   // Update filtered logs when logs change
   useEffect(() => {
@@ -149,19 +153,64 @@ const LogsPage = () => {
     handleEditLog(log);
   };
 
+  const toggleLogSelection = (logId: string) => {
+    setSelectedLogIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(logId)) {
+        newSet.delete(logId);
+      } else {
+        newSet.add(logId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedLogIds.size === 0) return;
+    
+    try {
+      const deletePromises = Array.from(selectedLogIds).map(id => deleteLog(id));
+      await Promise.all(deletePromises);
+      toast.success(t("Selected logs deleted successfully"));
+      setSelectedLogIds(new Set());
+      setIsMultiSelectMode(false);
+    } catch (error) {
+      console.error("Failed to delete logs:", error);
+      toast.error(t("Failed to delete logs"));
+    }
+  };
+
+  const handleCancelMultiSelect = () => {
+    setIsMultiSelectMode(false);
+    setSelectedLogIds(new Set());
+  };
 
   const LogCard = ({ log }: { log: any }) => {
     const { date, time } = formatDateTime(log.timestamp);
     const isFromSurvey = typeof log.notes === 'string' && (log.notes.includes('每日調查') || log.notes.toLowerCase().includes('daily survey'));
+    const isSelected = selectedLogIds.has(log.id);
     
     return (
       <Card
-        className={`${isFromSurvey ? 'border-primary/40 bg-primary/10' : getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer`}
-        onClick={() => handleLogCardClick(log)}
+        className={`${isFromSurvey ? 'border-primary/40 bg-primary/10' : getLogColorClasses(log.type)} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer ${isSelected ? 'ring-2 ring-primary' : ''}`}
+        onClick={() => {
+          if (isMultiSelectMode) {
+            toggleLogSelection(log.id);
+          } else {
+            handleLogCardClick(log);
+          }
+        }}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2 text-card-foreground">
+            {isMultiSelectMode && (
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => toggleLogSelection(log.id)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             {getLogIcon(log.type)}
             <span className="font-medium capitalize">{t(log.type)}</span>
             {isFromSurvey && (
@@ -173,17 +222,19 @@ const LogsPage = () => {
                 <div>{date}</div>
                 <div>{time}</div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary h-7 w-7"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditLog(log);
-                }}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
+              {!isMultiSelectMode && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-primary h-7 w-7"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditLog(log);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           
@@ -258,10 +309,43 @@ const LogsPage = () => {
               <p className="text-sm text-muted-foreground">{t("Track your rats' daily activities")}</p>
             </div>
           </div>
-          <Button variant="default" onClick={() => setIsQuickLogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t("New Log")}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isMultiSelectMode ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleCancelMultiSelect}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  {t("Cancel")}
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={selectedLogIds.size === 0}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t("Delete")} ({selectedLogIds.size})
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsMultiSelectMode(true)}
+                >
+                  {t("Select")}
+                </Button>
+                <Button variant="default" onClick={() => setIsQuickLogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t("New Log")}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

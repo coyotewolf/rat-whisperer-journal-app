@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Save } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 interface QuickLogActionSettingsProps {
   onBack: () => void;
@@ -15,6 +17,48 @@ interface QuickLogActionSettingsProps {
 const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
   const { t } = useTranslation();
   const { allActions, isLoading, updateAction, deleteAction } = useQuickLogActions();
+  const [localActions, setLocalActions] = useState<any[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    if (allActions) {
+      setLocalActions(allActions);
+      setHasChanges(false);
+    }
+  }, [allActions]);
+
+  const handleLocalUpdate = (id: string, updates: any) => {
+    setLocalActions(prev => 
+      prev.map(action => 
+        action.id === id ? { ...action, ...updates } : action
+      )
+    );
+    setHasChanges(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      for (const action of localActions) {
+        const original = allActions?.find(a => a.id === action.id);
+        if (original && JSON.stringify(original) !== JSON.stringify(action)) {
+          await new Promise<void>((resolve, reject) => {
+            updateAction(
+              { id: action.id, updates: action },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error)
+              }
+            );
+          });
+        }
+      }
+      setHasChanges(false);
+      toast.success(t("Settings saved successfully"));
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error(t("Failed to save settings"));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -26,14 +70,24 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
 
   return (
     <div className="space-y-6">
-      <Button
-        variant="ghost"
-        onClick={onBack}
-        className="mb-2 -ml-2 text-gray-500 hover:text-gray-700"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        {t("Back to Settings")}
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          onClick={onBack}
+          className="-ml-2 text-gray-500 hover:text-gray-700"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("Back to Settings")}
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={!hasChanges}
+          className="gap-2"
+        >
+          <Save className="h-4 w-4" />
+          {t("Save")}
+        </Button>
+      </div>
 
       <div>
         <h3 className="text-lg font-medium">{t("Quick Log Actions")}</h3>
@@ -43,7 +97,7 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
       </div>
 
       <div className="space-y-3">
-        {allActions?.map((action) => (
+        {localActions?.map((action) => (
           <Card key={action.id} className="p-4">
             <div className="flex items-start gap-4">
               <div className="flex-1 space-y-4">
@@ -51,7 +105,7 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                   <Switch
                     checked={action.enabled}
                     onCheckedChange={(enabled) =>
-                      updateAction({ id: action.id, updates: { enabled } })
+                      handleLocalUpdate(action.id, { enabled })
                     }
                   />
                   <Label className="text-base font-medium">
@@ -69,10 +123,7 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                       type="text"
                       value={action.name}
                       onChange={(e) =>
-                        updateAction({
-                          id: action.id,
-                          updates: { name: e.target.value },
-                        })
+                        handleLocalUpdate(action.id, { name: e.target.value })
                       }
                       className="flex-1"
                       disabled={!action.enabled}
@@ -91,13 +142,10 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                         placeholder={t("Food")}
                         value={action.default_values?.food || ""}
                         onChange={(e) =>
-                          updateAction({
-                            id: action.id,
-                            updates: {
-                              default_values: {
-                                ...action.default_values,
-                                food: e.target.value,
-                              },
+                          handleLocalUpdate(action.id, {
+                            default_values: {
+                              ...action.default_values,
+                              food: e.target.value,
                             },
                           })
                         }
@@ -108,13 +156,10 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                         placeholder={t("Amount")}
                         value={action.default_values?.amount || ""}
                         onChange={(e) =>
-                          updateAction({
-                            id: action.id,
-                            updates: {
-                              default_values: {
-                                ...action.default_values,
-                                amount: e.target.value,
-                              },
+                          handleLocalUpdate(action.id, {
+                            default_values: {
+                              ...action.default_values,
+                              amount: e.target.value,
                             },
                           })
                         }
@@ -133,13 +178,10 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                         placeholder={t("Amount")}
                         value={action.default_values?.amount || ""}
                         onChange={(e) =>
-                          updateAction({
-                            id: action.id,
-                            updates: {
-                              default_values: {
-                                ...action.default_values,
-                                amount: e.target.value,
-                              },
+                          handleLocalUpdate(action.id, {
+                            default_values: {
+                              ...action.default_values,
+                              amount: e.target.value,
                             },
                           })
                         }
@@ -152,13 +194,10 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                     placeholder={t("Default notes")}
                     value={action.default_values?.notes || ""}
                     onChange={(e) =>
-                      updateAction({
-                        id: action.id,
-                        updates: {
-                          default_values: {
-                            ...action.default_values,
-                            notes: e.target.value,
-                          },
+                      handleLocalUpdate(action.id, {
+                        default_values: {
+                          ...action.default_values,
+                          notes: e.target.value,
                         },
                       })
                     }

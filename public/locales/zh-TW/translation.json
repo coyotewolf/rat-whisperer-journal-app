@@ -643,5 +643,13 @@
   "Humidity (%)": "濕度 (%)",
   "Please set default values in Quick Log Actions settings first": "請先在快速記錄設定中設置預設值",
   "Set Feeding Defaults": "設定餵食預設值",
-  "Set Water Defaults": "設定飲水預設值"
+  "Set Water Defaults": "設定飲水預設值",
+  "Save": "儲存",
+  "Settings saved successfully": "設定已成功儲存",
+  "Failed to save settings": "儲存設定失敗",
+  "Select": "選擇",
+  "Cancel": "取消",
+  "Delete": "刪除",
+  "Selected logs deleted successfully": "已成功刪除選中的日誌",
+  "Failed to delete logs": "刪除日誌失敗"
 }

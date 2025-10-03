@@ -562,5 +562,13 @@
   "Humidity (%)": "Humidity (%)",
   "Please set default values in Quick Log Actions settings first": "Please set default values in Quick Log Actions settings first",
   "Set Feeding Defaults": "Set Feeding Defaults",
-  "Set Water Defaults": "Set Water Defaults"
+  "Set Water Defaults": "Set Water Defaults",
+  "Save": "Save",
+  "Settings saved successfully": "Settings saved successfully",
+  "Failed to save settings": "Failed to save settings",
+  "Select": "Select",
+  "Cancel": "Cancel",
+  "Delete": "Delete",
+  "Selected logs deleted successfully": "Selected logs deleted successfully",
+  "Failed to delete logs": "Failed to delete logs"
 }
