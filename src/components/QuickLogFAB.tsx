@@ -17,10 +17,10 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
   if (!user) return null;
 
   const quickActions = [
-    { icon: Utensils, label: t("Feed"), tag: "feeding" },
-    { icon: Droplet, label: t("Water"), tag: "water change" },
-    { icon: Trash2, label: t("Clean Cage"), tag: "cage clean" },
-    { icon: Trash2, label: t("Clean Toilet"), tag: "toilet clean" },
+    { icon: Utensils, label: t("Feed"), tag: "feeding", color: "bg-pink-300 hover:bg-pink-400 text-pink-900" },
+    { icon: Droplet, label: t("Water"), tag: "water change", color: "bg-sky-300 hover:bg-sky-400 text-sky-900" },
+    { icon: Trash2, label: t("Clean Cage"), tag: "cage clean", color: "bg-amber-300 hover:bg-amber-400 text-amber-900" },
+    { icon: Trash2, label: t("Clean Toilet"), tag: "toilet clean", color: "bg-purple-300 hover:bg-purple-400 text-purple-900" },
   ];
 
   const handleQuickLog = (tag: string) => {
@@ -50,7 +50,7 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
                 >
                   <Button
                     onClick={() => handleQuickLog(action.tag)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-full h-12 px-4 flex items-center gap-2"
+                    className={`${action.color} shadow-lg rounded-full h-12 px-4 flex items-center gap-2 transition-all`}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{action.label}</span>

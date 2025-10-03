@@ -23,18 +23,18 @@ const AlertCards = ({ logs }: AlertCardsProps) => {
     }
   };
 
-  const getAlertStyleClasses = (type: string) => { // Renamed and themed
+  const getAlertStyleClasses = (type: string) => {
     switch (type) {
       case 'warning':
-        return 'bg-yellow-500/20 border-yellow-500/30 text-yellow-700 dark:text-yellow-400';
+        return 'bg-amber-50 dark:bg-amber-950/50 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100';
       case 'error':
-        return 'bg-destructive/20 border-destructive/30 text-destructive-foreground';
+        return 'bg-red-50 dark:bg-red-950/50 border-red-300 dark:border-red-700 text-red-900 dark:text-red-100';
       case 'success':
-        return 'bg-green-500/20 border-green-500/30 text-green-700 dark:text-green-400';
+        return 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100';
       case 'info':
-        return 'bg-primary/20 border-primary/30 text-primary-foreground';
+        return 'bg-sky-50 dark:bg-sky-950/50 border-sky-300 dark:border-sky-700 text-sky-900 dark:text-sky-100';
       default:
-        return 'bg-muted/20 border-border text-muted-foreground';
+        return 'bg-muted/50 border-border text-foreground';
     }
   };
 
