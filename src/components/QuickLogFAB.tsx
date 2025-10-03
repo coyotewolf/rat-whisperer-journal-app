@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface QuickLogFABProps {
-  onQuickLog: (action: { type: string; tag: string; defaultValues?: Record<string, any> }) => void;
+  onQuickLog: (action: { type: string; defaultValues?: Record<string, any> }) => void;
 }
 
 const iconMap: { [key: string]: any } = {
@@ -26,8 +26,8 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
 
   if (!user) return null;
 
-  const handleQuickLog = (logType: string, tag: string, defaultValues?: Record<string, any>) => {
-    onQuickLog({ type: logType, tag, defaultValues });
+  const handleQuickLog = (logType: string, defaultValues?: Record<string, any>) => {
+    onQuickLog({ type: logType, defaultValues });
     setIsOpen(false);
   };
 
@@ -52,7 +52,7 @@ const QuickLogFAB = ({ onQuickLog }: QuickLogFABProps) => {
                   transition={{ delay: index * 0.05 }}
                 >
                   <Button
-                    onClick={() => handleQuickLog(action.log_type, action.name.toLowerCase(), action.default_values)}
+                    onClick={() => handleQuickLog(action.log_type, action.default_values)}
                     style={{ backgroundColor: action.color }}
                     className="shadow-lg rounded-full h-12 px-4 flex items-center gap-2 transition-all text-white hover:opacity-90"
                   >

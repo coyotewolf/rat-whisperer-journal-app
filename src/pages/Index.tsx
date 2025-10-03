@@ -134,7 +134,7 @@ const Index = () => {
 
   const [quickLogPreset, setQuickLogPreset] = useState<{ type: string; defaultValues?: Record<string, any> } | null>(null);
 
-  const handleQuickLogFromFAB = (action: { type: string; tag: string; defaultValues?: Record<string, any> }) => {
+  const handleQuickLogFromFAB = (action: { type: string; defaultValues?: Record<string, any> }) => {
     setQuickLogPreset({ type: action.type, defaultValues: action.defaultValues });
     setIsQuickLogOpen(true);
   };
