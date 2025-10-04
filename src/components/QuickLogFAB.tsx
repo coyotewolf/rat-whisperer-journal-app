@@ -58,23 +58,15 @@ const QuickLogFAB = ({ onLogAdded, onOpenSettings, onOpenQuickLogModal }: QuickL
         return;
       }
 
-      // For feeding logs, open the full form modal
-      if (logType === "feeding") {
-        if (onOpenQuickLogModal) {
-          setIsOpen(false);
-          onOpenQuickLogModal(logType, defaultValues);
-        }
-        return;
-      }
-
-      // Check if default values are required but missing for water
-      const needsDefaultValues = (logType === "environment" && actionName.toLowerCase().includes("water"));
+      // Check if default values are required but missing
+      const needsDefaultValues = (logType === "feeding" || (logType === "environment" && actionName.toLowerCase().includes("water")));
       
       if (needsDefaultValues && (!defaultValues || Object.keys(defaultValues).length === 0 || 
+          (logType === "feeding" && (!defaultValues.food || !defaultValues.amount)) ||
           (logType === "environment" && actionName.toLowerCase().includes("water") && !defaultValues.amount))) {
         
         // Show toast with action button
-        const actionLabel = t("Set Water Defaults");
+        const actionLabel = logType === "feeding" ? t("Set Feeding Defaults") : t("Set Water Defaults");
         
         toast.error(
           t("Please set default values in Quick Log Actions settings first"),
