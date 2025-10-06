@@ -168,7 +168,7 @@ const QuickLogActionSettings = ({ onBack }: QuickLogActionSettingsProps) => {
                     </div>
                   )}
 
-                  {action.log_type === "environment" && action.name.toLowerCase() === "water" && (
+                  {action.log_type === "environment" && (
                     <div className="space-y-2">
                       <Label className="text-sm text-muted-foreground">
                         {t("Default Values")}
