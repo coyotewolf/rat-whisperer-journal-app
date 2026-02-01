@@ -41,11 +41,11 @@ const AddRatModal = ({ isOpen, onClose, onRatAdded }: AddRatModalProps) => {
         .insert({
           user_id: user.id,
           name,
-          sex,
-          birthday,
+          gender: sex,
+          birthdate: birthday,
           status: 'active',
-          personality: personality.map(({ id, name, color }) => ({ id, name, color })) // Map personality tags
-        });
+          personality: JSON.stringify(personality.map(({ id, name, color }) => ({ id, name, color })))
+        } as any);
 
       if (error) throw error;
 

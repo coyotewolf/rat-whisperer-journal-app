@@ -87,8 +87,9 @@ export const useTasks = () => {
       if (error) throw error;
       const typed = (data || []).map(task => ({
         ...task,
-        priority: task.priority as 'low' | 'medium' | 'high'
-      }));
+        priority: task.priority as 'low' | 'medium' | 'high',
+        completed: task.completed ?? task.is_completed ?? false
+      })) as Task[];
       setTasks(typed);
       await cacheTasks(typed);
     } catch (error) {
@@ -135,8 +136,9 @@ export const useTasks = () => {
 
       const typedTask = {
         ...data,
-        priority: data.priority as 'low' | 'medium' | 'high'
-      };
+        priority: data.priority as 'low' | 'medium' | 'high',
+        completed: (data as any).completed ?? (data as any).is_completed ?? false
+      } as Task;
 
       setTasks(prev => [...prev, typedTask]);
       toast({
@@ -179,8 +181,9 @@ export const useTasks = () => {
       // Type cast the data to match our interface
       const typedTask = {
         ...data,
-        priority: data.priority as 'low' | 'medium' | 'high'
-      };
+        priority: data.priority as 'low' | 'medium' | 'high',
+        completed: (data as any).completed ?? (data as any).is_completed ?? false
+      } as Task;
       
       setTasks(prev => prev.map(task => task.id === id ? typedTask : task));
       toast({

@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      behavior_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_interaction_surveys: {
         Row: {
           answers: Json | null
@@ -354,6 +381,7 @@ export type Database = {
         Row: {
           acquisition_date: string | null
           birthdate: string | null
+          birthday: string | null
           coat_type: string | null
           color: string | null
           created_at: string
@@ -368,12 +396,16 @@ export type Database = {
           origin: string | null
           personality: string | null
           profile_image_url: string | null
+          profile_picture: string | null
+          sex: string | null
+          status: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           acquisition_date?: string | null
           birthdate?: string | null
+          birthday?: string | null
           coat_type?: string | null
           color?: string | null
           created_at?: string
@@ -388,12 +420,16 @@ export type Database = {
           origin?: string | null
           personality?: string | null
           profile_image_url?: string | null
+          profile_picture?: string | null
+          sex?: string | null
+          status?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           acquisition_date?: string | null
           birthdate?: string | null
+          birthday?: string | null
           coat_type?: string | null
           color?: string | null
           created_at?: string
@@ -408,6 +444,9 @@ export type Database = {
           origin?: string | null
           personality?: string | null
           profile_image_url?: string | null
+          profile_picture?: string | null
+          sex?: string | null
+          status?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -497,6 +536,7 @@ export type Database = {
       tasks: {
         Row: {
           color: string | null
+          completed: boolean | null
           completed_at: string | null
           created_at: string
           description: string | null
@@ -519,6 +559,7 @@ export type Database = {
         }
         Insert: {
           color?: string | null
+          completed?: boolean | null
           completed_at?: string | null
           created_at?: string
           description?: string | null
@@ -541,6 +582,7 @@ export type Database = {
         }
         Update: {
           color?: string | null
+          completed?: boolean | null
           completed_at?: string | null
           created_at?: string
           description?: string | null
@@ -589,6 +631,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_user_by_id: {
+        Args: { user_id_to_delete: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
