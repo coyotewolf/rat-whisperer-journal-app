@@ -62,8 +62,9 @@ const RatsPage = () => {
       
       if (error) throw error;
       
-      const activeRats = data?.filter(rat => rat.status === 'active') || [];
-      const deceasedRats = data?.filter(rat => rat.status === 'deceased') || [];
+      const ratsData = (data || []) as any[];
+      const activeRats = ratsData.filter(rat => rat.status === 'active' || !rat.is_deceased);
+      const deceasedRats = ratsData.filter(rat => rat.status === 'deceased' || rat.is_deceased);
 
       activeRats.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setRats([...activeRats, ...deceasedRats]);
@@ -78,13 +79,13 @@ const RatsPage = () => {
     try {
       const { error } = await supabase
         .from('rats')
-        .update({ profile_picture: imageUrl })
+        .update({ profile_image_url: imageUrl } as any)
         .eq('id', ratId);
       
       if (!error) {
         setRats(prevRats => 
           prevRats.map(rat => 
-            rat.id === ratId ? { ...rat, profile_picture: imageUrl } : rat
+            rat.id === ratId ? { ...rat, profile_image_url: imageUrl } : rat
           )
         );
       }

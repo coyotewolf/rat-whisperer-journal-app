@@ -173,7 +173,7 @@ export const usePersonalityTags = () => {
 
             await supabase
               .from('rats')
-              .update({ personality: updatedPersonality })
+              .update({ personality: JSON.stringify(updatedPersonality) } as any)
               .eq('id', rat.id)
               .eq('user_id', user.id);
           }

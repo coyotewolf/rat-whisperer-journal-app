@@ -67,11 +67,11 @@ const EditRatModal = ({ isOpen, onClose, onRatUpdated, rat }: EditRatModalProps)
         .from('rats')
         .update({
           name,
-          sex,
-          birthday,
+          gender: sex,
+          birthdate: birthday,
           status,
-          personality: personalityData
-        })
+          personality: JSON.stringify(personalityData)
+        } as any)
         .eq('id', rat.id);
 
       if (error) throw error;
