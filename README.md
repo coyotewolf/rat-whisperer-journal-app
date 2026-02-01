@@ -1,371 +1,371 @@
-# 🐀 Rat Care Tracker - 寵物鼠照護追蹤器
+# 🐀 Rat Care Tracker
 
-一款專為寵物鼠飼主設計的全方位照護管理應用程式，幫助您追蹤每一隻毛孩的健康、飲食、行為與日常照護。
-
----
-
-## 📋 目錄
-
-- [專案簡介](#專案簡介)
-- [核心功能](#核心功能)
-- [技術架構](#技術架構)
-- [使用指南](#使用指南)
-- [頁面導覽](#頁面導覽)
-- [AI 功能](#ai-功能)
-- [資料安全](#資料安全)
-- [開發資訊](#開發資訊)
+A comprehensive care management application designed for pet rat owners, helping you track the health, diet, behavior, and daily care of each of your furry friends.
 
 ---
 
-## 專案簡介
+## 📋 Table of Contents
 
-### 🎯 開發目的
-
-Rat Care Tracker 的誕生源於對寵物鼠照護的熱愛。寵物鼠雖然體型嬌小，但需要細心的照顧與觀察。本應用程式旨在：
-
-1. **系統化記錄**：提供結構化的方式記錄每日餵食、健康檢查、體重變化等重要資訊
-2. **健康監控**：透過 AI 分析健康趨勢，及早發現潛在問題
-3. **行為觀察**：追蹤群體互動行為，了解社會階層動態
-4. **照護提醒**：智慧提醒系統確保不會遺漏重要的照護任務
-5. **資料視覺化**：將照護數據轉化為易懂的圖表與報告
-
-### 👥 目標使用者
-
-- 寵物鼠飼主（無論是新手還是資深飼主）
-- 寵物鼠繁殖者
-- 寵物鼠救援組織
-- 獸醫診所（追蹤病患紀錄）
+- [Project Overview](#project-overview)
+- [Core Features](#core-features)
+- [Technical Architecture](#technical-architecture)
+- [User Guide](#user-guide)
+- [Page Navigation](#page-navigation)
+- [AI Features](#ai-features)
+- [Data Security](#data-security)
+- [Development Information](#development-information)
 
 ---
 
-## 核心功能
+## Project Overview
 
-### 🐁 老鼠檔案管理
+### 🎯 Purpose
 
-| 功能 | 說明 |
-|------|------|
-| 個人資料 | 記錄名字、性別、出生日期、毛色、耳型、被毛類型 |
-| 個性標籤 | 自訂個性描述（友善、害羞、好奇、活潑、穩重等） |
-| 大頭照上傳 | 支援照片裁切與上傳 |
-| 狀態追蹤 | 標記活躍、已過世等狀態 |
+Rat Care Tracker was born from a love for pet rat care. Although pet rats are small in size, they require careful attention and observation. This application aims to:
 
-### 📝 多元日誌記錄
+1. **Systematic Recording**: Provide a structured way to record daily feeding, health checks, weight changes, and other important information
+2. **Health Monitoring**: Analyze health trends through AI to detect potential issues early
+3. **Behavior Observation**: Track group interaction behaviors to understand social hierarchy dynamics
+4. **Care Reminders**: Smart reminder system ensures important care tasks are never missed
+5. **Data Visualization**: Transform care data into easy-to-understand charts and reports
 
-支援六種類型的日誌記錄：
+### 👥 Target Users
 
-| 日誌類型 | 記錄內容 |
-|----------|----------|
-| 🍽️ 餵食記錄 | 食物類型、份量、進食狀況 |
-| ⚖️ 體重記錄 | 體重數值、體況評估 |
-| 🏥 健康記錄 | 症狀、治療、獸醫診斷 |
-| 💊 用藥記錄 | 藥物名稱、劑量、頻率 |
-| 🎭 行為記錄 | 社交互動、特殊行為觀察 |
-| 🏠 環境記錄 | 籠舍清潔、環境變更 |
-
-### ✅ 任務管理
-
-- **任務建立**：設定標題、描述、優先級、到期日
-- **重複任務**：支援每日、每週、每月等週期性任務
-- **老鼠關聯**：將任務指派給特定老鼠
-- **快速建議**：預設常用任務範本（餵食、換水、籠舍清潔等）
-
-### 🔔 智慧提醒
-
-系統會根據日誌記錄自動計算並提醒：
-
-- 餵食提醒（超過設定天數未記錄餵食）
-- 飲水更換提醒
-- 籠舍清潔提醒
-- 體重測量提醒
-- 健康檢查提醒
-- 用藥提醒
-
-### 📊 數據報告
-
-| 報告類型 | 分析內容 |
-|----------|----------|
-| 體重趨勢 | 體重變化曲線、增減幅度分析 |
-| 健康報告 | 健康事件統計、常見症狀分析 |
-| 行為分析 | 行為模式識別、互動頻率 |
-| 階層分析 | AI 分析群體社會結構與支配關係 |
-| 餵食環境 | 飲食習慣與環境維護統計 |
-| 每日摘要 | 當日照護活動總覽 |
+- Pet rat owners (whether beginners or experienced keepers)
+- Pet rat breeders
+- Pet rat rescue organizations
+- Veterinary clinics (tracking patient records)
 
 ---
 
-## 技術架構
+## Core Features
 
-### 🛠️ 前端技術棧
+### 🐁 Rat Profile Management
+
+| Feature | Description |
+|---------|-------------|
+| Personal Info | Record name, gender, birthdate, coat color, ear type, coat type |
+| Personality Tags | Custom personality descriptions (friendly, shy, curious, active, calm, etc.) |
+| Profile Photo | Support photo cropping and upload |
+| Status Tracking | Mark as active, deceased, etc. |
+
+### 📝 Multiple Log Types
+
+Supports six types of log entries:
+
+| Log Type | Content |
+|----------|---------|
+| 🍽️ Feeding Log | Food type, portion, eating behavior |
+| ⚖️ Weight Log | Weight value, body condition assessment |
+| 🏥 Health Log | Symptoms, treatment, veterinary diagnosis |
+| 💊 Medication Log | Medication name, dosage, frequency |
+| 🎭 Behavior Log | Social interactions, special behavior observations |
+| 🏠 Environment Log | Cage cleaning, environment changes |
+
+### ✅ Task Management
+
+- **Task Creation**: Set title, description, priority, due date
+- **Recurring Tasks**: Support daily, weekly, monthly, and other periodic tasks
+- **Rat Association**: Assign tasks to specific rats
+- **Quick Suggestions**: Preset common task templates (feeding, water change, cage cleaning, etc.)
+
+### 🔔 Smart Reminders
+
+The system automatically calculates and reminds based on log entries:
+
+- Feeding reminder (no feeding recorded for set number of days)
+- Water change reminder
+- Cage cleaning reminder
+- Weight measurement reminder
+- Health check reminder
+- Medication reminder
+
+### 📊 Data Reports
+
+| Report Type | Analysis Content |
+|-------------|------------------|
+| Weight Trend | Weight change curves, increase/decrease analysis |
+| Health Report | Health event statistics, common symptom analysis |
+| Behavior Analysis | Behavior pattern recognition, interaction frequency |
+| Hierarchy Analysis | AI analysis of group social structure and dominance relationships |
+| Feeding & Environment | Diet habits and environment maintenance statistics |
+| Daily Summary | Daily care activity overview |
+
+---
+
+## Technical Architecture
+
+### 🛠️ Frontend Stack
 
 ```
-├── React 18          # UI 框架
-├── TypeScript        # 型別安全
-├── Vite              # 建構工具
-├── Tailwind CSS      # 樣式框架
-├── shadcn/ui         # UI 元件庫
-├── Framer Motion     # 動畫效果
-├── Recharts          # 圖表視覺化
-├── i18next           # 國際化（繁體中文/英文）
-└── React Router      # 路由管理
+├── React 18          # UI Framework
+├── TypeScript        # Type Safety
+├── Vite              # Build Tool
+├── Tailwind CSS      # Styling Framework
+├── shadcn/ui         # UI Component Library
+├── Framer Motion     # Animations
+├── Recharts          # Chart Visualization
+├── i18next           # Internationalization (Traditional Chinese/English)
+└── React Router      # Route Management
 ```
 
-### ☁️ 後端服務（Lovable Cloud）
+### ☁️ Backend Services (Lovable Cloud)
 
 ```
 ├── Supabase
-│   ├── PostgreSQL    # 關聯式資料庫
-│   ├── Auth          # 使用者驗證
-│   ├── Storage       # 檔案儲存
-│   └── Edge Functions # 無伺服器函數
-└── Gemini API        # AI 分析引擎
+│   ├── PostgreSQL    # Relational Database
+│   ├── Auth          # User Authentication
+│   ├── Storage       # File Storage
+│   └── Edge Functions # Serverless Functions
+└── Gemini API        # AI Analysis Engine
 ```
 
-### 📁 專案結構
+### 📁 Project Structure
 
 ```
 src/
-├── components/           # 可重用元件
-│   ├── ui/              # 基礎 UI 元件（shadcn）
-│   ├── log-forms/       # 日誌表單元件
-│   ├── reports/         # 報告圖表元件
-│   └── settings/        # 設定頁面元件
+├── components/           # Reusable Components
+│   ├── ui/              # Base UI Components (shadcn)
+│   ├── log-forms/       # Log Form Components
+│   ├── reports/         # Report Chart Components
+│   └── settings/        # Settings Page Components
 ├── contexts/            # React Context
-├── hooks/               # 自訂 Hooks
-├── pages/               # 頁面元件
-├── services/            # API 服務層
-├── types/               # TypeScript 型別定義
-├── utils/               # 工具函數
-└── integrations/        # 第三方整合
+├── hooks/               # Custom Hooks
+├── pages/               # Page Components
+├── services/            # API Service Layer
+├── types/               # TypeScript Type Definitions
+├── utils/               # Utility Functions
+└── integrations/        # Third-party Integrations
 
 supabase/
 └── functions/           # Edge Functions
-    ├── hierarchy-analysis/  # AI 階層分析
-    ├── daily-interaction-survey/  # 每日問卷
-    ├── get-mapbox-token/    # 地圖服務
-    └── delete_user_by_id/   # 帳號刪除
+    ├── hierarchy-analysis/  # AI Hierarchy Analysis
+    ├── daily-interaction-survey/  # Daily Survey
+    ├── get-mapbox-token/    # Map Service
+    └── delete_user_by_id/   # Account Deletion
 ```
 
 ---
 
-## 使用指南
+## User Guide
 
-### 🚀 快速開始
+### 🚀 Quick Start
 
-1. **註冊帳號**
-   - 使用電子郵件註冊
-   - 驗證信箱後即可登入
+1. **Register Account**
+   - Register with email
+   - Verify email to log in
 
-2. **初始設定**
-   - 系統會自動建立三隻範例老鼠
-   - 可在「老鼠」頁面編輯或刪除
+2. **Initial Setup**
+   - System automatically creates three sample rats
+   - Edit or delete them on the "Rats" page
 
-3. **新增您的老鼠**
-   - 點擊「新增老鼠」按鈕
-   - 填寫基本資料與上傳照片
+3. **Add Your Rats**
+   - Click "Add Rat" button
+   - Fill in basic info and upload photo
 
-4. **開始記錄**
-   - 使用首頁的快速記錄按鈕
-   - 或在「日誌」頁面新增詳細記錄
+4. **Start Recording**
+   - Use quick log buttons on the home page
+   - Or add detailed logs on the "Logs" page
 
-### 📱 快速記錄（FAB）
+### 📱 Quick Log (FAB)
 
-首頁右下角的浮動按鈕提供常用的快速記錄功能：
+The floating button at the bottom right of the home page provides common quick log functions:
 
-- 🍽️ 餵食
-- 💧 換水
-- ✨ 清籠
-- 🚽 清廁所
+- 🍽️ Feeding
+- 💧 Water Change
+- ✨ Cage Cleaning
+- 🚽 Toilet Cleaning
 
-點擊即可一鍵建立日誌，使用預設值快速完成記錄。
+Click to create a log instantly with default values for quick recording.
 
-### ⚙️ 自訂設定
+### ⚙️ Custom Settings
 
-在設定頁面可以調整：
+Adjustable in the settings page:
 
-| 設定項目 | 說明 |
-|----------|------|
-| 提醒頻率 | 調整各類提醒的天數閾值 |
-| 快速動作 | 自訂快速記錄按鈕與預設值 |
-| 個性標籤 | 管理可選用的個性標籤 |
-| 日誌標籤 | 自訂日誌分類標籤 |
-| 任務建議 | 編輯預設任務範本 |
-| 外觀主題 | 切換亮色/暗色模式 |
-| 語言設定 | 繁體中文/English |
-
----
-
-## 頁面導覽
-
-### 🏠 首頁（Dashboard）
-
-- AI 健康狀態概覽
-- 智慧照護提醒
-- 今日待辦任務
-- 最近活動記錄
-- 快速記錄按鈕
-
-### 🐀 老鼠（Rats）
-
-- 所有老鼠卡片列表
-- 快速查看基本資訊
-- 新增/編輯/刪除老鼠
-- 查看個別老鼠的完整日誌
-
-### 📋 日誌（Logs）
-
-- 時間軸形式的日誌列表
-- 篩選與搜尋功能
-- 多選批次刪除
-- 新增各類型日誌
-
-### ✅ 任務（Tasks）
-
-- 待辦任務清單
-- 快速完成/延期
-- 重複任務設定
-- 任務建議範本
-
-### 📊 報告（Reports）
-
-- 體重趨勢圖
-- 健康報告
-- 行為分析
-- AI 階層分析
-- 餵食環境統計
-
-### ⚙️ 設定
-
-- 帳號管理
-- 提醒設定
-- 外觀與語言
-- 標籤管理
+| Setting | Description |
+|---------|-------------|
+| Reminder Frequency | Adjust day thresholds for various reminders |
+| Quick Actions | Customize quick log buttons and default values |
+| Personality Tags | Manage available personality tags |
+| Log Tags | Customize log category tags |
+| Task Suggestions | Edit preset task templates |
+| Appearance Theme | Switch light/dark mode |
+| Language | Traditional Chinese/English |
 
 ---
 
-## AI 功能
+## Page Navigation
 
-### 🤖 健康狀態分析
+### 🏠 Home (Dashboard)
 
-使用 Gemini AI 分析近期日誌資料，生成口語化的健康狀態摘要：
+- AI health status overview
+- Smart care reminders
+- Today's to-do tasks
+- Recent activity log
+- Quick log buttons
 
-- 分析體重變化趨勢
-- 識別異常行為模式
-- 提供個性化照護建議
-- 結果快取以優化效能
+### 🐀 Rats
 
-### 🏆 社會階層分析
+- All rat card list
+- Quick view basic info
+- Add/edit/delete rats
+- View complete logs for individual rats
 
-透過 AI 分析群體互動行為：
+### 📋 Logs
 
-- 計算支配分數（-100 至 +100）
-- 排列群體階層順序
-- 識別支配/順從行為
-- 生成互動模式報告
-- 提供群體管理建議
-- 追蹤階層變化趨勢
+- Timeline-style log list
+- Filter and search functions
+- Multi-select batch delete
+- Add various log types
 
-### 📊 分析快取機制
+### ✅ Tasks
 
-- 智慧快取減少 API 呼叫
-- 資料變更時自動失效
-- 支援強制重新分析
+- To-do task list
+- Quick complete/postpone
+- Recurring task settings
+- Task suggestion templates
+
+### 📊 Reports
+
+- Weight trend chart
+- Health report
+- Behavior analysis
+- AI hierarchy analysis
+- Feeding & environment statistics
+
+### ⚙️ Settings
+
+- Account management
+- Reminder settings
+- Appearance & language
+- Tag management
 
 ---
 
-## 資料安全
+## AI Features
 
-### 🔐 資料保護
+### 🤖 Health Status Analysis
 
-- **加密傳輸**：所有資料透過 HTTPS 加密傳輸
-- **Row Level Security**：資料庫層級的存取控制
-- **使用者隔離**：每位使用者只能存取自己的資料
+Uses Gemini AI to analyze recent log data and generate conversational health status summaries:
 
-### 🗑️ 帳號刪除
+- Analyze weight change trends
+- Identify abnormal behavior patterns
+- Provide personalized care suggestions
+- Cache results for performance optimization
 
-- 可在設定中刪除帳號
-- 刪除後所有資料將永久清除
-- 此操作無法復原
+### 🏆 Social Hierarchy Analysis
+
+Analyze group interaction behavior through AI:
+
+- Calculate dominance scores (-100 to +100)
+- Rank group hierarchy order
+- Identify dominant/submissive behaviors
+- Generate interaction pattern reports
+- Provide group management suggestions
+- Track hierarchy change trends
+
+### 📊 Analysis Cache Mechanism
+
+- Smart caching reduces API calls
+- Auto-invalidate when data changes
+- Support forced re-analysis
 
 ---
 
-## 開發資訊
+## Data Security
 
-### 📦 環境需求
+### 🔐 Data Protection
+
+- **Encrypted Transmission**: All data transmitted via HTTPS encryption
+- **Row Level Security**: Database-level access control
+- **User Isolation**: Each user can only access their own data
+
+### 🗑️ Account Deletion
+
+- Delete account in settings
+- All data permanently deleted after deletion
+- This action cannot be undone
+
+---
+
+## Development Information
+
+### 📦 Environment Requirements
 
 - Node.js 18+
-- npm 或 bun
+- npm or bun
 
-### 🔧 本地開發
+### 🔧 Local Development
 
 ```bash
-# 安裝依賴
+# Install dependencies
 npm install
 
-# 啟動開發伺服器
+# Start development server
 npm run dev
 
-# 建構生產版本
+# Build production version
 npm run build
 ```
 
-### 🌐 環境變數
+### 🌐 Environment Variables
 
 ```env
-VITE_SUPABASE_URL=           # Supabase 專案 URL
-VITE_SUPABASE_PUBLISHABLE_KEY=  # Supabase 公開金鑰
+VITE_SUPABASE_URL=           # Supabase Project URL
+VITE_SUPABASE_PUBLISHABLE_KEY=  # Supabase Public Key
 ```
 
-### 🔑 Secrets（Edge Functions）
+### 🔑 Secrets (Edge Functions)
 
-| Secret 名稱 | 用途 |
-|-------------|------|
-| `GEMINI_API_KEY` | Google Gemini AI 分析 |
-| `MAPBOX_PUBLIC_TOKEN` | Mapbox 地圖服務 |
+| Secret Name | Purpose |
+|-------------|---------|
+| `GEMINI_API_KEY` | Google Gemini AI Analysis |
+| `MAPBOX_PUBLIC_TOKEN` | Mapbox Map Service |
 
-### 📝 資料庫結構
+### 📝 Database Structure
 
-主要資料表：
+Main Tables:
 
-| 資料表 | 用途 |
-|--------|------|
-| `rats` | 老鼠基本資料 |
-| `log_entries` | 日誌記錄 |
-| `tasks` | 任務清單 |
-| `reminder_settings` | 提醒設定 |
-| `quick_log_actions` | 快速記錄按鈕 |
-| `personality_tags` | 個性標籤 |
-| `log_tag_categories` | 日誌標籤分類 |
-| `log_tag_suggestions` | 日誌標籤建議 |
-| `task_suggestions` | 任務建議範本 |
-| `hierarchy_analysis_cache` | AI 分析快取 |
-| `rat_rank_history` | 階層歷史記錄 |
-
----
-
-## 🌟 特色亮點
-
-1. **🎨 精美介面**：採用柔和的馬卡龍配色，友善的使用體驗
-2. **🤖 AI 驅動**：智慧健康分析與階層分析
-3. **📱 響應式設計**：支援桌面與行動裝置
-4. **🌍 多語言支援**：繁體中文與英文介面
-5. **🔄 即時同步**：雲端儲存，跨裝置使用
-6. **⚡ 快速記錄**：一鍵完成日常記錄
-7. **📊 數據視覺化**：直觀的圖表與報告
+| Table | Purpose |
+|-------|---------|
+| `rats` | Rat basic info |
+| `log_entries` | Log entries |
+| `tasks` | Task list |
+| `reminder_settings` | Reminder settings |
+| `quick_log_actions` | Quick log buttons |
+| `personality_tags` | Personality tags |
+| `log_tag_categories` | Log tag categories |
+| `log_tag_suggestions` | Log tag suggestions |
+| `task_suggestions` | Task suggestion templates |
+| `hierarchy_analysis_cache` | AI analysis cache |
+| `rat_rank_history` | Hierarchy history records |
 
 ---
 
-## 📮 聯絡與回饋
+## 🌟 Highlights
 
-如有任何建議或問題，歡迎透過以下方式聯繫：
-
-- 提交 Issue
-- 發送 Pull Request
+1. **🎨 Beautiful Interface**: Soft macaron color scheme, friendly user experience
+2. **🤖 AI-Powered**: Smart health analysis and hierarchy analysis
+3. **📱 Responsive Design**: Support desktop and mobile devices
+4. **🌍 Multi-language Support**: Traditional Chinese and English interface
+5. **🔄 Real-time Sync**: Cloud storage, cross-device usage
+6. **⚡ Quick Recording**: One-click daily log completion
+7. **📊 Data Visualization**: Intuitive charts and reports
 
 ---
 
-## 📄 授權
+## 📮 Contact & Feedback
 
-本專案採用 MIT 授權條款。
+For any suggestions or issues, feel free to reach out:
+
+- Submit an Issue
+- Send a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ---
 
@@ -374,5 +374,5 @@ VITE_SUPABASE_PUBLISHABLE_KEY=  # Supabase 公開金鑰
   <br />
   <strong>Rat Care Tracker</strong>
   <br />
-  用愛守護每一隻毛孩 🐀❤️
+  Caring for every furry friend with love 🐀❤️
 </p>
