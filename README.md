@@ -1,73 +1,378 @@
-# Welcome to your Lovable project
+# 🐀 Rat Care Tracker - 寵物鼠照護追蹤器
 
-## Project info
+一款專為寵物鼠飼主設計的全方位照護管理應用程式，幫助您追蹤每一隻毛孩的健康、飲食、行為與日常照護。
 
-**URL**: https://lovable.dev/projects/882857a5-6a44-49e8-8ba5-a8ececb337dd
+---
 
-## How can I edit this code?
+## 📋 目錄
 
-There are several ways of editing your application.
+- [專案簡介](#專案簡介)
+- [核心功能](#核心功能)
+- [技術架構](#技術架構)
+- [使用指南](#使用指南)
+- [頁面導覽](#頁面導覽)
+- [AI 功能](#ai-功能)
+- [資料安全](#資料安全)
+- [開發資訊](#開發資訊)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/882857a5-6a44-49e8-8ba5-a8ececb337dd) and start prompting.
+## 專案簡介
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🎯 開發目的
 
-**Use your preferred IDE**
+Rat Care Tracker 的誕生源於對寵物鼠照護的熱愛。寵物鼠雖然體型嬌小，但需要細心的照顧與觀察。本應用程式旨在：
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **系統化記錄**：提供結構化的方式記錄每日餵食、健康檢查、體重變化等重要資訊
+2. **健康監控**：透過 AI 分析健康趨勢，及早發現潛在問題
+3. **行為觀察**：追蹤群體互動行為，了解社會階層動態
+4. **照護提醒**：智慧提醒系統確保不會遺漏重要的照護任務
+5. **資料視覺化**：將照護數據轉化為易懂的圖表與報告
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 👥 目標使用者
 
-Follow these steps:
+- 寵物鼠飼主（無論是新手還是資深飼主）
+- 寵物鼠繁殖者
+- 寵物鼠救援組織
+- 獸醫診所（追蹤病患紀錄）
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 核心功能
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 🐁 老鼠檔案管理
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+| 功能 | 說明 |
+|------|------|
+| 個人資料 | 記錄名字、性別、出生日期、毛色、耳型、被毛類型 |
+| 個性標籤 | 自訂個性描述（友善、害羞、好奇、活潑、穩重等） |
+| 大頭照上傳 | 支援照片裁切與上傳 |
+| 狀態追蹤 | 標記活躍、已過世等狀態 |
+
+### 📝 多元日誌記錄
+
+支援六種類型的日誌記錄：
+
+| 日誌類型 | 記錄內容 |
+|----------|----------|
+| 🍽️ 餵食記錄 | 食物類型、份量、進食狀況 |
+| ⚖️ 體重記錄 | 體重數值、體況評估 |
+| 🏥 健康記錄 | 症狀、治療、獸醫診斷 |
+| 💊 用藥記錄 | 藥物名稱、劑量、頻率 |
+| 🎭 行為記錄 | 社交互動、特殊行為觀察 |
+| 🏠 環境記錄 | 籠舍清潔、環境變更 |
+
+### ✅ 任務管理
+
+- **任務建立**：設定標題、描述、優先級、到期日
+- **重複任務**：支援每日、每週、每月等週期性任務
+- **老鼠關聯**：將任務指派給特定老鼠
+- **快速建議**：預設常用任務範本（餵食、換水、籠舍清潔等）
+
+### 🔔 智慧提醒
+
+系統會根據日誌記錄自動計算並提醒：
+
+- 餵食提醒（超過設定天數未記錄餵食）
+- 飲水更換提醒
+- 籠舍清潔提醒
+- 體重測量提醒
+- 健康檢查提醒
+- 用藥提醒
+
+### 📊 數據報告
+
+| 報告類型 | 分析內容 |
+|----------|----------|
+| 體重趨勢 | 體重變化曲線、增減幅度分析 |
+| 健康報告 | 健康事件統計、常見症狀分析 |
+| 行為分析 | 行為模式識別、互動頻率 |
+| 階層分析 | AI 分析群體社會結構與支配關係 |
+| 餵食環境 | 飲食習慣與環境維護統計 |
+| 每日摘要 | 當日照護活動總覽 |
+
+---
+
+## 技術架構
+
+### 🛠️ 前端技術棧
+
+```
+├── React 18          # UI 框架
+├── TypeScript        # 型別安全
+├── Vite              # 建構工具
+├── Tailwind CSS      # 樣式框架
+├── shadcn/ui         # UI 元件庫
+├── Framer Motion     # 動畫效果
+├── Recharts          # 圖表視覺化
+├── i18next           # 國際化（繁體中文/英文）
+└── React Router      # 路由管理
 ```
 
-**Edit a file directly in GitHub**
+### ☁️ 後端服務（Lovable Cloud）
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+├── Supabase
+│   ├── PostgreSQL    # 關聯式資料庫
+│   ├── Auth          # 使用者驗證
+│   ├── Storage       # 檔案儲存
+│   └── Edge Functions # 無伺服器函數
+└── Gemini API        # AI 分析引擎
+```
 
-**Use GitHub Codespaces**
+### 📁 專案結構
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+src/
+├── components/           # 可重用元件
+│   ├── ui/              # 基礎 UI 元件（shadcn）
+│   ├── log-forms/       # 日誌表單元件
+│   ├── reports/         # 報告圖表元件
+│   └── settings/        # 設定頁面元件
+├── contexts/            # React Context
+├── hooks/               # 自訂 Hooks
+├── pages/               # 頁面元件
+├── services/            # API 服務層
+├── types/               # TypeScript 型別定義
+├── utils/               # 工具函數
+└── integrations/        # 第三方整合
 
-## What technologies are used for this project?
+supabase/
+└── functions/           # Edge Functions
+    ├── hierarchy-analysis/  # AI 階層分析
+    ├── daily-interaction-survey/  # 每日問卷
+    ├── get-mapbox-token/    # 地圖服務
+    └── delete_user_by_id/   # 帳號刪除
+```
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 使用指南
 
-## How can I deploy this project?
+### 🚀 快速開始
 
-Simply open [Lovable](https://lovable.dev/projects/882857a5-6a44-49e8-8ba5-a8ececb337dd) and click on Share -> Publish.
+1. **註冊帳號**
+   - 使用電子郵件註冊
+   - 驗證信箱後即可登入
 
-## Can I connect a custom domain to my Lovable project?
+2. **初始設定**
+   - 系統會自動建立三隻範例老鼠
+   - 可在「老鼠」頁面編輯或刪除
 
-Yes, you can!
+3. **新增您的老鼠**
+   - 點擊「新增老鼠」按鈕
+   - 填寫基本資料與上傳照片
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+4. **開始記錄**
+   - 使用首頁的快速記錄按鈕
+   - 或在「日誌」頁面新增詳細記錄
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### 📱 快速記錄（FAB）
+
+首頁右下角的浮動按鈕提供常用的快速記錄功能：
+
+- 🍽️ 餵食
+- 💧 換水
+- ✨ 清籠
+- 🚽 清廁所
+
+點擊即可一鍵建立日誌，使用預設值快速完成記錄。
+
+### ⚙️ 自訂設定
+
+在設定頁面可以調整：
+
+| 設定項目 | 說明 |
+|----------|------|
+| 提醒頻率 | 調整各類提醒的天數閾值 |
+| 快速動作 | 自訂快速記錄按鈕與預設值 |
+| 個性標籤 | 管理可選用的個性標籤 |
+| 日誌標籤 | 自訂日誌分類標籤 |
+| 任務建議 | 編輯預設任務範本 |
+| 外觀主題 | 切換亮色/暗色模式 |
+| 語言設定 | 繁體中文/English |
+
+---
+
+## 頁面導覽
+
+### 🏠 首頁（Dashboard）
+
+- AI 健康狀態概覽
+- 智慧照護提醒
+- 今日待辦任務
+- 最近活動記錄
+- 快速記錄按鈕
+
+### 🐀 老鼠（Rats）
+
+- 所有老鼠卡片列表
+- 快速查看基本資訊
+- 新增/編輯/刪除老鼠
+- 查看個別老鼠的完整日誌
+
+### 📋 日誌（Logs）
+
+- 時間軸形式的日誌列表
+- 篩選與搜尋功能
+- 多選批次刪除
+- 新增各類型日誌
+
+### ✅ 任務（Tasks）
+
+- 待辦任務清單
+- 快速完成/延期
+- 重複任務設定
+- 任務建議範本
+
+### 📊 報告（Reports）
+
+- 體重趨勢圖
+- 健康報告
+- 行為分析
+- AI 階層分析
+- 餵食環境統計
+
+### ⚙️ 設定
+
+- 帳號管理
+- 提醒設定
+- 外觀與語言
+- 標籤管理
+
+---
+
+## AI 功能
+
+### 🤖 健康狀態分析
+
+使用 Gemini AI 分析近期日誌資料，生成口語化的健康狀態摘要：
+
+- 分析體重變化趨勢
+- 識別異常行為模式
+- 提供個性化照護建議
+- 結果快取以優化效能
+
+### 🏆 社會階層分析
+
+透過 AI 分析群體互動行為：
+
+- 計算支配分數（-100 至 +100）
+- 排列群體階層順序
+- 識別支配/順從行為
+- 生成互動模式報告
+- 提供群體管理建議
+- 追蹤階層變化趨勢
+
+### 📊 分析快取機制
+
+- 智慧快取減少 API 呼叫
+- 資料變更時自動失效
+- 支援強制重新分析
+
+---
+
+## 資料安全
+
+### 🔐 資料保護
+
+- **加密傳輸**：所有資料透過 HTTPS 加密傳輸
+- **Row Level Security**：資料庫層級的存取控制
+- **使用者隔離**：每位使用者只能存取自己的資料
+
+### 🗑️ 帳號刪除
+
+- 可在設定中刪除帳號
+- 刪除後所有資料將永久清除
+- 此操作無法復原
+
+---
+
+## 開發資訊
+
+### 📦 環境需求
+
+- Node.js 18+
+- npm 或 bun
+
+### 🔧 本地開發
+
+```bash
+# 安裝依賴
+npm install
+
+# 啟動開發伺服器
+npm run dev
+
+# 建構生產版本
+npm run build
+```
+
+### 🌐 環境變數
+
+```env
+VITE_SUPABASE_URL=           # Supabase 專案 URL
+VITE_SUPABASE_PUBLISHABLE_KEY=  # Supabase 公開金鑰
+```
+
+### 🔑 Secrets（Edge Functions）
+
+| Secret 名稱 | 用途 |
+|-------------|------|
+| `GEMINI_API_KEY` | Google Gemini AI 分析 |
+| `MAPBOX_PUBLIC_TOKEN` | Mapbox 地圖服務 |
+
+### 📝 資料庫結構
+
+主要資料表：
+
+| 資料表 | 用途 |
+|--------|------|
+| `rats` | 老鼠基本資料 |
+| `log_entries` | 日誌記錄 |
+| `tasks` | 任務清單 |
+| `reminder_settings` | 提醒設定 |
+| `quick_log_actions` | 快速記錄按鈕 |
+| `personality_tags` | 個性標籤 |
+| `log_tag_categories` | 日誌標籤分類 |
+| `log_tag_suggestions` | 日誌標籤建議 |
+| `task_suggestions` | 任務建議範本 |
+| `hierarchy_analysis_cache` | AI 分析快取 |
+| `rat_rank_history` | 階層歷史記錄 |
+
+---
+
+## 🌟 特色亮點
+
+1. **🎨 精美介面**：採用柔和的馬卡龍配色，友善的使用體驗
+2. **🤖 AI 驅動**：智慧健康分析與階層分析
+3. **📱 響應式設計**：支援桌面與行動裝置
+4. **🌍 多語言支援**：繁體中文與英文介面
+5. **🔄 即時同步**：雲端儲存，跨裝置使用
+6. **⚡ 快速記錄**：一鍵完成日常記錄
+7. **📊 數據視覺化**：直觀的圖表與報告
+
+---
+
+## 📮 聯絡與回饋
+
+如有任何建議或問題，歡迎透過以下方式聯繫：
+
+- 提交 Issue
+- 發送 Pull Request
+
+---
+
+## 📄 授權
+
+本專案採用 MIT 授權條款。
+
+---
+
+<p align="center">
+  <img src="src/assets/pixel-rat.png" alt="Pixel Rat" width="64" />
+  <br />
+  <strong>Rat Care Tracker</strong>
+  <br />
+  用愛守護每一隻毛孩 🐀❤️
+</p>
