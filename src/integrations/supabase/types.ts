@@ -14,16 +14,591 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_interaction_surveys: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          processed_behaviors: Json | null
+          questions: Json
+          survey_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          processed_behaviors?: Json | null
+          questions: Json
+          survey_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          processed_behaviors?: Json | null
+          questions?: Json
+          survey_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hierarchy_analysis_cache: {
+        Row: {
+          analysis_data: Json
+          behavior_log_count: number
+          created_at: string
+          id: string
+          last_behavior_log_timestamp: string
+          time_range: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_data: Json
+          behavior_log_count: number
+          created_at?: string
+          id?: string
+          last_behavior_log_timestamp: string
+          time_range: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json
+          behavior_log_count?: number
+          created_at?: string
+          id?: string
+          last_behavior_log_timestamp?: string
+          time_range?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hierarchy_invalidation_triggers: {
+        Row: {
+          created_at: string
+          id: string
+          log_entry_id: string | null
+          trigger_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_entry_id?: string | null
+          trigger_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_entry_id?: string | null
+          trigger_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      log_entries: {
+        Row: {
+          content: Json | null
+          created_at: string
+          id: string
+          rat_ids: string[] | null
+          rat_names: string[] | null
+          timestamp: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          id?: string
+          rat_ids?: string[] | null
+          rat_names?: string[] | null
+          timestamp?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          id?: string
+          rat_ids?: string[] | null
+          rat_names?: string[] | null
+          timestamp?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      log_tag_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          display_name: string
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      log_tag_suggestions: {
+        Row: {
+          category: string | null
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      map_data: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number
+          longitude: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      personality_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quick_log_actions: {
+        Row: {
+          color: string
+          created_at: string
+          default_values: Json | null
+          display_order: number
+          enabled: boolean
+          icon_name: string
+          id: string
+          log_type: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          default_values?: Json | null
+          display_order?: number
+          enabled?: boolean
+          icon_name: string
+          id?: string
+          log_type: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          default_values?: Json | null
+          display_order?: number
+          enabled?: boolean
+          icon_name?: string
+          id?: string
+          log_type?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rat_rank_history: {
+        Row: {
+          analysis_time: string
+          dominance_score: number
+          id: string
+          rank: number
+          rat_id: string
+          rat_name: string
+          time_range: number | null
+          user_id: string
+        }
+        Insert: {
+          analysis_time?: string
+          dominance_score: number
+          id?: string
+          rank: number
+          rat_id: string
+          rat_name: string
+          time_range?: number | null
+          user_id: string
+        }
+        Update: {
+          analysis_time?: string
+          dominance_score?: number
+          id?: string
+          rank?: number
+          rat_id?: string
+          rat_name?: string
+          time_range?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rats: {
+        Row: {
+          acquisition_date: string | null
+          birthdate: string | null
+          coat_type: string | null
+          color: string | null
+          created_at: string
+          deceased_date: string | null
+          ear_type: string | null
+          gender: string | null
+          id: string
+          is_deceased: boolean | null
+          is_neutered: boolean | null
+          name: string
+          notes: string | null
+          origin: string | null
+          personality: string | null
+          profile_image_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acquisition_date?: string | null
+          birthdate?: string | null
+          coat_type?: string | null
+          color?: string | null
+          created_at?: string
+          deceased_date?: string | null
+          ear_type?: string | null
+          gender?: string | null
+          id?: string
+          is_deceased?: boolean | null
+          is_neutered?: boolean | null
+          name: string
+          notes?: string | null
+          origin?: string | null
+          personality?: string | null
+          profile_image_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acquisition_date?: string | null
+          birthdate?: string | null
+          coat_type?: string | null
+          color?: string | null
+          created_at?: string
+          deceased_date?: string | null
+          ear_type?: string | null
+          gender?: string | null
+          id?: string
+          is_deceased?: boolean | null
+          is_neutered?: boolean | null
+          name?: string
+          notes?: string | null
+          origin?: string | null
+          personality?: string | null
+          profile_image_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reminder_settings: {
+        Row: {
+          created_at: string
+          custom_message: string | null
+          enabled: boolean | null
+          frequency_days: number | null
+          id: string
+          priority: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_message?: string | null
+          enabled?: boolean | null
+          frequency_days?: number | null
+          id?: string
+          priority?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_message?: string | null
+          enabled?: boolean | null
+          frequency_days?: number | null
+          id?: string
+          priority?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      task_suggestions: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          priority: string | null
+          quantity: number | null
+          title: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          priority?: string | null
+          quantity?: number | null
+          title?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          priority?: string | null
+          quantity?: number | null
+          title?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          color: string | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          due_time: string | null
+          id: string
+          is_completed: boolean | null
+          location: string | null
+          priority: string | null
+          quantity: number | null
+          rat_ids: string[] | null
+          repeat_days: string[] | null
+          repeat_interval: number | null
+          repeat_type: string | null
+          repeat_unit: string | null
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          is_completed?: boolean | null
+          location?: string | null
+          priority?: string | null
+          quantity?: number | null
+          rat_ids?: string[] | null
+          repeat_days?: string[] | null
+          repeat_interval?: number | null
+          repeat_type?: string | null
+          repeat_unit?: string | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          is_completed?: boolean | null
+          location?: string | null
+          priority?: string | null
+          quantity?: number | null
+          rat_ids?: string[] | null
+          repeat_days?: string[] | null
+          repeat_interval?: number | null
+          repeat_type?: string | null
+          repeat_unit?: string | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "tester" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +725,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["tester", "user"],
+    },
   },
 } as const
