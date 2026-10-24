@@ -4,6 +4,7 @@ This patch addresses authorization/exposure defects found during a source review
 
 - Edge account deletion validates the bearer token with Auth and permits only self-deletion.
 - `security/harden-account-deletion.sql` fixes the SQL NULL authorization bypass in the actual RPC used by the frontend, removes anonymous EXECUTE, and preserves authenticated self-deletion.
+- Authenticated Supabase responses are no longer runtime-cached; activating the updated service worker removes the old api-cache.
 - Vite binds to loopback by default. Do not expose the development server to the internet.
 
 Run `node --test security/delete-account.test.cjs` with the existing TypeScript dev dependency. Provider responses are mocked; no account is deleted by tests.
