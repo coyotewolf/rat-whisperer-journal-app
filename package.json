@@ -89,5 +89,10 @@
     "typescript-eslint": "^8.0.1",
     "vite": "6.4.5",
     "vite-plugin-pwa": "^1.0.1"
+  },
+  "overrides": {
+    "@tailwindcss/typography": {
+      "postcss-selector-parser": "6.1.5"
+    }
   }
 }
