@@ -27,3 +27,14 @@ test('unknown routes show the fallback and return home', async ({ page }) => {
   await expect(page).toHaveURL('/');
   await expect(page.locator('a[href="/rats"]')).toBeVisible();
 });
+
+test('translation backend loads local English resources', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('i18nextLng', 'en'));
+  const translation = page.waitForResponse(response =>
+    new URL(response.url()).pathname === '/locales/en/translation.json');
+  await page.goto('/');
+  const response = await translation;
+  expect(response.ok()).toBeTruthy();
+  expect(Object.keys(await response.json()).length).toBeGreaterThan(0);
+  await expect(page.locator('h1')).toBeVisible();
+});

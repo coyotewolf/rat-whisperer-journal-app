@@ -11,8 +11,18 @@ Windows Node 24.16.0 validation:
 - Two real Chromium browser smoke tests pass: unauthenticated home/navigation and 404 return-home. External backend requests are blocked; authenticated user/data workflows are not covered.
 - Production build including generated PWA service worker passes.
 - Lint now executes, but reports source errors; it is not a passing check.
-- Final full audit: 1 high / 7 moderate / 1 low. Production audit: 1 high / 5 moderate / 1 low. Remaining findings include Zod, React Router, CSS selector tooling and i18next-http-backend. These need separately tested major migrations.
 
 No SQL grants, Edge Function, PWA deployment, secret change, or production release was performed. PR #10's account deletion RPC/Edge/PWA deployment remains separately pending confirmation and live validation.
 
 Official Vite advisories: GHSA-rq7h-c2jc-7f22, GHSA-9jrq-w75r-8gcw, GHSA-8g5g-mxqh-grgj. Version matching is not evidence of compromise.
+## Completed second pass
+
+Removed unused Zod and @hookform/resolvers after checking tracked source imports. Migrated React Router DOM 6.x to 7.18.4; React 18 is retained. The applications use simple wildcard fallback routes and do not use the affected multi-segment relative splat patterns.
+
+All production builds and real Chromium 404-to-home navigation smoke checks passed with external requests blocked. This does not verify authenticated backend workflows. Existing source lint failures remain outside this dependency update.
+
+Full npm audit: 0 critical / 0 high / 5 moderate / 0 low. Production npm audit: 0 critical / 0 high / 3 moderate / 0 low. The remaining findings are the PostCSS selector-parser/Tailwind 3 toolchain (GHSA-rj75-hqrm-r3gf). Resolving them requires a separately validated CSS-toolchain migration; no major parser override, audit suppression, or audit --force was used. Production audit includes build tooling brought in by the current dependency classification; it is not proof of runtime exploitability.
+
+i18next-http-backend 3.x -> 4.0.5 removes the remaining low advisory. Native fetch is required (supported by modern browsers and Node 22). The application uses the default local locale path. Four mocked security tests and the real browser smoke suite pass; these are not live SQL authorization tests.
+
+No merge or production deployment was performed in either pass.
