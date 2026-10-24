@@ -24,7 +24,12 @@ serve(async (req) => {
     });
   }
 
-  const { user_id_to_delete } = await req.json();
+  let user_id_to_delete: unknown;
+  try {
+    ({ user_id_to_delete } = await req.json());
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
 
   if (!user_id_to_delete) {
     return new Response('Missing user_id_to_delete', { 
@@ -50,8 +55,23 @@ serve(async (req) => {
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
   try {
+    const authorization = req.headers.get('Authorization') || '';
+    const token = authorization.match(/^Bearer\s+(\S+)$/i)?.[1];
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Validate with Auth; never trust a client-supplied id or decode JWTs locally.
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid authentication' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (user.id !== user_id_to_delete) {
+      return new Response(JSON.stringify({ error: 'You may only delete your own account' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     // Validate user_id_to_delete format (UUID)
-    if (!isValidUUID(user_id_to_delete)) {
+    if (typeof user_id_to_delete !== 'string' || !isValidUUID(user_id_to_delete)) {
       return new Response(JSON.stringify({ error: 'Invalid user_id_to_delete format. Must be a valid UUID.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
