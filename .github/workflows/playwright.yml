@@ -8,13 +8,24 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package-manager: [npm, bun]
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: '24'
-    - name: Install dependencies
-      run: npm ci
+    - name: Install npm dependencies
+      if: matrix.package-manager == 'npm'
+      run: npm ci --no-audit --no-fund
+    - name: Install Bun dependencies
+      if: matrix.package-manager == 'bun'
+      run: npx --yes bun@1.4.4 install --frozen-lockfile
+    - name: Verify production build and application types
+      run: |
+        npm run build
+        npx tsc -p tsconfig.app.json --noEmit
     - name: Install Playwright Browsers
       run: npx playwright install chromium --with-deps
     - name: Run Playwright tests
@@ -22,6 +33,6 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
-        name: playwright-report
+        name: playwright-report-${{ matrix.package-manager }}
         path: playwright-report/
         retention-days: 30

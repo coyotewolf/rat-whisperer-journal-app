@@ -18,3 +18,7 @@ Refreshed registry dependencies within the existing application major-version fa
 - No authenticated Supabase, live account, production deployment, or npm audit was performed locally.
 
 The optional BROWSER_EXECUTABLE_PATH test setting permits reuse of an installed browser without changing CI's managed Chromium default.
+
+## Bun lock reconciliation
+
+The first dependency PR left the existing Bun lock stale. Bun 1.4.4 regenerated it directly from the committed npm lock, without changing the manifest or npm resolutions. The frontend has one package.json and these two lockfiles; no nested package.json files were found. Separate Deno edge-function dependencies remain in supabase/deno.json and direct URL imports (Supabase 2.47.1 / floating @2, std 0.168.0 and xhr 0.1.0). They are not covered by this frontend lock reconciliation. All direct dependency ranges and resolved versions were compared and match. Frozen Bun install, production/PWA build and application typecheck passed. Bun's blocked postinstall was not enabled; the build works without changing its trust policy. CI now validates npm and Bun independently, including build, typecheck and browser navigation tests.
