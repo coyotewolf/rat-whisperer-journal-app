@@ -18,3 +18,7 @@ Refreshed registry dependencies within the existing application major-version fa
 - No authenticated Supabase, live account, production deployment, or npm audit was performed locally.
 
 The optional BROWSER_EXECUTABLE_PATH test setting permits reuse of an installed browser without changing CI's managed Chromium default.
+
+## Bun lock reconciliation
+
+The first dependency PR left the existing Bun lock stale. Bun 1.4.4 regenerated it directly from the committed npm lock, without changing the manifest or npm resolutions. The repository has only one package manifest and these two lockfiles; no nested package manifests were found. All direct dependency ranges and resolved versions were compared and match. Frozen Bun install, production/PWA build and application typecheck passed. Bun's blocked postinstall was not enabled; the build works without changing its trust policy. CI now validates npm and Bun independently, including build, typecheck and browser navigation tests.
